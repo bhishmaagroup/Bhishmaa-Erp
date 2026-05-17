@@ -1,0 +1,25 @@
+<h3>License Requests</h3>
+
+<table class="table">
+<tr>
+  <th>School ID</th>
+  <th>Plan</th>
+  <th>Status</th>
+  <th>Action</th>
+</tr>
+
+{% for r in requests %}
+<tr>
+  <td>{{ r.school_id }}</td>
+  <td>{{ r.plan }}</td>
+  <td>{{ r.status }}</td>
+
+  <td>
+    <a href="/super/generate-license/{{ r.school_id }}" class="btn btn-success btn-sm">
+      Generate License
+    </a>
+  </td>
+
+</tr>
+{% endfor %}
+</table>

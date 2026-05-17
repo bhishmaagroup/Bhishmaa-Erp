@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Yearly Attendance{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+<!-- ================= HEADER ================= -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="fw-bold mb-0">📊 Yearly Attendance Register</h4>
+
+    <!-- EXPORT / ANALYTICS BUTTONS -->
+    <div>
+        <a href="{{ request.path }}/pdf"
+           class="btn btn-danger btn-sm me-1">
+            📄 PDF
+        </a>
+        <a href="{{ request.path }}/excel"
+           class="btn btn-success btn-sm me-1">
+            📊 Excel
+        </a>
+        <a href="{{ request.path }}/analytics"
+           class="btn btn-info btn-sm">
+            📈 Analytics
+        </a>
+    </div>
+</div>
+
+<!-- ================= STUDENT INFO ================= -->
+<div class="card mb-3 shadow-sm">
+    <div class="card-body">
+        <b>Student:</b>
+        {{ student.first_name }}
+        {% if student.middle_name %} {{ student.middle_name }}{% endif %}
+        {{ student.last_name }} <br>
+
+        <b>Class:</b> {{ student.student_class }}
+        | <b>Section:</b> {{ student.section }}
+    </div>
+</div>
+
+<!-- ================= YEARLY TABLE ================= -->
+<table class="table table-bordered table-sm text-center align-middle">
+    <thead class="table-dark">
+        <tr>
+            <th>Month</th>
+            <th>P</th>
+            <th>A</th>
+            <th>L</th>
+            <th>H</th>
+            <th>%</th>
+        </tr>
+    </thead>
+
+    <tbody>
+    {% for r in summary %}
+        <tr>
+            <td class="fw-semibold">{{ r.month }}</td>
+            <td class="text-success fw-bold">{{ r.P }}</td>
+            <td class="text-danger fw-bold">{{ r.A }}</td>
+            <td class="text-warning fw-bold">{{ r.L }}</td>
+            <td class="text-primary fw-bold">{{ r.H }}</td>
+            <td>
+                {% if r.percent >= 75 %}
+                    <span class="badge bg-success">{{ r.percent }}%</span>
+                {% elif r.percent >= 50 %}
+                    <span class="badge bg-warning text-dark">{{ r.percent }}%</span>
+                {% else %}
+                    <span class="badge bg-danger">{{ r.percent }}%</span>
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<a href="/attendance/student/ledger"
+   class="btn btn-secondary mt-3">
+    ← Back to Ledger
+</a>
+
+</div>
+{% endblock %}

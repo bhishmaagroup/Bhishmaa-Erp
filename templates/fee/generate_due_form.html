@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0"><i class="fas fa-calendar-alt"></i> Fee Management</h4>
+                    <span class="badge bg-light text-primary">Academic Year: {{ academic_year if academic_year else 'Current' }}</span>
+                </div>
+                
+                <div class="card-body p-4">
+                    <div class="text-center mb-4 p-3 border rounded bg-light">
+                        <h5 class="text-dark fw-bold">Overall School Dues Report</h5>
+                        <p class="small text-muted">Generate a complete list of all students with pending balances across the entire school.</p>
+                        <a href="{{ url_for('fee.overall_school_due') }}" class="btn btn-danger w-100 mb-2">
+                            <i class="fas fa-file-pdf"></i> Download Overall Dues PDF (All Students)
+                        </a>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <h5 class="text-dark fw-bold mb-3"><i class="fas fa-plus-circle"></i> Generate Monthly Dues</h5>
+                    <p class="text-muted small">Select a month to bill students. This will calculate tuition, transport, and hostel fees automatically.</p>
+                    
+                    <form action="{{ url_for('fee.generate_monthly_due') }}" method="POST">
+                        <div class="form-group mb-4">
+                            <label for="month" class="form-label font-weight-bold">Target Month for Billing:</label>
+                            <select name="month" id="month" class="form-select form-select-lg" required>
+                                <option value="" disabled selected>-- Choose Month --</option>
+                                {% for m in months %}
+                                    <option value="{{ m }}">{{ m }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="alert alert-info border-0 shadow-sm">
+                            <div class="d-flex">
+                                <i class="fas fa-info-circle mt-1 me-2"></i>
+                                <small>System will check your <b>Fee Structure</b> settings and apply charges to all active students. No duplicate records will be created.</small>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-cogs"></i> Run Monthly Billing
+                            </button>
+                            <a href="{{ url_for('fee.dashboard') }}" class="btn btn-link text-secondary">Back to Dashboard</a>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card-footer bg-white text-center py-3">
+                    <small class="text-muted">Logged in for: <b>{{ current_user.school.school_name if current_user.school else 'School Admin' }}</b></small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

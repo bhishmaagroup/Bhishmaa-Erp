@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}School Settings{% endblock %}
+
+{% block content %}
+<div class="neo-card p-4">
+
+  <h4 class="mb-4">School Information</h4>
+
+  <form method="post" enctype="multipart/form-data">
+    <div class="row g-3">
+
+      <div class="col-md-8">
+        <label>School Name</label>
+        <input class="form-control" name="school_name"
+               value="{{ school.school_name }}" required>
+      </div>
+
+      <div class="col-md-4 text-center">
+        <label>School Logo</label><br>
+        {% if school.logo %}
+          <img src="{{ url_for('uploaded_files', filename=school.logo) }}"
+               class="img-fluid mb-2"
+               style="max-height:120px">
+        {% else %}
+          <div class="text-muted small">No logo uploaded</div>
+        {% endif %}
+        <input type="file" name="logo" class="form-control mt-2">
+      </div>
+
+      <div class="col-md-12">
+        <label>Address</label>
+        <textarea class="form-control"
+                  name="address"
+                  rows="2">{{ school.address }}</textarea>
+      </div>
+
+      <div class="col-md-4">
+        <label>City</label>
+        <input class="form-control" name="city" value="{{ school.city }}">
+      </div>
+
+      <div class="col-md-4">
+        <label>State</label>
+        <input class="form-control" name="state" value="{{ school.state }}">
+      </div>
+
+      <div class="col-md-4">
+        <label>Pincode</label>
+        <input class="form-control" name="pincode" value="{{ school.pincode }}">
+      </div>
+
+      <div class="col-md-6">
+        <label>Phone</label>
+        <input class="form-control" name="phone" value="{{ school.phone }}">
+      </div>
+
+      <div class="col-md-6">
+        <label>Email</label>
+        <input class="form-control" name="email" value="{{ school.email }}">
+      </div>
+
+    </div>
+
+    <button class="btn btn-primary mt-4">
+      <i class="fa fa-save"></i> Save School Details
+    </button>
+  </form>
+
+</div>
+{% endblock %}

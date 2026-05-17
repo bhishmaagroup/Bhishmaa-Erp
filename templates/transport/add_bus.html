@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% block title %}Add Bus{% endblock %}
+
+{% block content %}
+
+<style>
+  .form-card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 25px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  }
+
+  .section-title {
+    font-weight: 600;
+    color: #0d6efd;
+    margin-top: 20px;
+  }
+</style>
+
+<div class="container">
+
+  <h4 class="mb-3">🚌 Add Bus</h4>
+
+  <form method="post" enctype="multipart/form-data">
+    <div class="form-card">
+
+      <!-- 📋 BASIC DETAILS -->
+      <div class="section-title">Basic Details</div>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <input class="form-control" name="bus_no" placeholder="Bus Number" required>
+        </div>
+        <div class="col-md-4">
+          <input class="form-control" name="registration_no" placeholder="Registration No">
+        </div>
+        <div class="col-md-4">
+          <input class="form-control" name="model" placeholder="Model & Make">
+        </div>
+
+        <div class="col-md-4">
+          <input class="form-control" name="chassis_no" placeholder="Chassis Number">
+        </div>
+        <div class="col-md-4">
+          <input class="form-control" name="engine_no" placeholder="Engine Number">
+        </div>
+        <div class="col-md-4">
+          <select class="form-select" name="bus_type">
+            <option value="">Bus Type</option>
+            <option>Owned</option>
+            <option>Rented</option>
+            <option>Contract</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 💺 CAPACITY -->
+      <div class="section-title">Capacity</div>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <input class="form-control" name="capacity" placeholder="Seating Capacity">
+        </div>
+        <div class="col-md-4">
+          <input class="form-control" name="max_students" placeholder="Max Students Allowed">
+        </div>
+      </div>
+
+      <!-- 📄 DOCUMENTS -->
+      <div class="section-title">Documents</div>
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label>RC Book</label>
+          <input type="file" class="form-control" name="rc_book">
+        </div>
+        <div class="col-md-3">
+          <label>Insurance</label>
+          <input type="file" class="form-control" name="insurance">
+        </div>
+        <div class="col-md-3">
+          <label>Insurance Expiry</label>
+          <input type="date" class="form-control" name="insurance_expiry">
+        </div>
+
+        <div class="col-md-3">
+          <label>PUC</label>
+          <input type="file" class="form-control" name="puc">
+        </div>
+        <div class="col-md-3">
+          <label>PUC Expiry</label>
+          <input type="date" class="form-control" name="puc_expiry">
+        </div>
+
+        <div class="col-md-3">
+          <label>Fitness</label>
+          <input type="file" class="form-control" name="fitness">
+        </div>
+        <div class="col-md-3">
+          <label>Fitness Expiry</label>
+          <input type="date" class="form-control" name="fitness_expiry">
+        </div>
+      </div>
+
+      <!-- 👨‍✈️ STAFF -->
+      <div class="section-title">Staff</div>
+      <div class="row g-3">
+
+        <!-- 🔥 DRIVER DROPDOWN -->
+        <div class="col-md-4">
+          <select class="form-select" name="driver_name" id="driverSelect">
+            <option value="">Select Driver</option>
+            {% for d in drivers %}
+            <option value="{{ (d.first_name ~ ' ' ~ (d.middle_name or '') ~ ' ' ~ (d.last_name or '')).strip() }}"
+              data-mobile="{{ d.mobile }}">
+              {{ (d.first_name ~ ' ' ~ (d.middle_name or '') ~ ' ' ~ (d.last_name or '')).strip() }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-4">
+          <input class="form-control" name="driver_mobile" placeholder="Driver Mobile">
+        </div>
+
+        <div class="col-md-4">
+          <input class="form-control" name="helper_name" placeholder="Helper Name">
+        </div>
+
+      </div>
+
+      <!-- 🛠️ MAINTENANCE -->
+      <div class="section-title">Maintenance</div>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label>Last Service</label>
+          <input type="date" class="form-control" name="last_service">
+        </div>
+        <div class="col-md-4">
+          <label>Next Service</label>
+          <input type="date" class="form-control" name="next_service">
+        </div>
+        <div class="col-md-4">
+          <input class="form-control" name="gps_id" placeholder="GPS Device ID">
+        </div>
+
+        <div class="col-md-4">
+          <select class="form-select" name="cctv">
+            <option value="">CCTV Status</option>
+            <option>Working</option>
+            <option>Not Working</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 🚦 STATUS -->
+      <div class="section-title">Status</div>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <select class="form-select" name="status">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="maintenance">Under Maintenance</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- SUBMIT -->
+      <button class="btn btn-success mt-4 px-5">Save Bus</button>
+
+    </div>
+  </form>
+
+</div>
+
+<!-- 🔥 AUTO MOBILE FILL -->
+<script>
+  document.getElementById("driverSelect").addEventListener("change", function () {
+    let mobile = this.options[this.selectedIndex].getAttribute("data-mobile");
+    document.querySelector("input[name='driver_mobile']").value = mobile || '';
+  });
+</script>
+
+{% endblock %}

@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}Student Attendance{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+<!-- ================= HEADER ================= -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0">🎓 Student Attendance</h4>
+
+    <div>
+        <a href="/attendance/student/ledger" class="btn btn-outline-primary me-1">
+            📒 Attendance Ledger
+        </a>
+        <a href="/attendance/student/class-register" class="btn btn-outline-primary">
+            📘 Monthly Ledger
+        </a>
+    </div>
+</div>
+
+<!-- ================= FILTER ================= -->
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-3">
+        <select name="class" class="form-select" required>
+            <option value="">-- Select Class --</option>
+            {% for c in ["LKG","UKG","1","2","3","4","5","6","7","8","9","10","11","12"] %}
+                <option value="{{ c }}"
+                    {% if request.args.get('class') == c %}selected{% endif %}>
+                    {{ c }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-md-3">
+        <select name="section" class="form-select" required>
+            <option value="">-- Select Section --</option>
+            {% for sec in ["A","B","C","D"] %}
+                <option value="{{ sec }}"
+                    {% if request.args.get('section') == sec %}selected{% endif %}>
+                    {{ sec }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-md-3">
+        <button class="btn btn-primary w-100">Load Students</button>
+    </div>
+</form>
+
+<!-- ================= SUMMARY BAR ================= -->
+{% if students %}
+<div class="alert alert-light border d-flex gap-3 align-items-center mb-2">
+    <span class="fw-bold">Quick Summary:</span>
+    <span class="text-success">P: <b id="cntP">0</b></span>
+    <span class="text-danger">A: <b id="cntA">0</b></span>
+    <span class="text-warning">L: <b id="cntL">0</b></span>
+    <span class="text-primary">H: <b id="cntH">0</b></span>
+</div>
+{% endif %}
+
+<!-- ================= STUDENT TABLE ================= -->
+{% if students %}
+<form method="post" onsubmit="disableBtn(this)">
+<div style="max-height:65vh; overflow:auto">
+<table class="table table-bordered table-hover align-middle">
+    <thead class="table-light sticky-top">
+        <tr>
+            <th style="width:60px">#</th>
+            <th>Student Name</th>
+            <th style="width:300px">Attendance</th>
+        </tr>
+    </thead>
+
+    <tbody>
+    {% for s in students %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>
+                {{ s.first_name }}
+                {% if s.middle_name %} {{ s.middle_name }}{% endif %}
+                {% if s.last_name %} {{ s.last_name }}{% endif %}
+            </td>
+
+            <td>
+                <!-- PRESENT -->
+                <label class="me-2 text-success fw-semibold">
+                    <input type="radio" name="status_{{ s.id }}" value="P" checked
+                           onchange="recount()"> P
+                </label>
+
+                <!-- ABSENT -->
+                <label class="me-2 text-danger fw-semibold">
+                    <input type="radio" name="status_{{ s.id }}" value="A"
+                           onchange="recount()"> A
+                </label>
+
+                <!-- LATE -->
+                <label class="me-2 text-warning fw-semibold">
+                    <input type="radio" name="status_{{ s.id }}" value="L"
+                           onchange="recount()"> L
+                </label>
+
+                <!-- HALF DAY -->
+                <label class="text-primary fw-semibold">
+                    <input type="radio" name="status_{{ s.id }}" value="H"
+                           onchange="recount()"> H
+                </label>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+
+<button class="btn btn-success mt-2" id="saveBtn">
+    💾 Save Attendance
+</button>
+</form>
+{% else %}
+<p class="text-muted">Select class & section to load students.</p>
+{% endif %}
+
+<a href="/attendance" class="btn btn-secondary mt-3">← Back</a>
+
+</div>
+
+<!-- ================= JS (UX ONLY) ================= -->
+<script>
+function recount(){
+    let P=0,A=0,L=0,H=0;
+    document.querySelectorAll("input[type=radio]:checked").forEach(r=>{
+        if(r.value==="P") P++;
+        if(r.value==="A") A++;
+        if(r.value==="L") L++;
+        if(r.value==="H") H++;
+    });
+    if(document.getElementById("cntP")){
+        cntP.innerText=P; cntA.innerText=A;
+        cntL.innerText=L; cntH.innerText=H;
+    }
+}
+recount();
+
+function disableBtn(form){
+    document.getElementById("saveBtn").disabled=true;
+}
+</script>
+{% endblock %}

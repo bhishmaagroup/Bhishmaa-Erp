@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h4 class="fw-bold mb-3">📘 Monthly Attendance Register (Editable)</h4>
+
+<form method="get" class="row mb-3">
+    <div class="col-md-3">
+        <input type="month" name="month" value="{{ month }}" class="form-control">
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-primary">Load</button>
+    </div>
+</form>
+
+<form method="post">
+
+<div style="overflow-x:auto">
+
+<table class="table table-bordered text-center table-sm">
+
+<thead class="table-dark">
+<tr>
+    <th>Teacher</th>
+
+    {% for d in days %}
+        <th>{{ d.day }}</th>
+    {% endfor %}
+
+    <th>P</th>
+    <th>A</th>
+    <th>L</th>
+    <th>H</th>
+
+</tr>
+</thead>
+
+<tbody>
+
+{% for t in teachers %}
+<tr>
+
+<td class="text-start">
+    {{ t.first_name }} {{ t.last_name }}
+</td>
+
+{% set P=0 %}{% set A=0 %}{% set L=0 %}{% set H=0 %}
+
+{% for d in days %}
+    {% set st = attendance.get(t.id, {}).get(d, "P") %}
+
+    {% if st=="P" %}{% set P=P+1 %}{% endif %}
+    {% if st=="A" %}{% set A=A+1 %}{% endif %}
+    {% if st=="L" %}{% set L=L+1 %}{% endif %}
+    {% if st=="H" %}{% set H=H+1 %}{% endif %}
+
+    <td>
+
+        <div class="cell"
+             data-name="att_{{ t.id }}_{{ d }}"
+             data-value="{{ st }}"
+             onclick="cycle(this)">
+
+            {{ st }}
+
+        </div>
+
+        <input type="hidden"
+               name="att_{{ t.id }}_{{ d }}"
+               value="{{ st }}">
+
+    </td>
+
+{% endfor %}
+
+<td class="text-success fw-bold">{{ P }}</td>
+<td class="text-danger fw-bold">{{ A }}</td>
+<td class="text-warning fw-bold">{{ L }}</td>
+<td class="text-info fw-bold">{{ H }}</td>
+
+</tr>
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+<button class="btn btn-success w-100 mt-3">💾 Save Full Month</button>
+
+</form>
+
+<style>
+.cell{
+    cursor:pointer;
+    font-weight:bold;
+    border-radius:5px;
+    padding:4px;
+}
+
+.cell[data-value="P"]{background:#198754;color:white;}
+.cell[data-value="A"]{background:#dc3545;color:white;}
+.cell[data-value="L"]{background:#ffc107;}
+.cell[data-value="H"]{background:#0dcaf0;color:white;}
+</style>
+
+<script>
+function cycle(el){
+
+    let val = el.dataset.value
+    let next = "P"
+
+    if(val==="P") next="A"
+    else if(val==="A") next="H"
+    else if(val==="H") next="L"
+    else next="P"
+
+    el.dataset.value = next
+    el.innerText = next
+
+    // update hidden input
+    let input = el.nextElementSibling
+    input.value = next
+
+    // color update
+    el.setAttribute("data-value", next)
+}
+</script>
+
+{% endblock %}

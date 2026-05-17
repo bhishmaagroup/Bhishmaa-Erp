@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h4 class="fw-bold mb-3">👨‍🏫 Teacher Monthly Register</h4>
+{% if month %}
+<div class="mb-3">
+    <a href="/attendance/teacher/register/pdf?month={{ month }}" class="btn btn-danger btn-sm">
+        📄 Monthly PDF
+    </a>
+
+    <a href="/attendance/teacher/register/excel?month={{ month }}" class="btn btn-success btn-sm">
+        📊 Monthly Excel
+    </a>
+</div>
+{% endif %}
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-3">
+        <input type="month" name="month" value="{{ month }}" class="form-control" required>
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-primary">Generate</button>
+        <a href="/attendance/teacher/register/edit" class="btn btn-warning btn-sm">
+            ✏️ Edit Monthly Register
+        </a>
+    </div>
+</form>
+
+{% if teachers and days %}
+<div style="overflow-x:auto">
+    <table class="table table-bordered text-center table-sm">
+        <thead class="table-dark">
+            <tr>
+                <th>Name</th>
+                {% for d in days %}
+                <th>{{ d.day }}</th>
+                {% endfor %}
+                <th>P</th>
+                <th>A</th>
+                <th>%</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for t in teachers %}
+            <tr>
+                <td class="text-start">
+                    {{ t.first_name }} {{ t.middle_name }} {{ t.last_name }}
+                </td>
+
+                {% set P = 0 %}
+                {% set A = 0 %}
+
+                {% for d in days %}
+                {% set st = attendance.get(t.id, {}).get(d) %}
+                {% if d.weekday() == 6 %}
+                <td class="bg-secondary"></td>
+                {% elif st == "P" %}
+                <td class="text-success fw-bold">P</td>
+                {% set P = P + 1 %}
+                {% elif st == "A" %}
+                <td class="bg-danger text-white fw-bold">A</td>
+                {% set A = A + 1 %}
+                {% else %}
+                <td></td>
+                {% endif %}
+                {% endfor %}
+
+                <td>{{ P }}</td>
+                <td>{{ A }}</td>
+                <td>
+                    {% if P + A > 0 %}
+                    {{ ((P/(P+A))*100)|round(1) }}%
+                    {% else %}
+                    0%
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% endblock %}

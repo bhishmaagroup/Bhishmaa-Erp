@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Stop View{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+<h4 class="mb-3">📍 Stop Details</h4>
+
+<div class="card p-4">
+
+<p><b>Route:</b> {{ stop.route.route_name }}</p>
+<p><b>Stop Name:</b> {{ stop.stop_name }}</p>
+<p><b>Pickup Time:</b> {{ stop.pickup_time }}</p>
+<p><b>Sequence:</b> {{ stop.sequence }}</p>
+<p><b>Distance:</b> {{ stop.distance_km }} KM</p>
+<p><b>Fare:</b> ₹{{ stop.fare }}</p>
+
+</div>
+
+</div>
+
+{% endblock %}

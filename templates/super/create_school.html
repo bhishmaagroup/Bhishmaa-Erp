@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-5">
+
+  <h3>Create New School</h3>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+  {% endwith %}
+
+  <form method="POST">
+
+    <div class="mb-3">
+      <input type="text" name="school_code" class="form-control" placeholder="School Code">
+    </div>
+
+    <div class="mb-3">
+      <input type="text" name="school_name" class="form-control" placeholder="School Name">
+    </div>
+
+    <div class="mb-3">
+      <input type="text" name="admin_username" class="form-control" placeholder="Admin Username">
+    </div>
+
+    <div class="mb-3">
+      <input type="password" name="temp_password" class="form-control" placeholder="Temp Password">
+    </div>
+
+    <button class="btn btn-success">Create School</button>
+
+  </form>
+
+</div>
+
+{% endblock %}

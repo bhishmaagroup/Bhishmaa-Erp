@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}Holiday Notice{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+<!-- ================= HEADER ================= -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">Holiday Notice</h3>
+        <small class="text-muted">Hindi / English WhatsApp Broadcast</small>
+    </div>
+    <a href="/dashboard" class="btn btn-outline-secondary btn-sm">← Back</a>
+</div>
+
+{% if holiday %}
+<div class="row">
+<div class="col-md-7">
+
+<!-- ================= HOLIDAY INFO ================= -->
+<div class="card shadow-sm mb-3">
+    <div class="card-body">
+        <h5 class="fw-bold mb-2">📅 Upcoming Holiday</h5>
+        <p class="mb-1"><b>Date:</b> {{ holiday.date.strftime("%d %B %Y") }}</p>
+        <p class="mb-0"><b>Reason:</b> {{ holiday.reason }}</p>
+    </div>
+</div>
+
+<!-- ================= MESSAGE BOX ================= -->
+<div class="card shadow-sm">
+<div class="card-body">
+
+<h6 class="fw-bold mb-3">📢 WhatsApp Notice</h6>
+
+<!-- Language Tabs -->
+<ul class="nav nav-tabs mb-3" id="langTabs">
+  <li class="nav-item">
+    <button class="nav-link active" data-lang="en" type="button">
+        English
+    </button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link" data-lang="hi" type="button">
+        हिंदी
+    </button>
+  </li>
+</ul>
+
+<!-- English -->
+<textarea id="msg_en" class="form-control mb-2" rows="7" readonly>
+{{ parent_en }}
+</textarea>
+
+<!-- Hindi -->
+<textarea id="msg_hi" class="form-control mb-2 d-none" rows="7" readonly>
+{{ parent_hi }}
+</textarea>
+
+<!-- ACTIONS -->
+<div class="d-flex gap-2 mt-3">
+
+    <a id="waBtn"
+       href="https://wa.me/?text={{ parent_en | urlencode }}"
+       target="_blank"
+       class="btn btn-success">
+       📲 Send to WhatsApp
+    </a>
+
+    <a href="/dashboard/holiday-notice/pdf"
+       target="_blank"
+       class="btn btn-outline-success">
+       📎 Attach PDF
+    </a>
+
+    <button class="btn btn-primary"
+            onclick="markSent({{ log_id }})">
+        ✅ Mark as Sent
+    </button>
+
+</div>
+
+<small class="text-muted d-block mt-2">
+Active language message will be sent to WhatsApp.
+</small>
+
+</div>
+</div>
+
+</div>
+</div>
+
+{% else %}
+<div class="alert alert-warning">No upcoming holiday found.</div>
+{% endif %}
+
+</div>
+
+<!-- ================= SCRIPT ================= -->
+<script>
+const enBox = document.getElementById("msg_en");
+const hiBox = document.getElementById("msg_hi");
+const waBtn = document.getElementById("waBtn");
+
+document.querySelectorAll("#langTabs button").forEach(btn => {
+    btn.addEventListener("click", () => {
+
+        document.querySelectorAll("#langTabs button")
+        .forEach(b => b.classList.remove("active"));
+
+        btn.classList.add("active");
+
+        const lang = btn.dataset.lang;
+
+        if (lang === "hi") {
+            enBox.classList.add("d-none");
+            hiBox.classList.remove("d-none");
+            waBtn.href = "https://wa.me/?text=" + encodeURIComponent(hiBox.value);
+        } else {
+            hiBox.classList.add("d-none");
+            enBox.classList.remove("d-none");
+            waBtn.href = "https://wa.me/?text=" + encodeURIComponent(enBox.value);
+        }
+    });
+});
+
+// Mark sent
+function markSent(id){
+    fetch(`/dashboard/notice/mark-sent/${id}`)
+    .then(()=>alert("Notice marked as SENT"));
+}
+</script>
+
+{% endblock %}

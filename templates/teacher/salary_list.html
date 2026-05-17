@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h4>📊 Salary Records</h4>
+
+<table class="table table-bordered">
+
+<tr>
+<th>Staff</th>
+<th>Month</th>
+<th>Net</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+
+{% for r in records %}
+<tr>
+<td>{{ r.staff_id }}</td>
+<td>{{ r.month }}</td>
+<td>₹{{ r.net_salary }}</td>
+
+<td>
+<span class="badge bg-{{ 'success' if r.status=='Paid' else 'warning' if r.status=='Partial' else 'danger' }}">
+{{ r.status }}
+</span>
+</td>
+
+<td>
+<a href="{{ url_for('teacher.salary_payment', salary_id=r.id) }}" class="btn btn-sm btn-primary">
+Pay
+</a>
+</td>
+
+</tr>
+{% endfor %}
+
+</table>
+
+{% endblock %}

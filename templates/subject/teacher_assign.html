@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}Teacher Subject Assign{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+<!-- HEADER -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+<div>
+
+<h3 class="fw-bold mb-1">
+👨‍🏫 Teacher Subject Assign
+</h3>
+
+<p class="text-muted mb-0">
+Assign subjects to teachers
+</p>
+
+</div>
+
+<a href="/subject/"
+   class="btn btn-outline-dark">
+
+← Back
+
+</a>
+
+</div>
+
+
+<!-- FORM -->
+<div class="card border-0 shadow-sm mb-4">
+
+<div class="card-body">
+
+<form method="post">
+
+<div class="row g-3 mb-4">
+
+<div class="col-md-5">
+
+<label class="form-label fw-semibold">
+Select Teacher
+</label>
+
+<select name="teacher_id"
+        class="form-select"
+        required>
+
+<option value="">
+Choose Teacher
+</option>
+
+{% for t in teachers %}
+
+<option value="{{ t.id }}">
+
+{{ t.first_name }}
+{{ t.last_name }}
+
+</option>
+
+{% endfor %}
+
+</select>
+
+</div>
+
+</div>
+
+<hr>
+
+<div class="row">
+
+{% for s in subjects %}
+
+<div class="col-md-3 mb-3">
+
+<div class="card h-100 border">
+
+<div class="card-body">
+
+<div class="form-check">
+
+<input type="checkbox"
+       class="form-check-input"
+       name="subject_ids"
+       value="{{ s.id }}">
+
+<label class="form-check-label w-100">
+
+<h6 class="fw-bold mb-1">
+{{ s.subject_name }}
+</h6>
+
+<div class="small text-muted">
+
+Class:
+<b>{{ s.class_name }}</b>
+
+<br>
+
+Section:
+<b>{{ s.section }}</b>
+
+</div>
+
+{% if s.is_optional %}
+
+<span class="badge bg-warning text-dark mt-2">
+Optional
+</span>
+
+{% else %}
+
+<span class="badge bg-success mt-2">
+Main
+</span>
+
+{% endif %}
+
+</label>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+<button class="btn btn-primary px-4">
+
+Assign Subjects
+
+</button>
+
+</form>
+
+</div>
+
+</div>
+
+
+<!-- ASSIGNMENT TABLE -->
+<div class="card border-0 shadow-sm">
+
+<div class="card-body">
+
+<h5 class="fw-bold mb-3">
+Current Assignments
+</h5>
+
+<div class="table-responsive">
+
+<table class="table table-bordered align-middle">
+
+<thead class="table-dark">
+
+<tr>
+
+<th>Teacher</th>
+<th>Subject</th>
+<th>Class</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for a in assignments %}
+
+<tr>
+
+<td class="fw-semibold">
+
+{{ a.teacher.first_name }}
+{{ a.teacher.last_name }}
+
+</td>
+
+<td>
+
+{{ a.subject.subject_name }}
+
+</td>
+
+<td>
+
+{{ a.class_name }}
+-
+{{ a.section }}
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

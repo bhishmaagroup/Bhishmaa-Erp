@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h4 class="fw-bold mb-3">📒 Teacher Attendance Ledger</h4>
+
+<table class="table table-bordered table-hover">
+<thead class="table-light">
+<tr>
+    <th>#</th>
+    <th>Teacher Name</th>
+    <th>Action</th>
+</tr>
+</thead>
+<tbody>
+{% for t in teachers %}
+<tr>
+    <td>{{ loop.index }}</td>
+    <td>
+        {{ t.first_name }}
+        {% if t.middle_name %} {{ t.middle_name }}{% endif %}
+        {{ t.last_name }}
+    </td>
+    <td>
+        <a href="/attendance/teacher/ledger/{{ t.id }}"
+           class="btn btn-sm btn-primary">Ledger</a>
+
+        <a href="/attendance/teacher/yearly/{{ t.id }}"
+           class="btn btn-sm btn-outline-secondary">Yearly</a>
+    </td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
+{% endblock %}

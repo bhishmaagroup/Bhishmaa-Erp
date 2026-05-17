@@ -1,0 +1,447 @@
+{% extends "base.html" %}
+{% block title %}Student Admission{% endblock %}
+
+{% block content %}
+
+<style>
+  body {
+    background: #f5f6f7;
+    font-family: 'Segoe UI', sans-serif;
+  }
+
+  .neo-card {
+    background: white;
+    border-radius: 18px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, .15);
+    padding: 30px;
+  }
+
+  .section-title {
+    font-weight: 600;
+    color: #0d6efd;
+    margin: 25px 0 10px;
+  }
+
+  .photo-box {
+    width: 140px;
+    height: 170px;
+    border: 2px dashed #0d6efd;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    overflow: hidden;
+    background: #f8f9fa;
+  }
+
+  .photo-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+</style>
+
+<div class="container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-12 col-xl-11">
+
+      <!-- ===== HEADER ===== -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0">
+          <i class="fa fa-user-plus me-2"></i> Student Admission Form
+        </h4>
+
+        <!-- 🔙 BACK BUTTON -->
+        <a href="{{ url_for('student.student_list') }}" class="btn btn-outline-secondary btn-sm">
+          <i class="fa fa-arrow-left"></i> Back
+        </a>
+      </div>
+
+      <form method="post" enctype="multipart/form-data">
+        <div class="neo-card">
+
+          <!-- ================= STUDENT PHOTO ================= -->
+          <div class="section-title">Student Photo</div>
+          <div class="d-flex gap-3 align-items-center mb-3">
+            <div class="photo-box" onclick="uploadPhoto('student')">
+              <img id="studentPreview" style="display:none">
+              <span id="studentText">Upload</span>
+            </div>
+            <button type="button" class="btn btn-outline-primary" onclick="openCamera('student')">
+              <i class="fa fa-camera"></i> Webcam
+            </button>
+          </div>
+
+          <input type="file" id="studentPhoto" accept="image/*" hidden>
+          <input type="hidden" name="student_photo" id="student_photo">
+
+          <!-- ================= STUDENT DETAILS ================= -->
+          <div class="section-title">Student Details</div>
+          <div class="row g-3">
+            <div class="col-md-4"><input class="form-control" name="first_name" placeholder="First Name" required></div>
+            <div class="col-md-4"><input class="form-control" name="middle_name" placeholder="Middle Name"></div>
+            <div class="col-md-4"><input class="form-control" name="last_name" placeholder="Last Name"></div>
+
+            <div class="col-md-3">
+              <select class="form-select" name="gender">
+                <option value="">Gender</option>
+                <option>Male</option>
+                <option>Female</option>
+                <option>Other</option>
+              </select>
+            </div>
+
+            <div class="col-md-3">
+              <input type="text" class="form-control" name="dob" placeholder="Date of Birth"
+                onfocus="(this.type='date')" onblur="(this.type='text')">
+            </div>
+
+            <div class="col-md-3">
+              <select class="form-select" name="religion">
+                <option value="">Religion</option>
+                <option>Hindu</option>
+                <option>Muslim</option>
+                <option>Christian</option>
+                <option>Sikh</option>
+                <option>Jain</option>
+                <option>Other</option>
+              </select>
+            </div>
+
+            <div class="col-md-3">
+              <select class="form-select" name="caste">
+                <option value="">Caste</option>
+                <option>General</option>
+                <option>OBC</option>
+                <option>SC</option>
+                <option>ST</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- ================= ACADEMIC ================= -->
+          <div class="section-title">Academic Details</div>
+          <div class="row g-3">
+            <div class="col-md-3">
+              <select class="form-select" name="class" required>
+                <option value="">Select Class</option>
+                <option>Nursery</option>
+                <option>LKG</option>
+                <option>UKG</option>
+                <option>I</option>
+                <option>II</option>
+                <option>III</option>
+                <option>IV</option>
+                <option>V</option>
+                <option>VI</option>
+                <option>VII</option>
+                <option>VIII</option>
+                <option>IX</option>
+                <option>X</option>
+                <option>XI</option>
+                <option>XII</option>
+              </select>
+            </div>
+
+            <div class="col-md-3">
+              <select class="form-select" name="section" required>
+                <option value="">Section</option>
+                <option>A</option>
+                <option>B</option>
+                <option>C</option>
+                <option>D</option>
+              </select>
+            </div>
+
+            <div class="col-md-3">
+              <input class="form-control" value="Admission No AUTO GENERATED" disabled>
+            </div>
+
+            <div class="col-md-3">
+              <select class="form-control" name="session" required>
+                <option value="" disabled {% if not current_s %} selected {% endif %}>Session</option>
+
+                {% for y in years %}
+                <option value="{{ y }}" {% if y==current_s %} selected {% endif %}>
+                  {{ y }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <select class="form-select" name="blood_group">
+                <option value="">Blood Group</option>
+                <option>UNDER iNVESTIGATION BY SCHOOL </option>
+                <option>O+</option>
+                <option>O-</option>
+                <option>A+</option>
+                <option>A-</option>
+                <option>B+</option>
+                <option>B-</option>
+                <option>AB+</option>
+                <option>AB-</option>
+              </select>
+            </div>
+
+            <div class="col-md-4"><input class="form-control" name="aadhaar" placeholder="Student Aadhaar"></div>
+            <div class="col-md-4"><input class="form-control" name="pen_no" placeholder="PEN No"></div>
+          </div>
+
+          <!-- ================= FATHER ================= -->
+          <div class="section-title">Father Details</div>
+
+          <div class="d-flex gap-3 align-items-center mb-2">
+            <div class="photo-box" onclick="uploadPhoto('father')">
+              <img id="fatherPreview" style="display:none">
+              <span id="fatherText">Father Photo</span>
+            </div>
+
+            <button type="button" class="btn btn-outline-primary" onclick="openCamera('father')">
+              Webcam
+            </button>
+          </div>
+
+          <input type="file" id="fatherPhoto" accept="image/*" hidden>
+          <input type="hidden" name="father_photo" id="father_photo">
+
+          <div class="row g-3">
+
+            <div class="col-md-3">
+              <input class="form-control" name="father_name" placeholder="Father Name" required>
+            </div>
+
+            <div class="col-md-3">
+              <input class="form-control" name="father_mobile" placeholder="Mobile" required>
+            </div>
+
+            <!-- 🔥 NEW EMAIL -->
+            <div class="col-md-3">
+              <input type="email" class="form-control" name="father_email" placeholder="Father Email" required>
+            </div>
+
+            <div class="col-md-3">
+              <input class="form-control" name="father_aadhaar" placeholder="Father Aadhaar">
+            </div>
+
+          </div>
+
+
+          <!-- ================= MOTHER ================= -->
+          <div class="section-title mt-4">Mother Details</div>
+
+          <div class="d-flex gap-3 align-items-center mb-2">
+            <div class="photo-box" onclick="uploadPhoto('mother')">
+              <img id="motherPreview" style="display:none">
+              <span id="motherText">Mother Photo</span>
+            </div>
+
+            <button type="button" class="btn btn-outline-primary" onclick="openCamera('mother')">
+              Webcam
+            </button>
+          </div>
+
+          <input type="file" id="motherPhoto" accept="image/*" hidden>
+          <input type="hidden" name="mother_photo" id="mother_photo">
+
+          <div class="row g-3">
+
+            <div class="col-md-3">
+              <input class="form-control" name="mother_name" placeholder="Mother Name" required>
+            </div>
+
+            <div class="col-md-3">
+              <input class="form-control" name="mother_mobile" placeholder="Mobile" required>
+            </div>
+
+            <!-- 🔥 NEW EMAIL -->
+            <div class="col-md-3">
+              <input type="email" class="form-control" name="mother_email" placeholder="Mother Email" required>
+            </div>
+
+            <div class="col-md-3">
+              <input class="form-control" name="mother_aadhaar" placeholder="Mother Aadhaar">
+            </div>
+
+          </div>
+          <!-- ================= ADDRESS ================= -->
+          <div class="section-title">Student Address</div>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <textarea class="form-control" name="present_address" placeholder="Present Address" rows="3"></textarea>
+            </div>
+
+            <div class="col-md-6">
+              <textarea class="form-control" name="permanent_address" placeholder="Permanent Address"
+                rows="3"></textarea>
+            </div>
+          </div>
+          <!-- ================= GUARDIAN ================= -->
+          <div class="section-title">Guardian Details (If Any)</div>
+
+          <div class="row g-3">
+            <div class="col-md-3">
+              <input class="form-control" name="guardian_name" placeholder="Guardian Name">
+            </div>
+
+            <div class="col-md-3">
+              <select class="form-select" name="guardian_relation">
+                <option value="">Relation</option>
+                <option>father</option>
+                <option>mother</option>
+                <option>brother</option>
+                <option>sister</option>
+                <option>Uncle</option>
+                <option>Aunt</option>
+                <option>Grandfather</option>
+                <option>Grandmother</option>
+                <option>Other</option>
+              </select>
+            </div>
+
+            <div class="col-md-3">
+              <input class="form-control" name="guardian_mobile" placeholder="Mobile">
+            </div>
+
+            <div class="col-md-3">
+              <input class="form-control" name="guardian_address" placeholder="Guardian Address">
+            </div>
+          </div>
+
+          <!-- ================= DOCUMENTS ================= -->
+          <div class="section-title">Documents</div>
+          <div class="row g-3">
+            <div class="col-md-3"><input type="file" class="form-control" name="dob_certificate"></div>
+            <div class="col-md-3"><input type="file" class="form-control" name="aadhaar_doc"></div>
+            <div class="col-md-3"><input type="file" class="form-control" name="tc"></div>
+            <div class="col-md-3"><input type="file" class="form-control" name="marksheet"></div>
+          </div>
+
+          <!-- ================= TRANSPORT ================= -->
+          <div class="section-title">Transport Details</div>
+
+          <div class="row g-3 align-items-center">
+
+            <div class="col-md-3">
+              <select class="form-select" name="transport_required" id="transport_required">
+                <option value="no">Transport Required? No</option>
+                <option value="yes">Transport Required? Yes</option>
+              </select>
+            </div>
+
+            <div class="col-md-4" id="routeBox" style="display:none;">
+              <select class="form-select" name="transport_route" id="routeSelect">
+                <option value="">Select Route</option>
+                {% for r in routes %}
+                <option value="{{ r.id }}">{{ r.route_name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-md-5" id="stopBox" style="display:none;">
+              <select class="form-select" name="pickup_point" id="stopSelect">
+                <option value="">Select Stop</option>
+              </select>
+            </div>
+
+          </div>
+
+          <!-- ================= HOSTEL ================= -->
+          <div class="section-title">Hostel Details</div>
+          <div class="row g-3">
+            <div class="col-md-3">
+              <select class="form-select" name="hostel_required">
+                <option value="no">Hostel Required? No</option>
+                <option value="yes">Hostel Required? Yes</option>
+              </select>
+            </div>
+            <div class="col-md-4"><input class="form-control" name="hostel_block" placeholder="Hostel Block"></div>
+            <div class="col-md-5"><input class="form-control" name="hostel_room" placeholder="Room No"></div>
+          </div>
+
+          <button class="btn btn-success mt-4 px-5">Submit Admission</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  function uploadPhoto(type) {
+    const fileInput = document.getElementById(type + 'Photo');
+    fileInput.click();
+
+    fileInput.onchange = () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        document.getElementById(type + 'Preview').src = reader.result;
+        document.getElementById(type + 'Preview').style.display = 'block';
+        document.getElementById(type + 'Text').style.display = 'none';
+        document.getElementById(type + '_photo').value = reader.result;
+      };
+      reader.readAsDataURL(file);
+    };
+  }
+
+  function openCamera(type) {
+    navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+      const video = document.createElement('video');
+      video.srcObject = stream;
+      video.play();
+
+      setTimeout(() => {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        const data = canvas.toDataURL('image/png');
+
+        document.getElementById(type + 'Preview').src = data;
+        document.getElementById(type + 'Preview').style.display = 'block';
+        document.getElementById(type + 'Text').style.display = 'none';
+        document.getElementById(type + '_photo').value = data;
+
+        stream.getTracks().forEach(t => t.stop());
+      }, 2000);
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+
+    document.getElementById("transport_required").addEventListener("change", function () {
+      let show = this.value === "yes";
+      document.getElementById("routeBox").style.display = show ? "block" : "none";
+      document.getElementById("stopBox").style.display = show ? "block" : "none";
+    });
+
+    document.getElementById("routeSelect").addEventListener("change", function () {
+
+      let route_id = this.value;
+
+      fetch("/transport/get-stops/" + route_id)
+        .then(res => res.json())
+        .then(data => {
+
+          let stopSelect = document.getElementById("stopSelect");
+          stopSelect.innerHTML = '<option value="">Select Stop</option>';
+
+          data.forEach(stop => {
+            stopSelect.innerHTML += `<option value="${stop.id}">${stop.stop_name}</option>`;
+          });
+
+        })
+        .catch(err => {
+          console.log("Error:", err);
+        });
+
+    });
+
+  });
+</script>
+
+{% endblock %}

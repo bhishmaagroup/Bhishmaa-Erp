@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+{% block title %}Edit Teacher{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+  <!-- ================= HEADER ================= -->
+  <div class="row mb-4 align-items-center">
+    <div class="col-md-8">
+      <h3 class="section-title mb-0">
+        <i class="fa fa-user-edit me-2"></i>Edit Staff
+      </h3>
+      <p class="text-muted small">Update teacher personal, qualification & employment details</p>
+    </div>
+    <div class="col-md-4 text-end">
+      <a href="{{ url_for('teacher.view_teacher', id=t.id) }}" class="btn btn-secondary">
+        <i class="fa fa-arrow-left"></i> Back
+      </a>
+    </div>
+  </div>
+
+  <form method="post" enctype="multipart/form-data">
+    <div class="card shadow-lg border-0 p-4">
+
+      <!-- ================= PHOTO ================= -->
+      <h6 class="section-title">Staff Photo</h6>
+      <div class="d-flex align-items-center gap-3 mb-4">
+        <div class="photo-box" onclick="uploadPhoto()">
+          {% if t.photo %}
+            <img id="photoPreview" src="{{ url_for('uploaded_files', filename=t.photo) }}">
+            <span id="photoText" style="display:none">Upload Photo</span>
+          {% else %}
+            <img id="photoPreview" style="display:none">
+            <span id="photoText">Upload Photo</span>
+          {% endif %}
+        </div>
+        <button type="button" class="btn btn-outline-primary" onclick="openCamera()">
+          <i class="fa fa-camera"></i> Webcam
+        </button>
+      </div>
+
+      <input type="hidden" name="photo" id="photo">
+
+      <!-- ================= BASIC DETAILS ================= -->
+      <h6 class="section-title">Basic Information</h6>
+      <div class="row g-3 mb-3">
+
+        <div class="col-md-3">
+          <label class="form-label">First Name</label>
+          <input class="form-control" name="first_name" value="{{ t.first_name }}" required>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Middle Name</label>
+          <input class="form-control" name="middle_name" value="{{ t.middle_name }}">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Last Name</label>
+          <input class="form-control" name="last_name" value="{{ t.last_name }}">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Gender</label>
+          <select class="form-select" name="gender">
+            <option {{ 'selected' if t.gender=='Male' }}>Male</option>
+            <option {{ 'selected' if t.gender=='Female' }}>Female</option>
+            <option {{ 'selected' if t.gender=='Other' }}>Other</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">DOB</label>
+          <input type="date" class="form-control" name="dob" value="{{ t.dob }}">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">DOJ</label>
+          <input type="date" class="form-control" name="joining_date" value="{{ t.joining_date }}">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Mobile</label>
+          <input class="form-control" name="mobile" value="{{ t.mobile }}">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Email</label>
+          <input class="form-control" name="email" value="{{ t.email }}">
+        </div>
+
+      </div>
+
+      <!-- ================= EMPLOYMENT ================= -->
+      <h6 class="section-title">Employment</h6>
+      <div class="row g-3 mb-3">
+
+        <div class="col-md-3">
+          <label class="form-label">Designation</label>
+          <input class="form-control" name="designation" value="{{ t.designation }}">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Employment Type</label>
+          <select class="form-select" name="employment_type">
+            <option {{ 'selected' if t.employment_type=='Permanent' }}>Permanent</option>
+            <option {{ 'selected' if t.employment_type=='Contract' }}>Contract</option>
+            <option {{ 'selected' if t.employment_type=='Guest' }}>Guest</option>
+            <option {{ 'selected' if t.employment_type=='Part Time' }}>Part Time</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Salary</label>
+          <input class="form-control" name="salary" value="{{ t.salary }}">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Experience</label>
+          <input class="form-control" name="experience" value="{{ t.experience }}">
+        </div>
+
+      </div>
+
+      <!-- ================= QUALIFICATION ================= -->
+      <h6 class="section-title">Qualification</h6>
+      <div class="row g-3 mb-3">
+
+        <div class="col-md-3">
+          <label class="form-label">Qualification</label>
+          <input class="form-control" name="qualification" value="{{ t.qualification }}">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Subject / Specialization</label>
+          <input class="form-control" name="subject" value="{{ t.specialization }}">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">PAN</label>
+          <input class="form-control" name="pan_no" value="{{ t.pan }}">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Aadhaar</label>
+          <input class="form-control" name="aadhaar" value="{{ t.aadhaar }}">
+        </div>
+
+      </div>
+
+      <!-- ================= ADDRESS ================= -->
+      <h6 class="section-title">Address</h6>
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <textarea class="form-control" name="address">{{ t.address }}</textarea>
+        </div>
+        <div class="col-md-6">
+          <textarea class="form-control" name="permanent_address">{{ t.permanent_address }}</textarea>
+        </div>
+      </div>
+
+      <!-- ================= DOCUMENTS ================= -->
+      
+      <h6 class="section-title">Documents</h6>
+      <div class="row g-3 mb-4">
+
+        <div class="col-md-3">
+          <label class="form-label">Aadhaar Card</label>
+          <input type="file" class="form-control" name="aadhaar_doc">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Passbook </label>
+          <input type="file" class="form-control" name="pass_doc">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Qualification Certificate</label>
+          <input type="file" class="form-control" name="qualification_doc">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Resume (PDF)</label>
+          <input type="file" class="form-control" name="resume">
+        </div>
+
+      </div>
+
+      <div class="text-end">
+        <button class="btn btn-success px-5">
+          <i class="fa fa-save"></i> Update Staff
+        </button>
+      </div>
+
+    </div>
+  </form>
+</div>
+
+<style>
+.photo-box{
+  width:140px;height:170px;border:2px dashed #0d6efd;
+  border-radius:14px;display:flex;align-items:center;
+  justify-content:center;cursor:pointer;background:#f8f9fa;
+}
+.photo-box img{width:100%;height:100%;object-fit:contain}
+</style>
+
+<script>
+function uploadPhoto(){
+  const input=document.createElement('input');
+  input.type='file'; input.accept='image/*';
+  input.onchange=e=>{
+    const file=e.target.files[0];
+    const reader=new FileReader();
+    reader.onload=()=>{
+      photoPreview.src=reader.result;
+      photoText.style.display='none';
+      document.getElementById('photo').value=reader.result;
+    }
+    reader.readAsDataURL(file);
+  }
+  input.click();
+}
+
+function openCamera(){
+  navigator.mediaDevices.getUserMedia({video:true}).then(stream=>{
+    const video=document.createElement('video');
+    video.srcObject=stream; video.play();
+    setTimeout(()=>{
+      const canvas=document.createElement('canvas');
+      canvas.width=video.videoWidth; canvas.height=video.videoHeight;
+      canvas.getContext('2d').drawImage(video,0,0);
+      const data=canvas.toDataURL('image/png');
+      photoPreview.src=data;
+      photoText.style.display='none';
+      document.getElementById('photo').value=data;
+      stream.getTracks().forEach(t=>t.stop());
+    },2000);
+  });
+}
+</script>
+{% endblock %}

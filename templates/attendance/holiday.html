@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Holiday Master{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+<h4 class="fw-bold mb-3">📅 Holiday Master</h4>
+
+<form method="post" class="row g-3 mb-4">
+    <div class="col-md-4">
+        <input type="date" name="holiday_date" class="form-control" required>
+    </div>
+    <div class="col-md-5">
+        <input type="text" name="title" class="form-control"
+               placeholder="Holiday Title" required>
+    </div>
+    <div class="col-md-3">
+        <button class="btn btn-primary w-100">Add Holiday</button>
+    </div>
+</form>
+
+<table class="table table-bordered table-sm">
+<thead class="table-light">
+<tr>
+    <th>#</th>
+    <th>Date</th>
+    <th>Title</th>
+</tr>
+</thead>
+<tbody>
+{% for h in holidays %}
+<tr>
+    <td>{{ loop.index }}</td>
+    <td>{{ h.holiday_date.strftime("%d-%m-%Y") }}</td>
+    <td>{{ h.title }}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
+</div>
+{% endblock %}

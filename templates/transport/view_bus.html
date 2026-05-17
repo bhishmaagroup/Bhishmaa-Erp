@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}Bus Details{% endblock %}
+
+{% block content %}
+
+<style>
+.form-card {
+    background: #fff;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.section-title {
+    font-weight: 600;
+    color: #0d6efd;
+    margin-top: 20px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 5px;
+}
+
+.label {
+    font-weight: 600;
+}
+
+.print-btn {
+    float: right;
+}
+</style>
+
+<div class="container">
+
+  <!-- 🔥 HEADER -->
+  <div class="d-flex justify-content-between mb-3">
+    <h4>🚌 Bus Application Form</h4>
+    <button onclick="window.print()" class="btn btn-dark print-btn">
+      🖨️ Print / Save PDF
+    </button>
+  </div>
+
+  <div class="form-card">
+
+    <!-- 📋 BASIC -->
+    <div class="section-title">Basic Details</div>
+    <div class="row">
+      <div class="col-md-4"><p><span class="label">Bus No:</span> {{ bus.bus_no }}</p></div>
+      <div class="col-md-4"><p><span class="label">Registration:</span> {{ bus.registration_no }}</p></div>
+      <div class="col-md-4"><p><span class="label">Model:</span> {{ bus.model }}</p></div>
+
+      <div class="col-md-4"><p><span class="label">Chassis:</span> {{ bus.chassis_no }}</p></div>
+      <div class="col-md-4"><p><span class="label">Engine:</span> {{ bus.engine_no }}</p></div>
+      <div class="col-md-4"><p><span class="label">Type:</span> {{ bus.bus_type }}</p></div>
+    </div>
+
+    <!-- 💺 CAPACITY -->
+    <div class="section-title">Capacity</div>
+    <div class="row">
+      <div class="col-md-4"><p><span class="label">Seating:</span> {{ bus.capacity }}</p></div>
+      <div class="col-md-4"><p><span class="label">Max Students:</span> {{ bus.max_students }}</p></div>
+    </div>
+
+    <!-- 👨‍✈️ STAFF -->
+    <div class="section-title">Staff</div>
+    <div class="row">
+      <div class="col-md-4"><p><span class="label">Driver:</span> {{ bus.driver_name }}</p></div>
+      <div class="col-md-4"><p><span class="label">Mobile:</span> {{ bus.driver_mobile }}</p></div>
+      <div class="col-md-4"><p><span class="label">Helper:</span> {{ bus.helper_name }}</p></div>
+    </div>
+
+    <!-- 🛠️ MAINTENANCE -->
+    <div class="section-title">Maintenance</div>
+    <div class="row">
+      <div class="col-md-4"><p><span class="label">Last Service:</span> {{ bus.last_service }}</p></div>
+      <div class="col-md-4"><p><span class="label">Next Service:</span> {{ bus.next_service }}</p></div>
+      <div class="col-md-4"><p><span class="label">GPS ID:</span> {{ bus.gps_id }}</p></div>
+      <div class="col-md-4"><p><span class="label">CCTV:</span> {{ bus.cctv }}</p></div>
+    </div>
+
+    <!-- 📄 DOCUMENTS -->
+    <div class="section-title">Documents</div>
+    <div class="row">
+
+      <div class="col-md-4">
+        <p class="label">RC Book:</p>
+        {% if bus.rc_book %}
+          <a href="/{{ bus.rc_book }}" target="_blank">View</a>
+        {% else %}-{% endif %}
+      </div>
+
+      <div class="col-md-4">
+        <p class="label">Insurance:</p>
+        {% if bus.insurance %}
+          <a href="/{{ bus.insurance }}" target="_blank">View</a><br>
+          Expiry: {{ bus.insurance_expiry }}
+        {% else %}-{% endif %}
+      </div>
+
+      <div class="col-md-4">
+        <p class="label">PUC:</p>
+        {% if bus.puc %}
+          <a href="/{{ bus.puc }}" target="_blank">View</a><br>
+          Expiry: {{ bus.puc_expiry }}
+        {% else %}-{% endif %}
+      </div>
+
+      <div class="col-md-4">
+        <p class="label">Fitness:</p>
+        {% if bus.fitness %}
+          <a href="/{{ bus.fitness }}" target="_blank">View</a><br>
+          Expiry: {{ bus.fitness_expiry }}
+        {% else %}-{% endif %}
+      </div>
+
+    </div>
+
+    <!-- 🚦 STATUS -->
+    <div class="section-title">Status</div>
+    <p><span class="label">Current Status:</span> {{ bus.status }}</p>
+
+  </div>
+
+</div>
+
+<!-- 🖨️ PRINT STYLE -->
+<style>
+@media print {
+  .btn, .print-btn {
+    display: none;
+  }
+  body {
+    background: white;
+  }
+}
+</style>
+
+{% endblock %}

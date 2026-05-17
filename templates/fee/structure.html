@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}Fee Structure{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-0">Fee Structure</h3>
+        <small class="text-muted">Class-wise fee configuration</small>
+    </div>
+    <div>
+        <a href="/fee/structure/pdf" target="_blank" class="btn btn-outline-danger btn-sm me-2">
+            <i class="fa fa-file-pdf"></i> Export PDF
+        </a>
+        <a href="/fee/dashboard" class="btn btn-outline-secondary btn-sm">
+            <i class="fa fa-arrow-left"></i> Back
+        </a>
+    </div>
+</div>
+
+<div class="neo-card">
+
+    <form method="post">
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle text-center">
+
+                <thead class="table-light">
+                    <tr>
+                        <th>Class</th>
+
+                        <!-- ONE TIME -->
+                        <th>Admission</th>
+                        <th>Registration</th>
+                        <th>Books</th>
+                        <th>Dress</th>
+                        <th>Activity</th>
+                        <th>Misc</th>
+
+                        <!-- MONTHLY -->
+                        <th>Tuition<br>(Monthly)</th>
+                        <th>Transport<br>(Monthly)</th>
+                        <th>Hostel</th>
+
+                        <!-- EXAM -->
+                        <th>Exam<br>(Half)</th>
+                        <th>Exam<br>(Annual)</th>
+                        <th>Exam<br>Partial</th>
+                        <!-- FINE -->
+                        <th>Due Day</th>
+                        <th>Fine / Day<br><small>₹ per late day</small></th>
+                        <th>Max Fine<br><small>Monthly cap</small></th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for c in classes %}
+                    {% set fs = structure_map.get(c) %}
+                    <tr>
+                        <td class="fw-bold">{{ c }}</td>
+
+                        <!-- ADMISSION -->
+                        <td>
+                            <input class="form-control form-control-sm" name="admission_{{c}}"
+                                value="{{ fs.admission_fee if fs else 0 }}" required>
+                        </td>
+
+                        <!-- REGISTRATION -->
+                        <td>
+                            <input class="form-control form-control-sm" name="registration_{{c}}"
+                                value="{{ fs.registration_fee if fs else 0 }}">
+                        </td>
+
+                        <!-- BOOK -->
+                        <td>
+                            <input class="form-control form-control-sm" name="book_{{c}}"
+                                value="{{ fs.book_fee if fs else 0 }}">
+                        </td>
+
+                        <!-- DRESS -->
+                        <td>
+                            <input class="form-control form-control-sm" name="dress_{{c}}"
+                                value="{{ fs.dress_fee if fs else 0 }}">
+                        </td>
+
+                        <!-- ACTIVITY -->
+                        <td>
+                            <input class="form-control form-control-sm" name="activity_{{c}}"
+                                value="{{ fs.activity_fee if fs else 0 }}">
+                        </td>
+
+                        <!-- MISC -->
+                        <td>
+                            <input class="form-control form-control-sm" name="misc_{{c}}"
+                                value="{{ fs.misc_fee if fs else 0 }}">
+                        </td>
+
+                        <!-- TUITION -->
+                        <td>
+                            <input class="form-control form-control-sm" name="tuition_{{c}}"
+                                value="{{ fs.tuition_fee if fs else 0 }}" required>
+                        </td>
+
+                        <!-- TRANSPORT -->
+                        <td>
+                            <input class="form-control form-control-sm" name="transport_{{c}}"
+                                value="{{ fs.transport_fee if fs else 0 }}">
+                        </td>
+
+                        <!-- HOSTEL -->
+                        <td>
+                            <input class="form-control form-control-sm" name="hostel_{{c}}"
+                                value="{{ fs.hostel_fee if fs else 0 }}">
+                        </td>
+
+                        <!-- HALF YEARLY EXAM -->
+                        <td>
+                            <input class="form-control form-control-sm" name="half_exam_{{c}}"
+                                value="{{ fs.half_yearly_exam_fee if fs else 0 }}">
+                        </td>
+
+                        <!-- ANNUAL EXAM -->
+                        <td>
+                            <input class="form-control form-control-sm" name="annual_exam_{{c}}"
+                                value="{{ fs.annual_exam_fee if fs else 0 }}">
+                        </td>
+
+                        <!-- PARTIAL EXAM TOGGLE -->
+                        <td>
+                            <input type="checkbox" name="exam_partial_{{c}}" {% if fs and fs.exam_partial_allowed
+                                %}checked{% endif %}>
+                        </td>
+
+                        <td>
+                            <input class="form-control form-control-sm" name="due_day_{{c}}"
+                                value="{{ fs.due_day if fs else 10 }}">
+                        </td>
+
+                        <td>
+                            <input class="form-control form-control-sm" name="fine_per_day_{{c}}"
+                                value="{{ fs.fine_per_day if fs else 0 }}">
+                        </td>
+
+                        <td>
+                            <input class="form-control form-control-sm" name="fine_max_{{c}}"
+                                value="{{ fs.fine_max if fs else 0 }}">
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+
+        <div class="text-end mt-3">
+            <button type="submit" class="btn btn-primary">
+                <i class="fa fa-save"></i> Save Fee Structure
+            </button>
+        </div>
+
+    </form>
+</div>
+
+{% endblock %}

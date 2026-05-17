@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+
+{% block title %}Student Subject Allocation{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+<!-- HEADER -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+<div>
+
+<h3 class="fw-bold mb-1">
+🎓 Student Subject Allocation
+</h3>
+
+<p class="text-muted mb-0">
+Allocate subjects to all students
+</p>
+
+</div>
+
+<a href="/subject/"
+   class="btn btn-outline-dark">
+
+← Back
+
+</a>
+
+</div>
+
+
+<!-- FILTER -->
+<div class="card border-0 shadow-sm mb-4">
+
+<div class="card-body">
+
+<form method="get">
+
+<div class="row g-3">
+
+<div class="col-md-3">
+
+<label class="form-label fw-semibold">
+Class
+</label>
+
+<select name="class"
+        class="form-select"
+        required>
+
+<option value="">Select</option>
+
+{% for c in ["LKG","UKG","1","2","3","4","5","6","7","8","9","10","11","12"] %}
+<option value="{{ c }}">{{ c }}</option>
+{% endfor %}
+
+</select>
+
+</div>
+
+
+<div class="col-md-3">
+
+<label class="form-label fw-semibold">
+Section
+</label>
+
+<select name="section"
+        class="form-select"
+        required>
+
+<option value="">Select</option>
+
+{% for s in ["A","B","C","D"] %}
+<option value="{{ s }}">{{ s }}</option>
+{% endfor %}
+
+</select>
+
+</div>
+
+
+<div class="col-md-2 d-flex align-items-end">
+
+<button class="btn btn-primary w-100">
+
+Load Data
+
+</button>
+
+</div>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+
+{% if students %}
+
+<!-- SUBJECTS -->
+<div class="card border-0 shadow-sm mb-4">
+
+<div class="card-body">
+
+<h5 class="fw-bold mb-3">
+📚 Subjects
+</h5>
+
+<div class="d-flex flex-wrap gap-2">
+
+{% for s in subjects %}
+
+<span class="badge bg-primary p-2">
+
+{{ s.subject_name }}
+
+</span>
+
+{% endfor %}
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- STUDENTS -->
+<div class="card border-0 shadow-sm mb-4">
+
+<div class="card-body">
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+
+<h5 class="fw-bold mb-0">
+👨‍🎓 Students
+</h5>
+
+<span class="badge bg-dark">
+
+{{ students|length }} Students
+
+</span>
+
+</div>
+
+<div class="table-responsive">
+
+<table class="table table-hover align-middle">
+
+<thead class="table-dark">
+
+<tr>
+
+<th>#</th>
+<th>Name</th>
+<th>Class</th>
+<th>Section</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for s in students %}
+
+<tr>
+
+<td>{{ loop.index }}</td>
+
+<td class="fw-semibold">
+
+{{ s.first_name }}
+{{ s.last_name }}
+
+</td>
+
+<td>
+
+{{ s.student_class }}
+
+</td>
+
+<td>
+
+{{ s.section }}
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- ALLOCATE -->
+<div class="card border-0 shadow-sm">
+
+<div class="card-body text-center">
+
+<form method="post">
+
+<button class="btn btn-success btn-lg px-5">
+
+🚀 Allocate Subjects To All Students
+
+</button>
+
+</form>
+
+</div>
+
+</div>
+
+{% endif %}
+
+</div>
+
+{% endblock %}

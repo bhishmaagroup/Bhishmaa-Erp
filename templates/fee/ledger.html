@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block title %}Fee Ledger{% endblock %}
+
+{% block content %}
+
+<!-- ================= HEADER ================= -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">Student Fee Ledger</h3>
+        <small class="text-muted">
+            Complete payment history & dues
+        </small>
+    </div>
+
+    <div>
+        <a href="/fee/dashboard" class="btn btn-outline-secondary btn-sm">
+            <i class="fa fa-arrow-left"></i> Back
+        </a>
+
+    </div>
+    
+</div>
+<form method="get" class="row g-2 mb-3">
+
+    <div class="col-md-4">
+        <select name="month" class="form-select">
+            <option value="">All Months</option>
+            <option>January</option>
+            <option>February</option>
+            <option>March</option>
+            <option>April</option>
+            <option>May</option>
+            <option>June</option>
+            <option>July</option>
+            <option>August</option>
+            <option>September</option>
+            <option>October</option>
+            <option>November</option>
+            <option>December</option>
+            <option>ADMISSION</option>
+            <option>ONETIME</option>
+            <option>ADVANCE</option>
+        </select>
+    </div>
+
+    <div class="col-md-4">
+        <select name="type" class="form-select">
+            <option value="">All Fee Types</option>
+            <option value="monthly">Monthly</option>
+            <option value="admission">Admission</option>
+            <option value="book">Book</option>
+            <option value="dress">Dress</option>
+            <option value="advance">Advance</option>
+        </select>
+    </div>
+
+    <div class="col-md-4">
+        <button class="btn btn-primary w-100">
+            <i class="fa fa-search"></i> Filter Ledger
+        </button>
+    </div>
+
+</form>
+
+<div class="mb-3 d-flex gap-2">
+    <a href="/fee/ledger-pdf/{{ student_id }}"
+       class="btn btn-outline-primary btn-sm">
+        <i class="fa fa-print"></i> PDF
+    </a>
+
+    
+</div>
+
+<!-- ================= SUMMARY CARDS ================= -->
+<div class="row g-3 mb-4">
+
+    <div class="col-md-4">
+        <div class="neo-card text-center">
+            <small class="text-muted">Total Paid</small>
+            <h3 class="fw-bold text-success mt-1">
+                ₹ {{ total_paid }}
+            </h3>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="neo-card text-center">
+            <small class="text-muted">Total Due</small>
+            <h3 class="fw-bold text-danger mt-1">
+                ₹ {{ total_due }}
+            </h3>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="neo-card text-center">
+            <small class="text-muted">Advance Balance</small>
+            <h3 class="fw-bold text-primary mt-1">
+                ₹ {{ advance_balance }}
+            </h3>
+        </div>
+    </div>
+
+</div>
+
+<!-- ================= LEDGER TABLE ================= -->
+<div class="neo-card">
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle text-center">
+
+            <thead class="table-light">
+                <tr>
+                    <th>Date</th>
+                    <th>Month</th>
+                    <th>Fee Type</th>
+                    <th>Total</th>
+                    <th>Paid</th>
+                    <th>Balance</th>
+                    <th>Receipt</th>
+                </tr>
+            </thead>
+
+            <tbody>
+            {% for r in records %}
+                <tr class="{% if r.balance_amount > 0 %}table-danger{% else %}table-success{% endif %}">
+
+                    <td>
+                        {{ r.created_at.strftime('%d-%m-%Y') if r.created_at else '-' }}
+                    </td>
+
+                    <td>{{ r.month }}</td>
+
+                    <td>
+                        {% if r.fee_type == 'admission' %}
+                            Admission Fee
+                        {% elif r.fee_type == 'monthly' %}
+                            Monthly Fee
+                        {% elif r.fee_type == 'book' %}
+                            Book Fee
+                        {% elif r.fee_type == 'dress' %}
+                            Dress Fee
+                        {% elif r.fee_type == 'advance' %}
+                            Advance
+                        {% else %}
+                            {{ r.fee_type|title }}
+                        {% endif %}
+                    </td>
+
+                    <td>₹ {{ r.total_amount }}</td>
+                    <td>₹ {{ r.paid_amount }}</td>
+
+                    <td class="fw-bold">
+                        ₹ {{ r.balance_amount }}
+                    </td>
+
+                    
+
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7" class="text-muted">
+                        No fee records found
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+
+        </table>
+    </div>
+
+</div>
+
+{% endblock %}

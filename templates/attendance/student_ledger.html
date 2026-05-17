@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Student Attendance Ledger{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+<h4 class="fw-bold mb-2">📒 Attendance Ledger</h4>
+
+<p>
+<strong>Student:</strong>
+{{ student.first_name }}
+{% if student.middle_name %} {{ student.middle_name }}{% endif %}
+{% if student.last_name %} {{ student.last_name }}{% endif %}
+<br>
+<strong>Class:</strong> {{ student.student_class }}
+|
+<strong>Section:</strong> {{ student.section }}
+</p>
+
+<!-- EXPORT BUTTONS -->
+<div class="mb-3">
+    <a href="{{ request.path }}/pdf" class="btn btn-danger btn-sm">
+        📄 PDF
+    </a>
+    <a href="{{ request.path }}/excel" class="btn btn-success btn-sm">
+        📊 Excel
+    </a>
+</div>
+
+<!-- DATE RANGE FILTER -->
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-3">
+        <input type="date" name="from" class="form-control"
+               value="{{ request.args.get('from','') }}">
+    </div>
+    <div class="col-md-3">
+        <input type="date" name="to" class="form-control"
+               value="{{ request.args.get('to','') }}">
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-primary">
+            Filter
+        </button>
+    </div>
+</form>
+
+<!-- SUMMARY -->
+<div class="alert alert-info">
+    Present: <b>{{ present }}</b> /
+    Total: <b>{{ total }}</b>
+    | Attendance %: <b>{{ percentage }}%</b>
+</div>
+
+<form method="post">
+<table class="table table-bordered table-striped">
+    <thead class="table-light">
+        <tr>
+            <th>#</th>
+            <th>Date</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for r in records %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ r.attendance_date.strftime("%d-%m-%Y") }}</td>
+            <td>
+                <select name="status_{{ r.id }}" class="form-select">
+                    <option value="P" {% if r.status == "P" %}selected{% endif %}>
+                        Present
+                    </option>
+                    <option value="A" {% if r.status == "A" %}selected{% endif %}>
+                        Absent
+                    </option>
+                </select>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<button class="btn btn-success">
+    💾 Update Attendance
+</button>
+</form>
+
+<a href="/attendance/student/ledger"
+   class="btn btn-secondary mt-3">
+    ← Back to Ledger
+</a>
+
+</div>
+{% endblock %}

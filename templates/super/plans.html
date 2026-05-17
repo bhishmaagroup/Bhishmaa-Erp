@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>Super Admin - Plans</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light p-5">
+<div class="container">
+
+  <h2 class="mb-4">🧑‍💼 Manage Plans</h2>
+
+  <!-- CREATE PLAN -->
+
+  <div class="card p-4 mb-4">
+    <h5>Create Plan</h5>
+    <form method="POST" action="{{ url_for('super_admin.create_plan') }}">
+      <div class="row">
+        <div class="col">
+          <input name="name" class="form-control" placeholder="Plan Name" required>
+        </div>
+        <div class="col">
+          <input name="price" type="number" class="form-control" placeholder="Price" required>
+        </div>
+        <div class="col">
+          <input name="limit" type="number" class="form-control" placeholder="Student Limit" required>
+        </div>
+      </div>
+      <button class="btn btn-success mt-3">Create</button>
+    </form>
+  </div>
+
+  <!-- EXISTING PLANS -->
+
+  <div class="row">
+    {% for plan in plans %}
+    <div class="col-md-4">
+      <div class="card p-3 mb-3">
+
+```
+    <h5>{{ plan.name|upper }}</h5>
+
+    <form method="POST" action="{{ url_for('super_admin.update_plan_config', id=plan.id) }}">
+      <input name="price" type="number" class="form-control mb-2" value="{{ plan.price }}">
+      <input name="limit" type="number" class="form-control mb-2" value="{{ plan.student_limit }}">
+      <button class="btn btn-dark w-100 mb-2">Update</button>
+    </form>
+
+    <form method="POST" action="{{ url_for('super_admin.delete_plan', id=plan.id) }}">
+      <button class="btn btn-danger w-100">Delete</button>
+    </form>
+
+  </div>
+</div>
+{% endfor %}
+```
+
+  </div>
+
+  <!-- COUPON -->
+
+  <div class="card p-4 mt-5">
+    <h5>Create Coupon</h5>
+    <form method="POST" action="{{ url_for('super_admin.create_coupon') }}">
+      <div class="row">
+        <div class="col">
+          <input name="code" class="form-control" placeholder="Coupon Code">
+        </div>
+        <div class="col">
+          <input name="discount" type="number" class="form-control" placeholder="Discount %">
+        </div>
+      </div>
+      <button class="btn btn-primary mt-3">Create Coupon</button>
+    </form>
+  </div>
+
+</div>
+</body>
+</html>

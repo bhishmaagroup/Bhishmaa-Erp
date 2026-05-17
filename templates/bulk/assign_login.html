@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+.container {
+    max-width: 1100px;
+    margin: auto;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+input[type="text"] {
+    padding: 8px;
+    width: 250px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+button {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-success {
+    background-color: green;
+    color: white;
+}
+
+.btn-danger {
+    background-color: red;
+    color: white;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 25px;
+}
+
+th, td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+th {
+    background-color: #f4f4f4;
+}
+
+tr:hover {
+    background-color: #f9f9f9;
+}
+
+.status-created {
+    color: green;
+    font-weight: bold;
+}
+
+.status-pending {
+    color: orange;
+    font-weight: bold;
+}
+
+.card {
+    background: #fff;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0px 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+</style>
+
+
+<div class="container">
+
+<h1>Bulk Credential Manager</h1>
+
+<form method="POST">
+
+<div class="top-bar">
+    <button class="btn-primary" name="generate_all" value="1">
+        🔥 Generate ALL
+    </button>
+
+    <input type="text" id="search" placeholder="Search student...">
+</div>
+
+<!-- ================= STUDENTS ================= -->
+<div class="card">
+<h2>Students</h2>
+
+<table id="studentTable">
+<tr>
+<th>Select</th>
+<th>Name</th>
+<th>Status</th>
+</tr>
+
+{% for s in students %}
+<tr>
+<td>
+{% if s.id in student_user_ids %}
+❌
+{% else %}
+<input type="checkbox" name="students" value="{{ s.id }}">
+{% endif %}
+</td>
+<td>
+    {{ s.first_name }} 
+    {% if s.middle_name and s.middle_name != 'None' %}{{ s.middle_name }}{% endif %} 
+    {{ s.last_name }}
+</td>
+<td>
+{% if s.id in student_user_ids %}
+<span class="status-created">Already Created</span>
+{% else %}
+<span class="status-pending">Pending</span>
+{% endif %}
+</td>
+</tr>
+{% endfor %}
+
+</table>
+</div>
+
+
+<!-- ================= EMPLOYEES ================= -->
+<div class="card">
+<h2>Employees</h2>
+
+<table>
+<tr>
+<th>Select</th>
+<th>Name</th>
+<th>Status</th>
+</tr>
+
+{% for t in teachers %}
+<tr>
+<td>
+{% if t.id in teacher_user_ids %}
+❌
+{% else %}
+<input type="checkbox" name="teachers" value="{{ t.id }}">
+{% endif %}
+</td>
+<td>{{ t.first_name }} 
+    {% if t.middle_name and t.middle_name != 'None' %}{{ t.middle_name }}{% endif %} 
+    {{ t.last_name }}</td>
+<td>
+{% if t.id in teacher_user_ids %}
+<span class="status-created">Already Created</span>
+{% else %}
+<span class="status-pending">Pending</span>
+{% endif %}
+</td>
+</tr>
+{% endfor %}
+
+</table>
+</div>
+
+<div style="text-align:center;">
+    <button class="btn-success" type="submit">
+        Generate Selected
+    </button>
+</div>
+
+</form>
+
+
+<!-- ================= RESULT ================= -->
+{% if created_data %}
+<div class="card">
+<h2>Generated Credentials</h2>
+
+<table>
+<tr>
+<th>Name</th>
+<th>Username</th>
+<th>Password</th>
+</tr>
+
+{% for row in created_data %}
+<tr>
+<td>{{ row.name }}</td>
+<td>{{ row.username }}</td>
+<td>{{ row.password }}</td>
+</tr>
+{% endfor %}
+
+</table>
+
+<div style="text-align:center;">
+<a href="/bulk/download-csv?data={{ created_data }}" class="btn-primary">
+    ⬇ Download CSV
+</a>
+</div>
+
+</div>
+{% endif %}
+
+</div>
+
+
+<script>
+document.getElementById("search").addEventListener("keyup", function() {
+    let value = this.value.toLowerCase();
+    let rows = document.querySelectorAll("#studentTable tr");
+
+    rows.forEach((row, index) => {
+        if(index === 0) return; // skip header
+        row.style.display = row.innerText.toLowerCase().includes(value) ? "" : "none";
+    });
+});
+</script>
+
+{% endblock %}

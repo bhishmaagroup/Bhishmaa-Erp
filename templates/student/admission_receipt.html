@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admission Receipt</title>
+    <style>
+        body {
+            font-family: Arial;
+            margin: 20px;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .center {
+            text-align: center;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .section {
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+            padding: 6px;
+        }
+
+        .no-border {
+            border: none;
+        }
+
+        .signature {
+            margin-top: 60px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        img {
+            object-fit: cover;
+        }
+
+        @media print {
+            button {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<button onclick="window.print()">Print</button>
+
+<div class="header">
+    <img src="{{ school.logo }}" width="80">
+
+    <div class="center">
+        <div class="title">{{ school.school_name }}</div>
+        <div>{{ school.address }}, {{ school.city }}</div>
+        <h3>ADMISSION RECEIPT - {{ student.session }}</h3>
+    </div>
+
+    <img src="{{ student.student_photo }}" width="80">
+</div>
+
+<!-- BASIC INFO -->
+<div class="section">
+    <table>
+        <tr>
+            <td>Admission No</td>
+            <td>{{ student.admission_no }}</td>
+            <td>Session</td>
+            <td>{{ student.session }}</td>
+        </tr>
+        <tr>
+            <td>Class</td>
+            <td>{{ student.student_class }} {{ student.section }}</td>
+            <td>Date</td>
+            <td>{{ student.created_at.strftime('%d-%m-%Y') }}</td>
+        </tr>
+    </table>
+</div>
+
+<!-- STUDENT DETAILS -->
+<div class="section">
+    <h3>Student Details</h3>
+    <table>
+        <tr>
+            <td>Name</td>
+            <td>{{ student.first_name }} {{ student.last_name }}</td>
+            <td>Gender</td>
+            <td>{{ student.gender }}</td>
+        </tr>
+        <tr>
+            <td>DOB</td>
+            <td>{{ student.dob.strftime('%d-%m-%Y') }}</td>
+            <td>Religion</td>
+            <td>{{ student.religion }}</td>
+        </tr>
+        <tr>
+            <td>Address</td>
+            <td colspan="3">{{ student.present_address }}</td>
+        </tr>
+    </table>
+</div>
+
+<!-- FAMILY DETAILS -->
+<div class="section">
+    <h3>Family Details</h3>
+    <table>
+        <tr>
+            <td>
+                <img src="{{ student.father_photo }}" width="70"><br>
+                <b>Father:</b> {{ student.father_name }}<br>
+                {{ student.father_mobile }}
+            </td>
+
+            <td>
+                <img src="{{ student.mother_photo }}" width="70"><br>
+                <b>Mother:</b> {{ student.mother_name }}<br>
+                {{ student.mother_mobile }}
+            </td>
+        </tr>
+    </table>
+</div>
+
+<!-- SERVICES -->
+<div class="section">
+    <h3>Services</h3>
+    <table>
+        <tr>
+            <th>Service</th>
+            <th>Status</th>
+        </tr>
+        <tr>
+            <td>Transport</td>
+            <td>{{ "Granted" if student.transport_required else "Not Granted" }}</td>
+        </tr>
+        <tr>
+            <td>Hostel</td>
+            <td>{{ "Granted" if student.hostel_required else "Not Granted" }}</td>
+        </tr>
+    </table>
+</div>
+
+<!-- SIGNATURE -->
+<div class="signature">
+    <div>Guardian Signature</div>
+    <div>Principal Signature</div>
+</div>
+
+</body>
+</html>

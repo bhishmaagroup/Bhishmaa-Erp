@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+{% block title %}Student Profile{% endblock %}
+
+{% block content %}
+<div class="neo-card p-4">
+
+  <!-- ================= HEADER ================= -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0">Student Profile</h4>
+    <a href="{{ url_for('student.student_list') }}" class="btn btn-outline-secondary btn-sm">
+      <i class="fa fa-arrow-left"></i> Back
+    </a>
+  </div>
+
+  <!-- ================= BASIC DETAILS ================= -->
+  <div class="row g-4 mb-4 align-items-center">
+    <div class="col-md-3 text-center">
+      {% if s.student_photo %}
+      <img src="{{ url_for('uploaded_files', filename=s.student_photo) }}" class="img-fluid rounded shadow" style="max-height:260px; object-fit:contain;">
+      {% else %}
+      <div class="border rounded p-4 text-muted">No Photo</div>
+      {% endif %}
+    </div>
+
+    <div class="col-md-9">
+      <h5 class="mb-3 text-primary">{{ s.first_name }} {{ s.middle_name }} {{ s.last_name }}</h5>
+
+      <div class="row">
+        <div class="col-md-4"><b>Gender:</b> {{ s.gender }}</div>
+        <div class="col-md-4"><b>Date of Birth:</b> {{ s.dob }}</div>
+        <div class="col-md-4"><b>Blood Group:</b> {{ s.blood_group or '-' }}</div>
+
+        <div class="col-md-4 mt-2"><b>Religion:</b> {{ s.religion }}</div>
+        <div class="col-md-4 mt-2"><b>Caste:</b> {{ s.caste }}</div>
+        <div class="col-md-4 mt-2"><b>Nationality:</b> Indian</div>
+
+        <div class="col-md-4 mt-2"><b>Aadhaar No:</b> {{ s.aadhaar }}</div>
+        <div class="col-md-4 mt-2"><b>PEN No:</b> {{ s.pen_no }}</div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- ================= ACADEMIC DETAILS ================= -->
+  <h5 class="section-title mb-3">Academic Details</h5>
+  <div class="row mb-3">
+    <div class="col-md-4"><b>Session:</b> {{ s.session or '-' }}</div>
+    <div class="col-md-4"><b>Class:</b> {{ s.student_class }}</div>
+    <div class="col-md-4"><b>Section:</b> {{ s.section }}</div>
+    <div class="col-md-4 mt-2"><b>Transport:</b> {{ s.transport_required }}</div>
+  </div>
+
+  <hr>
+
+  <!-- ================= FATHER DETAILS ================= -->
+  <h5 class="section-title mb-3">Father Details</h5>
+  <div class="row g-3 align-items-center mb-4">
+    <div class="col-md-3 text-center">
+      {% if s.father_photo %}
+      <img src="{{ url_for('uploaded_files', filename=s.father_photo) }}" class="img-fluid rounded shadow" style="max-height:200px; object-fit:contain;">
+      {% else %}
+      <div class="border rounded p-3 text-muted">No Photo</div>
+      {% endif %}
+    </div>
+
+    <div class="col-md-9">
+      <div class="row">
+        <div class="col-md-4"><b>Name:</b> {{ s.father_name }}</div>
+        <div class="col-md-4"><b>Mobile:</b> {{ s.father_mobile }}</div>
+        <div class="col-md-4"><b>Aadhaar:</b> {{ s.father_aadhaar }}</div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- ================= MOTHER DETAILS ================= -->
+  <h5 class="section-title mb-3">Mother Details</h5>
+  <div class="row g-3 align-items-center mb-4">
+    <div class="col-md-3 text-center">
+      {% if s.mother_photo %}
+      <img src="{{ url_for('uploaded_files', filename=s.mother_photo) }}" class="img-fluid rounded shadow" style="max-height:200px; object-fit:contain;">
+      {% else %}
+      <div class="border rounded p-3 text-muted">No Photo</div>
+      {% endif %}
+    </div>
+
+    <div class="col-md-9">
+      <div class="row">
+        <div class="col-md-4"><b>Name:</b> {{ s.mother_name }}</div>
+        <div class="col-md-4"><b>Mobile:</b> {{ s.mother_mobile }}</div>
+        <div class="col-md-4"><b>Aadhaar:</b> {{ s.mother_aadhaar }}</div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- ================= ADDRESS DETAILS ================= -->
+  <h5 class="section-title mb-3">Address Details</h5>
+
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <b>Present Address:</b><br>
+      <span class="text-muted">
+        {{ s.present_address or '—' }}
+      </span>
+    </div>
+
+    <div class="col-md-6">
+      <b>Permanent Address:</b><br>
+      <span class="text-muted">
+        {{ s.permanent_address or '—' }}
+      </span>
+    </div>
+  </div>
+
+  {% if s.guardian_name %}
+  <hr>
+
+  <!-- ================= GUARDIAN DETAILS ================= -->
+  <h5 class="section-title mb-3">Guardian Details</h5>
+
+  <div class="row mb-3">
+    <div class="col-md-4">
+      <b>Name:</b> {{ s.guardian_name }}
+    </div>
+
+    <div class="col-md-4">
+      <b>Relation:</b> {{ s.guardian_relation }}
+    </div>
+
+    <div class="col-md-4">
+      <b>Mobile:</b> {{ s.guardian_mobile }}
+    </div>
+
+    <div class="col-md-12 mt-2">
+      <b>Address:</b><br>
+      <span class="text-muted">
+        {{ s.guardian_address }}
+      </span>
+    </div>
+  </div>
+  {% endif %}
+
+  <hr>
+
+  <!-- ================= DOCUMENTS ================= -->
+  <h5 class="section-title mb-3">Uploaded Documents</h5>
+  <div class="row">
+    <div class="col-md-6">
+      <ul class="list-group">
+        {% if s.dob_certificate %}
+        <li class="list-group-item">
+          <i class="fa fa-file me-2"></i>
+          <a href="/{{ s.dob_certificate }}" target="_blank">DOB Certificate</a>
+        </li>
+        {% endif %}
+
+        {% if s.aadhaar_doc %}
+        <li class="list-group-item">
+          <i class="fa fa-id-card me-2"></i>
+          <a href="/{{ s.aadhaar_doc }}" target="_blank">Aadhaar Card</a>
+        </li>
+        {% endif %}
+
+        {% if s.tc %}
+        <li class="list-group-item">
+          <i class="fa fa-file-alt me-2"></i>
+          <a href="/{{ s.tc }}" target="_blank">Transfer Certificate</a>
+        </li>
+        {% endif %}
+
+        {% if s.marksheet %}
+        <li class="list-group-item">
+          <i class="fa fa-file-alt me-2"></i>
+          <a href="/{{ s.marksheet }}" target="_blank">Marksheet</a>
+        </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+
+</div>
+<form method="post" action="{{ url_for('student.promote_student', id=s.id) }}" class="mt-3">
+  <select name="next_class" required class="form-select mb-2">
+    <option>Nursery</option>
+                <option>LKG</option>
+                <option>UKG</option>
+                <option>I</option>
+                <option>II</option>
+                <option>III</option>
+                <option>IV</option>
+                <option>V</option>
+                <option>VI</option>
+                <option>VII</option>
+                <option>VIII</option>
+                <option>IX</option>
+                <option>X</option>
+                <option>XI</option>
+                <option>XII</option>
+  </select>
+
+  <select name="next_section" class="form-select mb-2">
+    <option>A</option><option>B</option>
+  </select>
+
+  <input class="form-control mb-2" name="next_session" value="2026-27">
+
+  <button class="btn btn-primary w-100">
+    Promote Student
+  </button>
+
+  
+</form>
+
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+<div class="card border-0 shadow-sm">
+
+<div class="card-body">
+
+<h4 class="fw-bold mb-4">
+✏️ Edit Subject
+</h4>
+
+<form method="post">
+
+<div class="row g-3">
+
+<div class="col-md-2">
+
+<label class="form-label">
+Class
+</label>
+
+<input type="text"
+       name="class_name"
+       value="{{ sub.class_name }}"
+       class="form-control">
+
+</div>
+
+<div class="col-md-2">
+
+<label class="form-label">
+Section
+</label>
+
+<input type="text"
+       name="section"
+       value="{{ sub.section }}"
+       class="form-control">
+
+</div>
+
+<div class="col-md-4">
+
+<label class="form-label">
+Subject Name
+</label>
+
+<input type="text"
+       name="subject_name"
+       value="{{ sub.subject_name }}"
+       class="form-control">
+
+</div>
+
+<div class="col-md-2">
+
+<label class="form-label">
+Code
+</label>
+
+<input type="text"
+       name="subject_code"
+       value="{{ sub.subject_code }}"
+       class="form-control">
+
+</div>
+
+<div class="col-md-2 d-flex align-items-end">
+
+<button class="btn btn-primary w-100">
+
+Update
+
+</button>
+
+</div>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

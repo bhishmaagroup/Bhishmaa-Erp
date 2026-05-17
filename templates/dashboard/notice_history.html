@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Notice History{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+<h3 class="fw-bold mb-3">📜 Notice History</h3>
+
+<table class="table table-bordered table-striped">
+<thead>
+<tr>
+<th>Date</th>
+<th>Type</th>
+<th>Group</th>
+<th>Status</th>
+</tr>
+</thead>
+
+<tbody>
+{% for n in notices %}
+<tr>
+<td>{{ n.created_at.strftime("%d %b %Y") }}</td>
+<td>{{ n.notice_type }}</td>
+<td>{{ n.target_group }}</td>
+<td>
+{% if n.sent_status %}
+<span class="badge bg-success">Sent</span>
+{% else %}
+<span class="badge bg-warning">Pending</span>
+{% endif %}
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
+</div>
+{% endblock %}

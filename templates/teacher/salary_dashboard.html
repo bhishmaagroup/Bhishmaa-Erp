@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h4>📊 Salary Dashboard</h4>
+
+<div class="row">
+    <div class="col-md-3"><div class="card p-3">Total: {{ total }}</div></div>
+    <div class="col-md-3"><div class="card p-3 text-success">Paid: {{ paid }}</div></div>
+    <div class="col-md-3"><div class="card p-3 text-warning">Partial: {{ partial }}</div></div>
+    <div class="col-md-3"><div class="card p-3 text-danger">Pending: {{ pending }}</div></div>
+</div>
+
+<div class="mt-3">
+    <a href="{{ url_for('teacher.salary_panel') }}" class="btn btn-primary">💰 Panel</a>
+    <a href="{{ url_for('teacher.salary_list') }}" class="btn btn-dark">📊 Records</a>
+</div>
+
+<img src="{{ url_for('teacher.salary_chart') }}" class="img-fluid mt-3">
+
+{% endblock %}

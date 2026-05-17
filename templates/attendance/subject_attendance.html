@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block title %}
+Subject Attendance
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+<div>
+
+<h3 class="fw-bold mb-1">
+📚 Subject Wise Attendance
+</h3>
+
+<p class="text-muted mb-0">
+Teacher Subject Attendance Panel
+</p>
+
+</div>
+
+</div>
+
+<!-- SUBJECT SELECT -->
+<div class="card shadow-sm border-0 mb-4">
+
+<div class="card-body">
+
+<form method="get">
+
+<div class="row g-3">
+
+<div class="col-md-5">
+
+<label class="form-label fw-semibold">
+
+Select Subject
+
+</label>
+
+<select name="subject_id"
+        class="form-select"
+        required>
+
+<option value="">
+Choose Subject
+</option>
+
+{% for ts in teacher_subjects %}
+
+<option value="{{ ts.subject.id }}">
+
+{{ ts.subject.subject_name }}
+-
+Class {{ ts.class_name }}
+({{ ts.section }})
+
+</option>
+
+{% endfor %}
+
+</select>
+
+</div>
+
+<div class="col-md-2 d-flex align-items-end">
+
+<button class="btn btn-primary w-100">
+
+Load Students
+
+</button>
+
+</div>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+{% if students %}
+
+<form method="post">
+
+<div class="card shadow-sm border-0">
+
+<div class="card-body">
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+
+<div>
+
+<h5 class="fw-bold mb-1">
+
+{{ subject_obj.subject_name }}
+
+</h5>
+
+<p class="text-muted mb-0">
+
+Class {{ subject_obj.class_name }}
+-
+Section {{ subject_obj.section }}
+
+</p>
+
+</div>
+
+<div style="width:150px">
+
+<label class="form-label fw-semibold">
+Period
+</label>
+
+<select name="period_no"
+        class="form-select">
+
+{% for p in range(1,9) %}
+
+<option value="{{ p }}">
+Period {{ p }}
+</option>
+
+{% endfor %}
+
+</select>
+
+</div>
+
+</div>
+
+<div class="table-responsive">
+
+<table class="table table-bordered align-middle">
+
+<thead class="table-dark">
+
+<tr>
+
+<th>#</th>
+<th>Student</th>
+<th width="400">
+
+Attendance
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for s in students %}
+
+<tr>
+
+<td>
+
+{{ loop.index }}
+
+</td>
+
+<td class="fw-semibold">
+
+{{ s.first_name }}
+{{ s.last_name }}
+
+</td>
+
+<td>
+
+<label class="me-3 text-success fw-bold">
+
+<input type="radio"
+       name="status_{{ s.id }}"
+       value="P"
+       checked>
+
+P
+
+</label>
+
+<label class="me-3 text-danger fw-bold">
+
+<input type="radio"
+       name="status_{{ s.id }}"
+       value="A">
+
+A
+
+</label>
+
+<label class="me-3 text-warning fw-bold">
+
+<input type="radio"
+       name="status_{{ s.id }}"
+       value="L">
+
+L
+
+</label>
+
+<label class="me-3 text-primary fw-bold">
+
+<input type="radio"
+       name="status_{{ s.id }}"
+       value="H">
+
+H
+
+</label>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+<button class="btn btn-success w-100">
+
+💾 Save Subject Attendance
+
+</button>
+
+</div>
+
+</div>
+
+</form>
+
+{% endif %}
+
+</div>
+
+{% endblock %}

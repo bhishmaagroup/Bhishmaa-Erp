@@ -1,0 +1,313 @@
+{% extends "base.html" %}
+{% block title %}Edit Student{% endblock %}
+
+{% block content %}
+<div class="neo-card p-4">
+
+  <!-- HEADER -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0">Edit Student Admission</h4>
+    <a href="{{ url_for('student.student_list') }}" class="btn btn-outline-secondary btn-sm">
+      <i class="fa fa-arrow-left"></i> Back
+    </a>
+  </div>
+
+  <form method="post" enctype="multipart/form-data">
+
+    <!-- ================= PHOTOS ================= -->
+    <h5 class="section-title">Photos</h5>
+    <div class="row g-4 mb-4">
+
+      <div class="col-md-4 text-center">
+        <label class="fw-semibold">Student Photo</label>
+        {% if s.student_photo %}
+        <img src="{{ url_for('uploaded_files', filename=s.student_photo) }}" class="img-fluid rounded shadow mb-2"
+          style="max-height:180px">
+        {% endif %}
+        <input type="file" name="student_photo_new" class="form-control">
+      </div>
+
+      <div class="col-md-4 text-center">
+        <label class="fw-semibold">Father Photo</label>
+        {% if s.father_photo %}
+        <img src="{{ url_for('uploaded_files', filename=s.father_photo) }}" class="img-fluid rounded shadow mb-2"
+          style="max-height:180px">
+        {% endif %}
+        <input type="file" name="father_photo_new" class="form-control">
+      </div>
+
+      <div class="col-md-4 text-center">
+        <label class="fw-semibold">Mother Photo</label>
+        {% if s.mother_photo %}
+        <img src="{{ url_for('uploaded_files', filename=s.mother_photo) }}" class="img-fluid rounded shadow mb-2"
+          style="max-height:180px">
+        {% endif %}
+        <input type="file" name="mother_photo_new" class="form-control">
+      </div>
+
+    </div>
+
+    <!-- ================= STUDENT DETAILS ================= -->
+    <h5 class="section-title">Student Details</h5>
+    <div class="row g-3">
+
+      <div class="col-md-4">
+        <label>First Name</label>
+        <input class="form-control" name="first_name" value="{{ s.first_name }}">
+      </div>
+
+      <div class="col-md-4">
+        <label>Middle Name</label>
+        <input class="form-control" name="middle_name" value="{{ s.middle_name }}">
+      </div>
+
+      <div class="col-md-4">
+        <label>Last Name</label>
+        <input class="form-control" name="last_name" value="{{ s.last_name }}">
+      </div>
+
+      <div class="col-md-3">
+        <label>Gender</label>
+        <select class="form-select" name="gender">
+          <option {{ 'selected' if s.gender=='Male' }}>Male</option>
+          <option {{ 'selected' if s.gender=='Female' }}>Female</option>
+          <option {{ 'selected' if s.gender=='Other' }}>Other</option>
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <label>DOB</label>
+        <input type="date" class="form-control" name="dob" value="{{ s.dob }}">
+      </div>
+
+      <div class="col-md-3">
+        <label>Religion</label>
+        <input class="form-control" name="religion" value="{{ s.religion }}">
+      </div>
+
+      <div class="col-md-3">
+        <label>Caste</label>
+        <input class="form-control" name="caste" value="{{ s.caste }}">
+      </div>
+
+      <div class="col-md-3">
+        <label>Aadhaar</label>
+        <input class="form-control" name="aadhaar" value="{{ s.aadhaar }}">
+      </div>
+
+      <div class="col-md-3">
+        <label>PEN No</label>
+        <input class="form-control" name="pen_no" value="{{ s.pen_no }}">
+      </div>
+
+      <div class="col-md-3">
+        <label>Blood Group</label>
+        <input class="form-control" name="blood_group" value="{{ s.blood_group }}">
+      </div>
+
+    </div>
+
+    <hr>
+
+    <!-- ================= ACADEMIC ================= -->
+    <h5 class="section-title">Academic Details</h5>
+    <div class="row g-3">
+
+      <div class="col-md-3">
+        <label>Class</label>
+        <input class="form-control" name="student_class" value="{{ s.student_class }}">
+      </div>
+
+      <div class="col-md-3">
+        <label>Section</label>
+        <input class="form-control" name="section" value="{{ s.section }}">
+      </div>
+
+
+
+      <div class="col-md-3">
+        <label>Session</label>
+        <input class="form-control" name="session" value="{{ s.session }}">
+      </div>
+
+      <!-- TRANSPORT REQUIRED -->
+      <div class="col-md-3">
+        <label>Transport</label>
+        <select class="form-select" name="transport_required" id="transport_required">
+          <option value="no" {{ 'selected' if not s.transport_required }}>No</option>
+          <option value="yes" {{ 'selected' if s.transport_required }}>Yes</option>
+        </select>
+      </div>
+
+      <!-- ROUTE -->
+      <div class="col-md-4" id="routeBox" style="display:none;">
+        <label>Route</label>
+        <select class="form-select" name="transport_route" id="routeSelect">
+          <option value="">Select Route</option>
+          {% for r in routes %}
+          <option value="{{ r.id }}" {{ 'selected' if s.transport_route==r.id }}>
+            {{ r.route_name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- STOP -->
+      <div class="col-md-5" id="stopBox" style="display:none;">
+        <label>Pickup Point</label>
+        <select class="form-select" name="pickup_point" id="stopSelect">
+          <option value="">Select Stop</option>
+        </select>
+      </div>
+
+
+
+
+
+    </div>
+
+    <hr>
+
+    <!-- ================= ADDRESS ================= -->
+    <h5 class="section-title">Address</h5>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label>Present Address</label>
+        <textarea class="form-control" name="present_address">{{ s.present_address }}</textarea>
+      </div>
+
+      <div class="col-md-6">
+        <label>Permanent Address</label>
+        <textarea class="form-control" name="permanent_address">{{ s.permanent_address }}</textarea>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- ================= FATHER ================= -->
+    <h5 class="section-title">Father Details</h5>
+    <div class="row g-3">
+      <div class="col-md-3">
+        <label>Name</label>
+        <input class="form-control" name="father_name" value="{{ s.father_name }}">
+      </div>
+      <div class="col-md-3">
+        <label>Mobile</label>
+        <input class="form-control" name="father_mobile" value="{{ s.father_mobile }}">
+      </div>
+      <div class="col-md-3">
+        <label>Father Email</label>
+        <input class="form-control" name="father_email" value="{{ s.father_email}}">
+      </div>
+      <div class="col-md-3">
+        <label>Aadhaar</label>
+        <input class="form-control" name="father_aadhaar" value="{{ s.father_aadhaar }}">
+      </div>
+    </div>
+
+    <hr>
+    <!-- ================= MOTHER ================= -->
+    <h5 class="section-title">Mother Details</h5>
+    <div class="row g-3">
+      <div class="col-md-3">
+        <label>Name</label>
+        <input class="form-control" name="mother_name" value="{{ s.mother_name }}">
+      </div>
+      <div class="col-md-3">
+        <label>Mobile</label>
+        <input class="form-control" name="mother_mobile" value="{{ s.mother_mobile }}">
+      </div>
+      <div class="col-md-3">
+        <label>Mother Email</label>
+        <input class="form-control" name="mother_email" value="{{ s.mother_email}}">
+      </div>
+      <div class="col-md-3">
+        <label>Aadhaar</label>
+        <input class="form-control" name="mother_aadhaar" value="{{ s.mother_aadhaar }}">
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- ================= GUARDIAN ================= -->
+    <h5 class="section-title">Guardian Details</h5>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label>Name</label>
+        <input class="form-control" name="guardian_name" value="{{ s.guardian_name }}">
+      </div>
+      <div class="col-md-4">
+        <label>Relation</label>
+        <input class="form-control" name="guardian_relation" value="{{ s.guardian_relation }}">
+      </div>
+      <div class="col-md-4">
+        <label>Mobile</label>
+        <input class="form-control" name="guardian_mobile" value="{{ s.guardian_mobile }}">
+      </div>
+      <div class="col-md-12">
+        <label>Address</label>
+        <textarea class="form-control" name="guardian_address">{{ s.guardian_address }}</textarea>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- ================= DOCUMENTS ================= -->
+    <h5 class="section-title">Documents (Replace if needed)</h5>
+    <div class="row g-3">
+      <div class="col-md-3"><input type="file" name="dob_certificate_new" class="form-control"></div>
+      <div class="col-md-3"><input type="file" name="aadhaar_doc_new" class="form-control"></div>
+      <div class="col-md-3"><input type="file" name="tc_new" class="form-control"></div>
+      <div class="col-md-3"><input type="file" name="marksheet_new" class="form-control"></div>
+    </div>
+
+    <div class="mt-4">
+      <button class="btn btn-success px-5">
+        <i class="fa fa-save"></i> Update Student
+      </button>
+      <a href="{{ url_for('student.student_list') }}" class="btn btn-secondary ms-2">
+        Cancel
+      </a>
+    </div>
+
+  </form>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+
+    let transport = document.getElementById("transport_required");
+    let routeBox = document.getElementById("routeBox");
+    let stopBox = document.getElementById("stopBox");
+
+    function toggleTransport() {
+      let show = transport.value === "yes";
+      routeBox.style.display = show ? "block" : "none";
+      stopBox.style.display = show ? "block" : "none";
+    }
+
+    toggleTransport();
+
+    transport.addEventListener("change", toggleTransport);
+
+    document.getElementById("routeSelect").addEventListener("change", function () {
+
+      let route_id = this.value;
+
+      fetch("/transport/get-stops/" + route_id)
+        .then(res => res.json())
+        .then(data => {
+
+          let stopSelect = document.getElementById("stopSelect");
+          stopSelect.innerHTML = '<option value="">Select Stop</option>';
+
+          data.forEach(stop => {
+            stopSelect.innerHTML += `<option value="${stop.id}">${stop.stop_name}</option>`;
+          });
+
+        });
+
+    });
+
+  });
+</script>
+{% endblock %}

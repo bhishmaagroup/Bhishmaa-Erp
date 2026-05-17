@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h4 class="mb-3">💰 Salary Payment Dashboard</h4>
+
+<!-- ================= TOP SUMMARY CARDS ================= -->
+<div class="row mb-3 text-center">
+
+    <div class="col-md-3">
+        <div class="card shadow-sm p-2">
+            <h6>Gross Salary</h6>
+            <h5 class="text-primary">₹{{ salary.gross_salary  | round(2) }}</h5>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm p-2">
+            <h6>Total Deduction</h6>
+            <h5 class="text-danger">₹{{ salary.total_deduction | round(2) }}</h5>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm p-2">
+            <h6>Net Salary</h6>
+            <h5 class="text-success">₹{{ adjusted_salary | round(2) }}</h5>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm p-2">
+            <h6>Remaining</h6>
+            <h5 class="text-warning">₹{{ remaining | round(2) }}</h5>
+        </div>
+    </div>
+
+</div>
+
+<!-- ================= EMPLOYEE ================= -->
+<div class="card shadow p-3 mb-3">
+    <h5>👤 Employee Info</h5>
+    <b>{{ teacher.first_name }} {{ teacher.last_name }}</b><br>
+    {{ teacher.designation }} | ID: {{ teacher.teacher_code }}
+
+    <div class="mt-2">
+        <span class="badge bg-{% if salary.status=='Paid' %}success{% elif salary.status=='Partial' %}warning{% else %}danger{% endif %}">
+            {{ salary.status }}
+        </span>
+    </div>
+</div>
+
+<!-- ================= ATTENDANCE ================= -->
+<div class="card shadow p-3 mb-3">
+
+    <h5>📊 Attendance Overview (Full Month)</h5>
+
+    <!-- ===== SUMMARY CARDS ===== -->
+    <div class="row text-center mb-3">
+
+        <div class="col">
+            <div class="p-2 border rounded bg-light">
+                <small class="text-success">Present</small><br>
+                <b class="text-success">{{ total_P }}</b>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="p-2 border rounded bg-light">
+                <small class="text-danger">Absent</small><br>
+                <b class="text-danger">{{ total_A }}</b>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="p-2 border rounded bg-light">
+                <small class="text-warning">Late</small><br>
+                <b class="text-warning">{{ total_L }}</b>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="p-2 border rounded bg-light">
+                <small class="text-info">Half Day</small><br>
+                <b class="text-info">{{ total_H }}</b>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ===== DAILY GRID ===== -->
+    <div class="border rounded p-2 mb-3" style="background:#f8f9fa">
+
+        <div class="d-flex flex-wrap gap-2 justify-content-start">
+
+            {% for d in attendance_days %}
+            <div style="width:60px"
+                 class="text-center border rounded p-1 shadow-sm
+                 {% if d.status=='P' %}bg-success text-white
+                 {% elif d.status=='A' %}bg-danger text-white
+                 {% elif d.status=='L' %}bg-warning
+                 {% elif d.status=='H' %}bg-info text-white
+                 {% else %}bg-light{% endif %}">
+
+                <small>{{ d.date.day }}</small><br>
+                <b>{{ d.status }}</b>
+
+            </div>
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+    <!-- ===== LEGEND ===== -->
+    <div class="mb-3 text-center">
+
+        <span class="badge bg-success">P = Present</span>
+        <span class="badge bg-danger">A = Absent</span>
+        <span class="badge bg-warning text-dark">L = Late</span>
+        <span class="badge bg-info">H = Half Day</span>
+        <span class="badge bg-secondary">- = No Data</span>
+
+    </div>
+
+    <!-- ===== DEDUCTION INFO ===== -->
+    <div class="alert alert-danger mb-0">
+
+        <b>💸 Attendance Deduction: ₹{{ salary.attendance_deduction }}</b>
+
+        <hr class="my-2">
+
+        <small>
+        ❌ Absent = Full Day Salary Cut <br>
+        ⚠ Late = {{ total_L }} × (Late Penalty %) <br>
+        🌓 Half Day = 50% Salary Cut <br>
+        📅 Total Days Counted = {{ attendance_days|length }}
+        </small>
+
+    </div>
+
+</div>
+<!-- ================= EARNINGS + DEDUCTIONS ================= -->
+<div class="row">
+
+    <div class="col-md-6">
+        <div class="card shadow p-3 mb-3">
+            <h5 class="text-success">🟢 Earnings</h5>
+
+            <table class="table table-sm">
+                {% for k,v in earnings.items() %}
+                <tr>
+                    <td>{{ k }}</td>
+                    <td class="text-success fw-bold">₹{{ v }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card shadow p-3 mb-3">
+            <h5 class="text-danger">🔴 Deductions</h5>
+
+            <table class="table table-sm">
+                {% for k,v in deductions.items() %}
+                <tr>
+                    <td>{{ k }}</td>
+                    <td class="text-danger fw-bold">-₹{{ v | round(2) }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- ================= FINAL ================= -->
+<div class="card shadow p-3 mb-3 text-center bg-light">
+
+    <h5>💰 Final Salary</h5>
+
+    <p>Previous Advance: ₹{{ prev_advance }}</p>
+
+    <h3 class="text-success">Payable Salary: ₹{{ adjusted_salary | round(2)  }}</h3>
+
+    {% set percent = (paid / adjusted_salary * 100) if adjusted_salary else 0 %}
+
+    <div class="progress mt-3">
+        <div class="progress-bar bg-success"
+             style="width: {{ percent }}%">
+        </div>
+    </div>
+
+    <p class="mt-2">
+        Paid: ₹{{ paid | round(2) }} |
+        Remaining: <span class="text-danger">₹{{ remaining | round(2) }}</span>
+    </p>
+
+</div>
+
+<!-- ================= PAYMENT ================= -->
+<div class="card shadow p-3 mb-3">
+    <h5>💳 Make Payment</h5>
+
+    <form method="post" class="row g-2">
+
+        <div class="col-md-3">
+            <input name="amount" type="number" step="0.01"
+                   class="form-control" placeholder="Enter Amount" required>
+        </div>
+
+        <div class="col-md-3">
+            <select name="mode" class="form-select">
+                <option value="Cash">Cash</option>
+                <option value="UPI">UPI</option>
+                <option value="Bank">Bank Transfer</option>
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <input name="txnid" class="form-control" placeholder="Transaction ID (optional)">
+        </div>
+
+        <div class="col-md-2">
+            <button class="btn btn-success w-100">Pay Now</button>
+        </div>
+
+    </form>
+</div>
+
+<!-- ================= HISTORY ================= -->
+<div class="card shadow p-3">
+    <h5>📜 Payment History</h5>
+
+    <table class="table table-hover">
+
+        <tr class="table-dark">
+            <th>Date</th>
+            <th>Amount</th>
+            <th>Mode</th>
+            <th>Transaction</th>
+        </tr>
+
+        {% for p in payments %}
+        <tr>
+            <td>{{ p.payment_date.strftime('%d %b %Y') if p.payment_date else '-' }}</td>
+            <td class="text-success fw-bold">₹{{ p.paid_amount }}</td>
+            <td>{{ p.payment_mode }}</td>
+            <td>{{ p.transaction_id or '-' }}</td>
+        </tr>
+        {% endfor %}
+
+    </table>
+</div>
+
+{% endblock %}

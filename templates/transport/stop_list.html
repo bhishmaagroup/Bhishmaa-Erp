@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Stops{% endblock %}
+
+{% block content %}
+
+<style>
+.card-box {
+    background:#fff;
+    border-radius:15px;
+    padding:20px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.15);
+}
+</style>
+
+<div class="container-fluid">
+
+<h4 class="mb-3">📍 Stop Management</h4>
+
+<a href="{{ url_for('transport.add_stop') }}" class="btn btn-primary mb-3">
+  ➕ Add Stop
+</a>
+
+<div class="card-box">
+
+<table class="table table-hover align-middle">
+
+<thead class="table-dark">
+<tr>
+  <th>Route</th>
+  <th>Stop</th>
+  <th>Time</th>
+  <th>Sequence</th>
+  <th>Distance</th>
+  <th>Fare</th>
+  <th>Action</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for s in stops %}
+<tr>
+
+<td>
+  {{ s.route.route_name if s.route else '-' }}
+</td>
+
+<td>
+  <b>{{ s.stop_name }}</b>
+</td>
+
+<td>
+  {{ s.pickup_time or '-' }}
+</td>
+
+<td>
+  {{ s.sequence or 0 }}
+</td>
+
+<td>
+  {{ s.distance_km or 0 }} KM
+</td>
+
+<td>
+  ₹{{ s.fare | int if s.fare else 0 }}
+</td>
+
+<td>
+
+  <a href="{{ url_for('transport.view_stop', id=s.id) }}"
+     class="btn btn-sm btn-info">View</a>
+
+  <a href="{{ url_for('transport.edit_stop', id=s.id) }}"
+     class="btn btn-sm btn-warning">Edit</a>
+
+  <a href="{{ url_for('transport.delete_stop', id=s.id) }}"
+     class="btn btn-sm btn-danger"
+     onclick="return confirm('Delete this stop?')">
+     Delete
+  </a>
+
+</td>
+
+</tr>
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+{% endblock %}

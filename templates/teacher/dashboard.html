@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% block title %}Teacher Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+  <!-- ================= HEADER ================= -->
+  <div class="row mb-4 align-items-center">
+
+    <div class="col-auto">
+      <div class="border rounded d-flex align-items-center justify-content-center" style="height:70px; width:70px;">
+        <i class="fa fa-chalkboard-user fa-2x text-info"></i>
+      </div>
+    </div>
+
+    <div class="col">
+      <h2 class="section-title mb-0">Staff Management</h2>
+      <p class="text-muted small mb-0">
+        Staff • Attendance • Salary • Advance • ID Cards
+      </p>
+    </div>
+
+    <div class="col-md-3 text-end">
+      <span class="badge bg-info fs-6">
+        Academic Year: 2025–2026
+      </span>
+    </div>
+
+  </div>
+
+  <!-- ================= QUICK ACTIONS ================= -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="neo-card p-3">
+        <div class="row g-2 text-center">
+
+          <div class="col-md-2 col-sm-4">
+            <a href="/teacher/add" class="btn btn-primary w-100">
+              <i class="fa fa-user-plus"></i><br><small>Add Staff</small>
+            </a>
+          </div>
+
+          <div class="col-md-2 col-sm-4">
+            <a href="/teacher/list" class="btn btn-success w-100">
+              <i class="fa fa-users"></i><br><small>Staffs</small>
+            </a>
+          </div>
+
+          <div class="col-md-2 col-6">
+            <a href="/attendance" class="btn btn-warning w-100 ">
+              <i class="fa fa-money-bill-wave"></i><br><small>Attendance</small>
+
+            </a>
+          </div>
+
+          <div class="col-md-2 col-sm-4">
+            <a href="{{ url_for('teacher.salary_panel') }}" class="btn btn-primary w-100">
+              <i class="fa fa-money-bill-wave"></i><br><small>Salary</small>
+            </a>
+          </div>
+
+          <div class="col-md-2 col-sm-4">
+            <a href="/salary/advance" class="btn btn-secondary w-100">
+              <i class="fa fa-hand-holding-dollar"></i><br><small>Advance</small>
+            </a>
+          </div>
+
+          <div class="col-md-2 col-sm-4">
+            <a href="/teacher/id-card" class="btn btn-dark w-100">
+              <i class="fa fa-id-card"></i><br><small>ID Cards</small>
+            </a>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= STAT CARDS ================= -->
+  <div class="row g-4 mb-4">
+
+    <div class="col-md-3 col-sm-6">
+      <div class="neo-card p-4">
+        <p class="text-muted mb-1">Total Staffs</p>
+        <h3 class="mb-0">{{ total_teachers }}</h3>
+      </div>
+    </div>
+
+    <div class="col-md-3 col-sm-6">
+      <div class="neo-card p-4">
+        <p class="text-muted mb-1">Active Staff</p>
+        <h3 class="mb-0 text-success">{{ active_teachers }}</h3>
+      </div>
+    </div>
+
+    <div class="col-md-3 col-sm-6">
+      <div class="neo-card p-4">
+        <p class="text-muted mb-1">Salary Paid</p>
+        <h3 class="mb-0 text-info">₹ {{ total_salary_paid }}</h3>
+      </div>
+    </div>
+
+    <div class="col-md-3 col-sm-6">
+      <div class="neo-card p-4">
+        <p class="text-muted mb-1">Attendance Entries</p>
+        <h3 class="mb-0 text-warning">{{ attendance_count }}</h3>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ================= TEACHER TABLE ================= -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="neo-card p-4">
+        <div class="d-flex justify-content-between mb-3">
+          <h5 class="section-title">🧑‍🏫 Staffs</h5>
+          <a href="/teacher/list" class="btn btn-sm btn-outline-primary">View All</a>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Designation</th>
+                <th>Mobile</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for t in teachers %}
+              <tr>
+                <td>{{ t.teacher_code }}</td>
+                <td>{{ t.first_name }} {{ t.last_name }}</td>
+                <td>{{ t.designation }}</td>
+                <td>{{ t.mobile }}</td>
+                <td>
+                  {% if t.is_active %}
+                  <span class="badge bg-success">Active</span>
+                  {% else %}
+                  <span class="badge bg-danger">Inactive</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <a href="/salary/teacher/{{ t.id }}" class="btn btn-sm btn-outline-success">Salary</a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

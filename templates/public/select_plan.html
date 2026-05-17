@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>Select Plan</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light p-5">
+<div class="container text-center">
+
+  <h2 class="mb-4">🚀 Choose Your Plan</h2>
+
+  <!-- COUPON -->
+
+  <div class="mb-4">
+    <input id="coupon" class="form-control w-25 d-inline" placeholder="Enter Coupon">
+    <button onclick="applyCoupon()" class="btn btn-success">Apply</button>
+    <p id="msg" class="text-success mt-2"></p>
+  </div>
+
+  <div class="row">
+    {% for plan in plans %}
+    <div class="col-md-4">
+      <div class="card p-4 shadow-sm mb-4">
+
+```
+    <h4>{{ plan.name|upper }}</h4>
+
+    <h3 class="price" data-price="{{ plan.price }}">₹{{ plan.price }}</h3>
+
+    <p>{{ plan.student_limit }} Students</p>
+
+    <form method="POST" action="{{ url_for('super_admin.request_license', plan_id=plan.id) }}">
+      <button class="btn btn-primary w-100">Select</button>
+    </form>
+
+  </div>
+</div>
+{% endfor %}
+```
+
+  </div>
+
+</div>
+
+<script>
+let discount = 0;
+
+function applyCoupon(){
+  let code = document.getElementById("coupon").value;
+
+  fetch(`/super/apply-coupon?code=${code}`)
+  .then(res => res.json())
+  .then(data => {
+    if(data.valid){
+      discount = data.discount;
+      document.getElementById("msg").innerText = discount + "% OFF Applied";
+      updatePrices();
+    } else {
+      document.getElementById("msg").innerText = "Invalid Coupon";
+    }
+  });
+}
+
+function updatePrices(){
+  document.querySelectorAll(".price").forEach(el => {
+    let base = parseFloat(el.dataset.price);
+    let final = base - (base * discount / 100);
+    el.innerText = "₹" + final.toFixed(0);
+  });
+}
+</script>
+
+</body>
+</html>

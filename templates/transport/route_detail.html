@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Route Detail{% endblock %}
+
+{% block content %}
+
+<style>
+.box {
+    background:#fff;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.15);
+}
+</style>
+
+<div class="container-fluid">
+
+<h4 class="mb-3">🗺️ Route Detail</h4>
+
+<!-- ROUTE INFO -->
+<div class="box mb-3">
+
+<h5>{{ route.route_name }} ({{ route.route_code }})</h5>
+
+<p><b>Start:</b> {{ route.start_point }}</p>
+<p><b>End:</b> {{ route.end_point }}</p>
+<p><b>Distance:</b> {{ route.distance_km }} KM</p>
+
+<p><b>Bus:</b> {{ route.bus.bus_no if route.bus else '-' }}</p>
+<p><b>Driver:</b> {{ route.driver_name }}</p>
+<p><b>Mobile:</b> {{ route.driver_mobile }}</p>
+
+<p><b>Fare:</b> ₹{{ route.base_fare }} ({{ route.fare_type }})</p>
+
+</div>
+
+
+<!-- STOPS -->
+<div class="box mb-3">
+
+<h5>📍 Stops</h5>
+
+<table class="table table-sm">
+<tr>
+  <th>#</th>
+  <th>Stop</th>
+  <th>Time</th>
+  <th>Distance</th>
+  <th>Fare</th>
+</tr>
+
+{% for s in stops %}
+<tr>
+  <td>{{ s.sequence }}</td>
+  <td>{{ s.stop_name }}</td>
+  <td>{{ s.pickup_time }}</td>
+  <td>{{ s.distance_km }} KM</td>
+  <td>₹{{ s.fare }}</td>
+</tr>
+{% endfor %}
+
+</table>
+
+</div>
+
+
+<!-- STUDENTS -->
+<div class="box">
+
+<h5>👨‍🎓 Students on this Route</h5>
+
+<table class="table table-sm">
+
+<tr>
+  <th>Student ID</th>
+  <th>Stop</th>
+</tr>
+
+{% for st in students %}
+<tr>
+  <td>{{ st.student_id }}</td>
+  <td>{{ st.stop.stop_name if st.stop else '-' }}</td>
+</tr>
+{% endfor %}
+
+</table>
+
+</div>
+
+</div>
+
+{% endblock %}

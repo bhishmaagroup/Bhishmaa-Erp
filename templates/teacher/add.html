@@ -1,0 +1,354 @@
+{% extends 'base.html' %}
+{% block title %}Add Teacher{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+  <!-- ================= HEADER ================= -->
+  <div class="row mb-4 align-items-center">
+    <div class="col-md-8">
+      <h3 class="section-title mb-0">
+        <i class="fa fa-chalkboard-teacher me-2"></i>Add New Staff
+      </h3>
+      <p class="text-muted small">Staff personal, qualification & employment details</p>
+    </div>
+    <div class="col-md-4 text-end">
+      <a href="{{ url_for('teacher.list_teachers') }}" class="btn btn-secondary">
+        <i class="fa fa-arrow-left"></i> Back
+      </a>
+    </div>
+  </div>
+
+  <form method="post" enctype="multipart/form-data">
+    <div class="card shadow-lg border-0 p-4">
+
+      <!-- ================= PHOTO ================= -->
+      <h6 class="section-title">Staff Photo</h6>
+      <div class="d-flex align-items-center gap-3 mb-4">
+        <div class="photo-box" onclick="uploadPhoto()">
+          <img id="photoPreview" style="display:none">
+          <span id="photoText">Upload Photo</span>
+        </div>
+        <button type="button" class="btn btn-outline-primary" onclick="openCamera()">
+          <i class="fa fa-camera"></i> Webcam
+        </button>
+      </div>
+
+      <input type="file" id="photoInput" name="photo_file" accept="image/*" hidden>
+      <input type="hidden" name="photo" id="photo">
+
+      <!-- ================= BASIC DETAILS ================= -->
+      <h6 class="section-title">Basic Information</h6>
+      <div class="row g-3 mb-3">
+
+        <div class="col-md-3">
+          <label class="form-label">First Name</label>
+          <input class="form-control" name="first_name" required>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Middle Name</label>
+          <input class="form-control" name="middle_name">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Last Name</label>
+          <input class="form-control" name="last_name">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Gender</label>
+          <select class="form-select" name="gender">
+            <option value="">Select</option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Date of Birth (DOB)</label>
+          <input type="date" class="form-control" name="dob">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Date of Joining (DOJ)</label>
+          <input type="date" class="form-control" name="joining_date">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Mobile</label>
+          <input class="form-control" name="mobile">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Email</label>
+          <input class="form-control" name="email">
+        </div>
+
+      </div>
+
+      <!-- ================= EMPLOYMENT ================= -->
+      <h6 class="section-title">Employment Details</h6>
+      <div class="row g-3 mb-3">
+
+        <div class="col-md-3">
+          <label class="form-label">Designation</label>
+          <select class="form-select" name="designation">
+            <option value="">Select</option>
+            <option>Director</option>
+            <option>Principal</option>
+            <option>Head Teacher</option>
+            <option>Coordinator</option>
+            <option>P.T. Teacher</option>
+            <option>Teacher</option>
+            <option>Clerk</option>
+            <option>Accountant</option>
+            <option>Driver</option>
+            <option>CareTaker</option>
+            <option>Security</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+
+        <div class="col-md-3">
+          <label class="form-label">Employment Type</label>
+          <select class="form-select" name="employment_type">
+            <option value="">Select</option>
+            <option>Permanent</option>
+            <option>Contract</option>
+            <option>Guest</option>
+            <option>Part Time</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Monthly Salary</label>
+          <input type="number" class="form-control" name="salary">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Experience (Years)</label>
+          <input type="number" class="form-control" name="experience" min="0">
+        </div>
+
+      </div>
+
+      <!-- ================= QUALIFICATION ================= -->
+      <h6 class="section-title">Qualification</h6>
+      <div class="row g-3 mb-3">
+
+        <div class="col-md-3">
+          <label class="form-label">Highest Qualification</label>
+          <select class="form-select" name="qualification">
+            <option value="">Select</option>
+            <option>High School</option>
+            <option>Intermediate</option>
+            <option>D.El.Ed</option>
+            <option>B.Ed</option>
+            <option>M.Ed</option>
+            <option>BA / BSc / BCom</option>
+            <option>MA / MSc / MCom</option>
+            <option>PhD</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Subject / Specialization</label>
+          <select class="form-select" name="subject">
+            <!-- Pre-Primary -->
+             <option value="none">None</option>
+            <optgroup label="Pre-Primary (Nursery/LKG/UKG)">
+              <option value="alphabet">Alphabet Recognition</option>
+              <option value="numbers">Number Recognition</option>
+              <option value="storytelling">Storytelling</option>
+              <option value="rhymes">Rhymes & Poems</option>
+              <option value="drawing">Drawing & Coloring</option>
+              <option value="crafts">Crafts & Activities</option>
+            </optgroup>
+
+            <!-- Primary (Classes 1-5) -->
+            <optgroup label="Primary (Classes 1-5)">
+              <option value="english-primary">English</option>
+              <option value="hindi">Hindi / Regional Language</option>
+              <option value="math-primary">Mathematics</option>
+              <option value="evs">Environmental Studies (EVS)</option>
+              <option value="computer-basic">Computer Studies</option>
+              <option value="gk">General Knowledge</option>
+              <option value="arts">Arts Education</option>
+              <option value="pe-primary">Physical Education</option>
+            </optgroup>
+
+            <!-- Middle (Classes 6-8) -->
+            <optgroup label="Middle (Classes 6-8)">
+              <option value="english-middle">English</option>
+              <option value="hindi-middle">Hindi / Regional Language</option>
+              <option value="third-language">Third Language</option>
+              <option value="math-middle">Mathematics</option>
+              <option value="science-middle">Science</option>
+              <option value="sst">Social Studies</option>
+              <option value="computer-middle">Computer Science</option>
+              <option value="arts-middle">Arts Education</option>
+              <option value="pe-middle">Physical Education</option>
+            </optgroup>
+
+            <!-- Secondary (Classes 9-10) -->
+            <optgroup label="Secondary (Classes 9-10)">
+              <option value="english-sec">English</option>
+              <option value="hindi-sec">Hindi / Regional Language</option>
+              <option value="math-sec">Mathematics</option>
+              <option value="science-sec">Science</option>
+              <option value="social-sec">Social Science</option>
+              <option value="computer-sec">Computer Science</option>
+              <option value="pe-sec">Physical Education</option>
+            </optgroup>
+
+            <!-- Intermediate Streams (Classes 11-12) -->
+            <optgroup label="Science Stream (11-12)">
+              <option value="physics">Physics</option>
+              <option value="chemistry">Chemistry</option>
+              <option value="biology">Biology</option>
+              <option value="math-inter">Mathematics</option>
+              <option value="english-inter">English</option>
+            </optgroup>
+            <optgroup label="Commerce Stream (11-12)">
+              <option value="accountancy">Accountancy</option>
+              <option value="business">Business Studies</option>
+              <option value="economics">Economics</option>
+              <option value="math-comm">Mathematics</option>
+              <option value="english-comm">English</option>
+            </optgroup>
+            <optgroup label="Humanities Stream (11-12)">
+              <option value="history">History</option>
+              <option value="geography">Geography</option>
+              <option value="pol-science">Political Science</option>
+              <option value="sociology">Sociology</option>
+              <option value="psychology">Psychology</option>
+              <option value="english-hum">English</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">PAN Number</label>
+          <input class="form-control" name="pan_no">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Aadhaar Number</label>
+          <input class="form-control" name="aadhaar">
+        </div>
+
+      </div>
+
+      <!-- ================= ADDRESS ================= -->
+      <h6 class="section-title">Address</h6>
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <textarea class="form-control" name="address" rows="2" placeholder="Present Address"></textarea>
+        </div>
+        <div class="col-md-6">
+          <textarea class="form-control" name="permanent_address" rows="2" placeholder="Permanent Address"></textarea>
+        </div>
+      </div>
+
+      <!-- ================= DOCUMENTS ================= -->
+      <h6 class="section-title">Documents</h6>
+      <div class="row g-3 mb-4">
+
+        <div class="col-md-3">
+          <label class="form-label">Aadhaar Card</label>
+          <input type="file" class="form-control" name="aadhaar_doc">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Passbook </label>
+          <input type="file" class="form-control" name="pass_doc">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Qualification Certificate</label>
+          <input type="file" class="form-control" name="qualification_doc">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Resume (PDF)</label>
+          <input type="file" class="form-control" name="resume">
+        </div>
+
+      </div>
+
+      <!-- ================= SUBMIT ================= -->
+      <div class="text-end">
+        <button class="btn btn-success px-5">
+          <i class="fa fa-save"></i> Save Staff
+        </button>
+      </div>
+
+    </div>
+  </form>
+</div>
+
+<!-- ================= STYLE ================= -->
+<style>
+  .photo-box {
+    width: 140px;
+    height: 170px;
+    border: 2px dashed #0d6efd;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background: #f8f9fa;
+  }
+
+  .photo-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+</style>
+
+<!-- ================= JS ================= -->
+<script>
+  function uploadPhoto() {
+    const input = document.getElementById('photoInput');
+    input.click();
+    input.onchange = function () {
+      const file = this.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        photoPreview.src = reader.result;
+        photoPreview.style.display = 'block';
+        photoText.style.display = 'none';
+        document.getElementById('photo').value = reader.result;
+      }
+      reader.readAsDataURL(file);
+    }
+  }
+
+  function openCamera() {
+    navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+      const video = document.createElement('video');
+      video.srcObject = stream;
+      video.play();
+      setTimeout(() => {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        const data = canvas.toDataURL('image/png');
+        photoPreview.src = data;
+        photoPreview.style.display = 'block';
+        photoText.style.display = 'none';
+        document.getElementById('photo').value = data;
+        stream.getTracks().forEach(t => t.stop());
+      }, 2000);
+    });
+  }
+</script>
+{% endblock %}

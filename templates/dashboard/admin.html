@@ -1,0 +1,294 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<style>
+  /* ===== MODERN UI ===== */
+  .dashboard-header {
+    background: linear-gradient(135deg, #4f6df5, #6a8cff);
+    color: white;
+    border-radius: 16px;
+    padding: 20px;
+  }
+
+  .neo-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    transition: 0.3s;
+  }
+
+  .neo-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .action-card {
+    border-radius: 14px;
+    padding: 18px;
+    color: white;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  .action-card:hover {
+    transform: scale(1.05);
+  }
+
+  .bg-blue {
+    background: #2f6df6;
+  }
+
+  .bg-green {
+    background: #1dbf73;
+  }
+
+  .bg-cyan {
+    background: #17a2b8;
+  }
+
+  .bg-yellow {
+    background: #f4b400;
+  }
+
+  .bg-gray {
+    background: #6c757d;
+  }
+
+  .bg-red {
+    background: #e53935;
+  }
+
+  .stat-icon {
+    font-size: 28px;
+  }
+
+  .small-graph {
+    height: 40px;
+  }
+</style>
+
+<div class="container-fluid">
+
+  <!-- ===== HEADER ===== -->
+  <div class="dashboard-header mb-4 d-flex justify-content-between align-items-center">
+
+    <div class="d-flex align-items-center">
+      {% if school.logo %}
+      <img src="{{ url_for('uploaded_files', filename=school.logo) }}"
+        style="height:70px;border-radius:10px;margin-right:15px;">
+      {% else %}
+      <img src="/static/default.png" style="height:70px;border-radius:10px;margin-right:15px;">
+      {% endif %}
+
+      <div>
+        <h3 class="mb-0">{{ school.school_name }}</h3>
+        <small>Welcome back Admin 👋</small>
+      </div>
+    </div>
+
+    <div>
+      <span class="badge bg-light text-dark">
+        Academic Year: {{ academic_year }}
+      </span>
+    </div>
+
+  </div>
+
+  <!-- ===== ACTION BUTTONS ===== -->
+  <div class="row mb-4 g-3">
+
+    <div class="col-md-2">
+      <a href="{{ url_for('student.admission') }}">
+        <div class="action-card bg-blue">
+          <i class="fa fa-user-plus"></i>
+          <h6>New Admission</h6>
+
+        </div>
+      </a>
+    </div>
+
+    <div class="col-md-2">
+      <a href="{{ url_for('student.student_list') }}">
+        <div class="action-card bg-green">
+          <i class="fa fa-users"></i>
+          <h6>Manage Students</h6>
+
+        </div>
+      </a>
+    </div>
+
+    <div class="col-md-2">
+      <a href="/teacher/dashboard">
+        <div class="action-card bg-cyan">
+          <i class="fa fa-user"></i>
+          <h6>Staff</h6>
+        </div>
+      </a>
+    </div>
+
+    <div class="col-md-2">
+      <a href="/fee/dashboard">
+        <div class="action-card bg-yellow">
+          <i class="fa fa-money-bill"></i>
+          <h6>Fees</h6>
+        </div>
+      </a>
+    </div>
+
+    <div class="col-md-2">
+      <a href="/dashboard/operations">
+        <div class="action-card bg-gray">
+          <i class="fa fa-school"></i>
+          <h6>Operations</h6>
+        </div>
+      </a>
+    </div>
+
+    <div class="col-md-2">
+      <a href="{{ url_for('school.school_settings') }}">
+        <div class="action-card bg-red">
+          <i class="fa fa-cog"></i>
+          <h6>Settings</h6>
+        </div>
+      </a>
+    </div>
+
+  </div>
+
+  <!-- ===== STATS ===== -->
+  <div class="row g-4 mb-4">
+
+    <div class="col-md-3">
+      <div class="neo-card p-3">
+        <div class="d-flex justify-content-between">
+          <div>
+            <small>Total Students</small>
+            <h3>{{ total_students }}</h3>
+          </div>
+          <i class="fa fa-graduation-cap stat-icon text-primary"></i>
+        </div>
+        <canvas id="chart1" class="small-graph"></canvas>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="neo-card p-3">
+        <div class="d-flex justify-content-between">
+          <div>
+            <small>Teachers</small>
+            <h3>{{ total_teachers }}</h3>
+          </div>
+          <i class="fa fa-user stat-icon text-success"></i>
+        </div>
+        <canvas id="chart2" class="small-graph"></canvas>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="neo-card p-3">
+        <div class="d-flex justify-content-between">
+          <div>
+            <small>Fees</small>
+            <h3>₹{{ total_collection }}</h3>
+          </div>
+          <i class="fa fa-wallet stat-icon text-warning"></i>
+        </div>
+        <canvas id="chart3" class="small-graph"></canvas>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="neo-card p-3">
+        <div class="d-flex justify-content-between">
+          <div>
+            <small>Pending</small>
+            <h3 class="text-danger">₹{{ total_due }}</h3>
+          </div>
+          <i class="fa fa-exclamation stat-icon text-danger"></i>
+        </div>
+        <canvas id="chart4" class="small-graph"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== MAIN SECTION ===== -->
+  <div class="row g-4">
+
+    <!-- GRAPH -->
+    <div class="col-md-6">
+      <div class="neo-card p-3">
+        <h5>Fees Overview</h5>
+        <canvas id="mainChart"></canvas>
+      </div>
+    </div>
+
+    <!-- ACTIVITY -->
+    <div class="col-md-3">
+      <div class="neo-card p-3">
+        <h5>Recent Activity</h5>
+        <ul class="list-unstyled">
+          <li>✔ New Admission</li>
+          <li>✔ Fee Submitted</li>
+          <li>✔ Teacher Joined</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div class="col-md-3">
+      <div class="neo-card p-3">
+        <h5>Notifications</h5>
+        <p class="text-danger">⚠ Pending Fees</p>
+        <p class="text-warning">⚠ Low Attendance</p>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ===== CHART JS ===== -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  function smallChart(id) {
+    new Chart(document.getElementById(id), {
+      type: 'line',
+      data: {
+        labels: [1, 2, 3, 4, 5],
+        datasets: [{
+          data: [10, 20, 15, 25, 30],
+          borderWidth: 2,
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: {
+        plugins: { legend: false },
+        scales: { x: { display: false }, y: { display: false } }
+      }
+    });
+  }
+
+  smallChart('chart1');
+  smallChart('chart2');
+  smallChart('chart3');
+  smallChart('chart4');
+
+  new Chart(document.getElementById('mainChart'), {
+    type: 'line',
+    data: {
+      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+      datasets: [{
+        label: 'Fees',
+        data: [10, 30, 25, 40, 20],
+        borderWidth: 3,
+        fill: true
+      }]
+    }
+  });
+</script>
+
+{% endblock %}

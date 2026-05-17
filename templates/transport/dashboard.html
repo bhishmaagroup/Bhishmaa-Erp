@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}Transport Dashboard{% endblock %}
+
+{% block content %}
+
+<style>
+    .dashboard-card {
+        border-radius: 18px;
+        padding: 20px;
+        color: white;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .bg1 {
+        background: linear-gradient(45deg, #007bff, #00c6ff);
+    }
+
+    .bg2 {
+        background: linear-gradient(45deg, #28a745, #5effa0);
+    }
+
+    .bg3 {
+        background: linear-gradient(45deg, #ff7e5f, #feb47b);
+    }
+
+    .bg4 {
+        background: linear-gradient(45deg, #6a11cb, #2575fc);
+    }
+
+    .search-box {
+        border-radius: 30px;
+        padding: 10px 20px;
+        border: 1px solid #ddd;
+        width: 250px;
+    }
+
+    /* 🔥 SEARCH + BUTTON ALIGN */
+    .search-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        border-radius: 25px;
+        padding: 7px 16px;
+        font-size: 14px;
+    }
+</style>
+
+<div class="container-fluid">
+
+    <h4 class="mb-4">🚍 Transport Dashboard</h4>
+
+    <!-- 🔥 STATS CARDS -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="dashboard-card bg1">
+                <h5>Total Students</h5>
+                <h2>{{ data|length }}</h2>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="dashboard-card bg2">
+                <h5>Total Buses</h5>
+                <h2>{{ data|map(attribute=1)|unique|list|length }}</h2>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="dashboard-card bg3">
+                <h5>Routes</h5>
+                <h2>{{ data|map(attribute=3)|unique|list|length }}</h2>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="dashboard-card bg4">
+                <h5>Drivers</h5>
+                <h2>{{ data|map(attribute=2)|unique|list|length }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔍 SEARCH + BUTTONS -->
+    <form method="get" class="mb-3 search-row">
+
+        <input class="search-box" name="search" placeholder="Search Student / Bus / Driver">
+
+        <button class="btn btn-primary action-btn">Search</button>
+
+        <!-- 🔥 BUTTONS -->
+        <a href="{{ url_for('transport.bus_list') }}" class="btn btn-outline-primary action-btn">
+            🚌 Bus
+        </a>
+
+        
+
+        <a href="{{ url_for('transport.route_list') }}" class="btn btn-outline-primary action-btn">Routes</a>
+        <a href="{{ url_for('transport.stop_list') }}" class="btn btn-outline-primary action-btn">Stops</a>
+      
+
+    </form>
+
+    <!-- 📊 TABLE -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Student</th>
+                        <th>Bus</th>
+                        <th>Driver</th>
+                        <th>Route</th>
+                        <th>Stop</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for row in data %}
+                    <tr>
+                        <td>{{ row[0] }}</td>
+                        <td>{{ row[1] or '-' }}</td>
+                        <td>{{ row[2] or '-' }}</td>
+                        <td>{{ row[3] or '-' }}</td>
+                        <td>{{ row[4] or '-' }}</td>
+                        <td>{{ row[5] or '-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

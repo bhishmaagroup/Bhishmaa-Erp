@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block title %}Add Route{% endblock %}
+
+{% block content %}
+
+<style>
+.form-card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 25px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+.section-title {
+    font-weight: 600;
+    color: #0d6efd;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+</style>
+
+<div class="container">
+
+<h4 class="mb-3">🗺️ Add Route</h4>
+
+<form method="post">
+<div class="form-card">
+
+<!-- 🗺️ BASIC -->
+<div class="section-title">Basic Details</div>
+<div class="row g-3">
+
+<div class="col-md-4">
+<input name="route_name" class="form-control" placeholder="Route Name">
+</div>
+
+<div class="col-md-4">
+<input name="route_code" class="form-control" placeholder="Route Code">
+</div>
+
+<div class="col-md-4">
+<input name="distance_km" class="form-control" placeholder="Distance (KM)">
+</div>
+
+<div class="col-md-6">
+<input name="start_point" class="form-control" placeholder="Start Point">
+</div>
+
+<div class="col-md-6">
+<input name="end_point" class="form-control" placeholder="End Point">
+</div>
+
+</div>
+
+
+<!-- 🚌 BUS MAPPING -->
+<div class="section-title">Bus Mapping</div>
+<div class="row g-3">
+
+<div class="col-md-6">
+<select name="bus_id" class="form-select">
+  <option value="">Select Bus</option>
+  {% for b in buses %}
+    <option value="{{ b.id }}">
+      {{ b.bus_no }} ({{ b.driver_name }})
+    </option>
+  {% endfor %}
+</select>
+</div>
+
+<div class="col-md-6">
+<select name="backup_bus_id" class="form-select">
+  <option value="">Backup Bus</option>
+  {% for b in buses %}
+    <option value="{{ b.id }}">
+      {{ b.bus_no }}
+    </option>
+  {% endfor %}
+</select>
+</div>
+
+</div>
+
+
+<!-- 👨‍✈️ DRIVER -->
+<div class="section-title">Driver Details</div>
+<div class="row g-3">
+
+<div class="col-md-6">
+<input name="driver_name" class="form-control" placeholder="Driver Name">
+</div>
+
+<div class="col-md-6">
+<input name="driver_mobile" class="form-control" placeholder="Driver Mobile">
+</div>
+
+</div>
+
+
+<!-- 💰 FEE -->
+<div class="section-title">Fee Configuration</div>
+<div class="row g-3">
+
+<div class="col-md-6">
+<select name="fare_type" class="form-select">
+  <option value="one-way">One Way</option>
+  <option value="two-way">Two Way</option>
+</select>
+</div>
+
+<div class="col-md-6">
+<input name="base_fare" class="form-control" placeholder="Base Fare ₹">
+</div>
+
+</div>
+
+
+<!-- 🛰️ TRACKING -->
+<div class="section-title">Tracking & Safety</div>
+
+<div class="form-check">
+  <input class="form-check-input" type="checkbox" name="gps_enabled">
+  <label class="form-check-label">Enable GPS Tracking</label>
+</div>
+
+<div class="form-check">
+  <input class="form-check-input" type="checkbox" name="geofence_enabled">
+  <label class="form-check-label">Enable Geofencing</label>
+</div>
+
+
+<!-- SUBMIT -->
+<button class="btn btn-success mt-4 w-100">
+  🚀 Add Route
+</button>
+
+</div>
+</form>
+
+</div>
+
+{% endblock %}

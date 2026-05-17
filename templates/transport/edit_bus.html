@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+{% block title %}Edit Bus{% endblock %}
+
+{% block content %}
+
+<style>
+.form-card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 25px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+.section-title {
+    font-weight: 600;
+    color: #0d6efd;
+    margin-top: 20px;
+}
+</style>
+
+<div class="container">
+
+  <h4 class="mb-3">✏️ Edit Bus</h4>
+
+  <form method="post" enctype="multipart/form-data">
+    <div class="form-card">
+
+      <!-- 📋 BASIC DETAILS -->
+      <div class="section-title">Basic Details</div>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <input class="form-control" name="bus_no" value="{{ bus.bus_no }}" required>
+        </div>
+        <div class="col-md-4">
+          <input class="form-control" name="registration_no" value="{{ bus.registration_no }}">
+        </div>
+        <div class="col-md-4">
+          <input class="form-control" name="model" value="{{ bus.model }}">
+        </div>
+
+        <div class="col-md-4">
+          <input class="form-control" name="chassis_no" value="{{ bus.chassis_no }}">
+        </div>
+        <div class="col-md-4">
+          <input class="form-control" name="engine_no" value="{{ bus.engine_no }}">
+        </div>
+        <div class="col-md-4">
+          <select class="form-select" name="bus_type">
+            <option value="">Bus Type</option>
+            <option {% if bus.bus_type=='Owned' %}selected{% endif %}>Owned</option>
+            <option {% if bus.bus_type=='Rented' %}selected{% endif %}>Rented</option>
+            <option {% if bus.bus_type=='Contract' %}selected{% endif %}>Contract</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 💺 CAPACITY -->
+      <div class="section-title">Capacity</div>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <input class="form-control" name="capacity" value="{{ bus.capacity }}">
+        </div>
+        <div class="col-md-4">
+          <input class="form-control" name="max_students" value="{{ bus.max_students }}">
+        </div>
+      </div>
+
+      <!-- 📄 DOCUMENTS -->
+      <div class="section-title">Documents</div>
+      <div class="row g-3">
+
+        <div class="col-md-3">
+          <label>RC Book</label>
+          <input type="file" class="form-control" name="rc_book">
+          {% if bus.rc_book %}
+            <small><a href="/{{ bus.rc_book }}" target="_blank">View</a></small>
+          {% endif %}
+        </div>
+
+        <div class="col-md-3">
+          <label>Insurance</label>
+          <input type="file" class="form-control" name="insurance">
+          {% if bus.insurance %}
+            <small><a href="/{{ bus.insurance }}" target="_blank">View</a></small>
+          {% endif %}
+        </div>
+
+        <div class="col-md-3">
+          <label>Insurance Expiry</label>
+          <input type="date" class="form-control" name="insurance_expiry"
+                 value="{{ bus.insurance_expiry }}">
+        </div>
+
+        <div class="col-md-3">
+          <label>PUC</label>
+          <input type="file" class="form-control" name="puc">
+        </div>
+
+        <div class="col-md-3">
+          <label>PUC Expiry</label>
+          <input type="date" class="form-control" name="puc_expiry"
+                 value="{{ bus.puc_expiry }}">
+        </div>
+
+        <div class="col-md-3">
+          <label>Fitness</label>
+          <input type="file" class="form-control" name="fitness">
+        </div>
+
+        <div class="col-md-3">
+          <label>Fitness Expiry</label>
+          <input type="date" class="form-control" name="fitness_expiry"
+                 value="{{ bus.fitness_expiry }}">
+        </div>
+
+      </div>
+
+      <!-- 👨‍✈️ STAFF -->
+      <div class="section-title">Staff</div>
+      <div class="row g-3">
+
+        <!-- 🔥 DRIVER DROPDOWN -->
+        <div class="col-md-4">
+          <select class="form-select" name="driver_name" id="driverSelect">
+
+            <option value="">Select Driver</option>
+
+            {% for d in drivers %}
+              {% set full_name = (d.first_name ~ ' ' ~ (d.middle_name or '') ~ ' ' ~ (d.last_name or '')).strip() %}
+
+              <option value="{{ full_name }}"
+                      data-mobile="{{ d.mobile }}"
+                      {% if bus.driver_name == full_name %}selected{% endif %}>
+                {{ full_name }}
+              </option>
+            {% endfor %}
+
+          </select>
+        </div>
+
+        <div class="col-md-4">
+          <input class="form-control" name="driver_mobile" value="{{ bus.driver_mobile }}">
+        </div>
+
+        <div class="col-md-4">
+          <input class="form-control" name="helper_name" value="{{ bus.helper_name }}">
+        </div>
+
+      </div>
+
+      <!-- 🛠️ MAINTENANCE -->
+      <div class="section-title">Maintenance</div>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <input type="date" class="form-control" name="last_service"
+                 value="{{ bus.last_service }}">
+        </div>
+        <div class="col-md-4">
+          <input type="date" class="form-control" name="next_service"
+                 value="{{ bus.next_service }}">
+        </div>
+        <div class="col-md-4">
+          <input class="form-control" name="gps_id" value="{{ bus.gps_id }}">
+        </div>
+
+        <div class="col-md-4">
+          <select class="form-select" name="cctv">
+            <option {% if bus.cctv=='Working' %}selected{% endif %}>Working</option>
+            <option {% if bus.cctv=='Not Working' %}selected{% endif %}>Not Working</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 🚦 STATUS -->
+      <div class="section-title">Status</div>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <select class="form-select" name="status">
+            <option value="active" {% if bus.status=='active' %}selected{% endif %}>Active</option>
+            <option value="inactive" {% if bus.status=='inactive' %}selected{% endif %}>Inactive</option>
+            <option value="maintenance" {% if bus.status=='maintenance' %}selected{% endif %}>Maintenance</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- SUBMIT -->
+      <button class="btn btn-warning mt-4 px-5">Update Bus</button>
+
+    </div>
+  </form>
+
+</div>
+
+<!-- 🔥 AUTO MOBILE FILL -->
+<script>
+document.getElementById("driverSelect").addEventListener("change", function() {
+    let mobile = this.options[this.selectedIndex].getAttribute("data-mobile");
+    document.querySelector("input[name='driver_mobile']").value = mobile || '';
+});
+</script>
+
+{% endblock %}

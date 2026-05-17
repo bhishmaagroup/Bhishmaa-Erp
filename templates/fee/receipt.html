@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+{% block title %}Fee Receipt{% endblock %}
+
+{% block head %}
+<style>
+
+/* ================= PAGE ORIENTATION ================= */
+{% if ledgers|length > 12 %}
+@page { size: A4 portrait; margin: 12mm; }
+{% else %}
+@page { size: A4 landscape; margin: 10mm; }
+{% endif %}
+
+html, body {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-size: 12px;
+    background: #fff;
+}
+
+/* ================= ACTION BAR ================= */
+.action-bar{
+    display: block;               /* 🔥 screen pe visible */
+    text-align: right;
+    margin-bottom: 8px;
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    background: #fff;
+    padding: 4px 0;
+}
+
+/* ================= RECEIPT ================= */
+.receipt-box {
+    border: 1px dashed #999;
+    padding: 12px;
+    background: #fff;
+    position: relative;
+    min-height: 90vh;
+}
+
+.school-logo { max-height: 65px; }
+.school-name { font-size: 17px; font-weight: bold; }
+.copy-label { font-size: 12px; font-weight: bold; text-align: right; }
+
+.school-header {
+    display: grid;
+    grid-template-columns: 70px 1fr;
+    align-items: center;
+}
+
+.school-text { text-align: center; }
+
+/* ================= WATERMARK ================= */
+.watermark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-30deg);
+    font-size: 80px;
+    font-weight: 900;
+    color: rgba(200,0,0,0.12);
+    pointer-events: none;
+}
+
+/* ================= META ================= */
+.receipt-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    margin: 6px 0;
+}
+.receipt-meta span { white-space: nowrap; }
+
+/* ================= STUDENT ================= */
+.student-box {
+    border: 1px solid #ccc;
+    padding: 10px;
+    font-size: 11px;
+}
+
+.student-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+.student-item span { font-weight: 600; }
+
+/* ================= TABLE AUTO FONT ================= */
+{% if ledgers|length > 18 %}
+.table-auto { font-size: 9px; }
+{% elif ledgers|length > 12 %}
+.table-auto { font-size: 10px; }
+{% else %}
+.table-auto { font-size: 12px; }
+{% endif %}
+
+.table-auto th,
+.table-auto td {
+    padding: 3px 5px !important;
+}
+
+/* ================= SUMMARY ================= */
+.receipt-summary {
+    text-align: right;
+    font-size: 12px;
+    font-weight: 700;
+    margin-top: 6px;
+}
+
+/* ================= PAGE BREAK ================= */
+.page-break {
+    page-break-before: always;
+    height: 0;
+    margin: 0;
+    padding: 0;
+}
+/* ================= PRINT ================= */
+@media print {
+    .navbar,
+    .sidebar,
+    footer,
+    .action-bar {                 /* 🔥 print me hide */
+        display: none !important;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="action-bar">
+    <button onclick="window.print()" class="btn btn-sm btn-primary">🖨 Print</button>
+    <button class="btn btn-sm btn-secondary"
+        onclick="window.location.href='/fee/ledger/{{ student.id }}'">
+        ❌ Close
+    </button>
+</div>
+
+<div class="row g-3">
+
+{% for COPY in ["PARENT COPY", "SCHOOL COPY"] %}
+
+{% if loop.index == 2 and ledgers|length > 12 %}
+<div class="page-break"></div>
+{% endif %}
+
+<div class="{% if ledgers|length > 12 %}col-12{% else %}col-6{% endif %}">
+<div class="receipt-box">
+
+<div class="watermark">PAID</div>
+
+<div class="copy-label">{{ COPY }}</div>
+
+<!-- ===== SCHOOL HEADER ===== -->
+<div class="school-header mb-2">
+{% if school.logo %}
+<img src="/{{ school.logo }}" class="school-logo">
+{% endif %}
+<div class="school-text">
+<div class="school-name">{{ school.school_name }}</div>
+<small>
+{{ school.address }}, {{ school.city }}<br>
+📞 {{ school.phone }}
+</small>
+</div>
+</div>
+
+<hr>
+
+<!-- ===== RECEIPT META ===== -->
+<div class="receipt-meta">
+<span><b>Receipt No:</b> {{ receipt_no }}</span>
+<span><b>Date:</b> {{ date.strftime('%d-%m-%Y') }}</span>
+</div>
+
+<!-- ===== STUDENT DETAILS ===== -->
+<div class="student-box">
+<div class="student-row">
+<div class="student-item">
+<span>Student:</span> {{ student.first_name }} {{ student.last_name }}
+</div>
+<div class="student-item">
+<span>Class:</span> {{ student.student_class }}
+</div>
+<div class="student-item">
+<span>Admission No:</span> {{ student.admission_no }}
+</div>
+</div>
+
+<div class="student-row">
+<div class="student-item" style="width:180%">
+<span>Father:</span> {{ student.father_name }}
+</div>
+<div class="student-item" style="width:90%">
+<span>Parent Mobile:</span>
+{{ student.parent_phone or student.father_mobile or student.guardian_phone or "—" }}
+</div>
+</div>
+</div>
+
+<hr>
+
+<!-- ===== FEE TABLE ===== -->
+<table class="table table-bordered table-sm table-auto">
+<tr>
+<th>#</th>
+<th>Fee</th>
+<th>Month</th>
+<th class="text-end">Paid</th>
+</tr>
+{% for l in ledgers %}
+<tr>
+<td>{{ loop.index }}</td>
+<td>{{ l.fee_type|upper }}</td>
+<td>{{ l.month }}</td>
+<td class="text-end">₹{{ l.paid_amount }}</td>
+</tr>
+{% endfor %}
+</table>
+
+<!-- ===== SUMMARY ===== -->
+<div class="receipt-summary">
+Total: ₹{{ total_paid }} &nbsp; | &nbsp; Balance: ₹{{ balance }}
+</div>
+
+<div style="text-align:center;font-size:11px;font-weight:600;margin-top:6px;">
+This receipt is system generated and valid without signature or seal.
+</div>
+
+</div>
+</div>
+
+{% endfor %}
+
+</div>
+{% endblock %}

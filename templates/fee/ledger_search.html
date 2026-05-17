@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Student Ledger Search{% endblock %}
+
+{% block content %}
+
+<h4 class="fw-bold mb-3">
+    <i class="fa fa-search"></i> Search Student Ledger
+</h4>
+
+<div class="neo-card mb-4">
+<form method="post" class="row g-3">
+
+    <div class="col-md-5">
+        <input type="text"
+               name="keyword"
+               class="form-control"
+               placeholder="Student Name / Admission No">
+    </div>
+
+    <div class="col-md-3">
+        <select name="student_class" class="form-select">
+            <option value="">All Classes</option>
+            <option>NURSERY</option>
+            <option>LKG</option>
+            <option>UKG</option>
+            <option>I</option>
+            <option>II</option>
+            <option>III</option>
+            <option>IV</option>
+            <option>V</option>
+            <option>VI</option>
+            <option>VII</option>
+            <option>VIII</option>
+            <option>IX</option>
+            <option>X</option>
+            <option>XI</option>
+            <option>XII</option>
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <button class="btn btn-primary w-100">
+            <i class="fa fa-search"></i> Search
+        </button>
+    </div>
+
+</form>
+
+</div>
+
+{% if students %}
+<div class="neo-card">
+<table class="table table-hover align-middle">
+<thead class="table-light">
+<tr>
+    <th>#</th>
+    <th>Name</th>
+    <th>Father Name</th>
+    <th>Mother Name</th>
+    <th>Class</th>
+    <th>Admission No</th>
+    <th>Total Due</th>
+    <th class="text-end">Action</th>
+</tr>
+</thead>
+<tbody>
+
+{% for s in students %}
+{% set ledgers = s.ledger %}
+{% set total_due = ledgers|sum(attribute='balance_amount') %}
+
+<tr>
+    <td>{{ loop.index }}</td>
+    <td>{{ s.first_name }} {{ s.last_name }}</td>
+    <td>{{ s.father_name }}</td>
+    <td>{{ s.mother_name }}</td>
+    <td>{{ s.student_class }}</td>
+    <td>{{ s.admission_no }}</td>
+    <td class="fw-bold text-danger">
+        ₹ {{ total_due }}
+    </td>
+    <td class="text-end">
+        <a href="/fee/ledger/{{ s.id }}"
+           class="btn btn-sm btn-outline-primary">
+            View Ledger
+        </a>
+    </td>
+</tr>
+{% endfor %}
+
+</tbody>
+</table>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="neo-card p-4">
+  <h4 class="mb-3">Import / Export (Student, Teacher, Fee)</h4>
+
+  <form method="post" enctype="multipart/form-data">
+    <select name="module" class="form-select mb-2" required>
+      <option value="">Select Module</option>
+      <option value="student">Student</option>
+      <option value="teacher">Teacher</option>
+      <option value="fee">Fee Ledger</option>
+    </select>
+
+    <input type="file" name="file" class="form-control mb-2" required>
+
+    <button type="submit" class="btn btn-success w-100">Import Data</button>
+  </form>
+
+  <hr>
+
+  <div class="d-flex flex-wrap gap-2">
+    <a href="{{ url_for('import_export.export', module='student') }}" class="btn btn-outline-primary btn-sm">
+      Export Students
+    </a>
+    <a href="{{ url_for('import_export.export', module='teacher') }}" class="btn btn-outline-primary btn-sm">
+      Export Teachers
+    </a>
+    <a href="{{ url_for('import_export.export', module='fee') }}" class="btn btn-outline-primary btn-sm">
+      Export Fee Records
+    </a>
+  </div>
+</div>
+{% endblock %}

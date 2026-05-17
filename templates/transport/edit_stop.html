@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Edit Stop{% endblock %}
+
+{% block content %}
+
+<style>
+.form-card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 25px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+.section-title {
+    font-weight: 600;
+    color: #0d6efd;
+    margin-top: 20px;
+}
+</style>
+
+<div class="container">
+
+  <h4 class="mb-3">✏️ Edit Stop</h4>
+
+  <form method="post">
+    <div class="form-card">
+
+      <!-- ROUTE -->
+      <div class="section-title">Route Selection</div>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <select name="route_id" class="form-select" required>
+            {% for r in routes %}
+              <option value="{{ r.id }}"
+                {% if stop.route_id == r.id %}selected{% endif %}>
+                {{ r.route_name }} ({{ r.start_point }} → {{ r.end_point }})
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <!-- STOP DETAILS -->
+      <div class="section-title">Stop Details</div>
+      <div class="row g-3">
+
+        <div class="col-md-4">
+          <input name="stop_name" value="{{ stop.stop_name }}"
+                 class="form-control" required>
+        </div>
+
+        <div class="col-md-4">
+          <input type="time" name="pickup_time"
+                 value="{{ stop.pickup_time }}"
+                 class="form-control">
+        </div>
+
+        <div class="col-md-4">
+          <input type="number" name="sequence"
+                 value="{{ stop.sequence }}"
+                 class="form-control">
+        </div>
+
+        <div class="col-md-4">
+          <input type="number" step="0.1" name="distance_km"
+                 value="{{ stop.distance_km }}"
+                 class="form-control">
+        </div>
+
+        <div class="col-md-4">
+          <input type="number" name="fare"
+                 value="{{ stop.fare }}"
+                 class="form-control">
+        </div>
+
+      </div>
+
+      <!-- SUBMIT -->
+      <button class="btn btn-warning mt-4 w-100">
+        ✏️ Update Stop
+      </button>
+
+    </div>
+  </form>
+
+</div>
+
+{% endblock %}

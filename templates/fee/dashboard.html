@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% block title %}Fee Dashboard{% endblock %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+
+<!-- ================= HEADER ================= -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h3 class="fw-bold mb-1">Fee Dashboard</h3>
+    <small class="text-muted">Academic Year: {{ academic_year }}</small>
+  </div>
+  <div>
+    <a href="/fee/structure" class="btn btn-outline-primary btn-sm me-2">
+      <i class="fa fa-sitemap"></i> Fee Structure
+    </a>
+    <a href="/fee/generate-monthly-due" class="btn btn-primary btn-sm">
+      <i class="fa fa-bolt"></i> Generate Monthly Due
+    </a>
+  </div>
+</div>
+
+<!-- ================= QUICK ACTIONS ================= -->
+<div class="neo-card mb-4">
+  <div class="row text-center g-3">
+
+    <div class="col-md-4 col-6">
+      <a href="/fee/select-student" class="btn btn-success w-100 py-3">
+        <i class="fa fa-cash-register fa-lg mb-1"></i><br>
+        <strong>Collect Fee</strong>
+        <div class="small">Search Student</div>
+      </a>
+    </div>
+
+    <div class="col-md-4 col-6">
+      <a href="/fee/ledger-search" class="btn btn-primary w-100 py-3">
+        <i class="fa fa-book-open fa-lg mb-1"></i><br>
+        <strong>Fee Ledger</strong>
+        <div class="small">Search Student</div>
+      </a>
+    </div>
+
+    <div class="col-md-4 col-6">
+      <a href="/fee/structure" class="btn btn-secondary w-100 py-3">
+        <i class="fa fa-book-open fa-lg mb-1"></i><br>
+        <strong>Fee Structure</strong>
+        <div class="small">View Structure</div>
+      </a>
+    </div>
+
+
+    <div class="col-md-4 col-6">
+      <a href="/fee/send-fee-reminders" class="btn btn-danger w-100 py-3">
+        <i class="fa fa-whatsapp fa-lg mb-1"></i><br>
+        <strong>Send Reminders</strong>
+        <div class="small">WhatsApp Parents</div>
+      </a>
+    </div>
+
+    <div class="col-md-4 col-6">
+      <a href="/fee/send-fee-reminders-email" class="btn btn-info w-100 py-3">
+        <i class="fa fa-whatsapp fa-lg mb-1"></i><br>
+        <strong>📧 Send Email Reminders</strong>
+        <div class="small">Email Parents</div>
+
+      </a>
+    </div>
+
+
+
+    </a>
+
+  </div>
+</div>
+
+<!-- ================= STATS ================= -->
+<div class="row g-4 mb-4">
+
+  <div class="col-md-3">
+    <div class="neo-card">
+      <small class="text-muted">Total Students</small>
+      <h3 class="fw-bold">{{ students|length }}</h3>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="neo-card">
+      <small class="text-muted">Fees Collected</small>
+      <h3 class="fw-bold text-success">₹ {{ total_collection }}</h3>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="neo-card">
+      <small class="text-muted">Pending Fees</small>
+      <h3 class="fw-bold text-danger">₹ {{ total_due }}</h3>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="neo-card">
+      <small class="text-muted">Today</small>
+      <h3 class="fw-bold">{{ today }}</h3>
+    </div>
+  </div>
+
+</div>
+
+<!-- ================= CHARTS ================= -->
+<div class="row g-4 mb-4">
+
+  <div class="col-md-7">
+    <div class="neo-card">
+      <h6 class="fw-bold mb-3">
+        <i class="fa fa-chart-bar me-1"></i> Monthly Fee Collection
+      </h6>
+      <canvas id="feeChart" height="120"></canvas>
+    </div>
+  </div>
+
+  <div class="col-md-5">
+    <div class="neo-card">
+      <h6 class="fw-bold mb-3">
+        <i class="fa fa-chart-pie me-1"></i> Fee Status Ratio
+      </h6>
+      <canvas id="statusChart" height="180"></canvas>
+    </div>
+  </div>
+
+</div>
+
+<!-- ================= STUDENT LIST ================= -->
+<div class="neo-card">
+  <h6 class="fw-bold mb-3">
+    <i class="fa fa-users me-1"></i> Student Fee Operations
+  </h6>
+
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>#</th>
+          <th>Student</th>
+          <th>Class</th>
+          <th class="text-end">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in students %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td>{{ s.first_name }} {{ s.last_name }}</td>
+          <td>{{ s.student_class }}</td>
+          <td class="text-end">
+            {% if mode == "ledger" %}
+            <a href="/fee/ledger/{{ s.id }}" class="btn btn-sm btn-outline-primary">
+              Ledger
+            </a>
+            {% else %}
+            <a href="/fee/collect/{{ s.id }}" class="btn btn-sm btn-success">
+              Collect
+            </a>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="4" class="text-center text-muted">
+            No students found
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // ================= BAR CHART =================
+  new Chart(document.getElementById('feeChart'), {
+    type: 'bar',
+    data: {
+      labels: {{ chart_months | tojson }},
+    datasets: [{
+      label: 'Collection',
+      data: {{ chart_values | tojson }},
+    backgroundColor: '#0d6efd',
+    borderRadius: 6
+      }]
+    },
+    options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: true } }
+  }
+  });
+
+  // ================= DOUGHNUT =================
+  new Chart(document.getElementById('statusChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Collected', 'Pending'],
+      datasets: [{
+        data: [{{ total_collection }}, {{ total_due }}],
+    backgroundColor: ['#198754', '#dc3545']
+  }]
+    },
+    options: {
+    responsive: true,
+    plugins: { legend: { position: 'bottom' } }
+  }
+  });
+</script>
+{% endblock %}

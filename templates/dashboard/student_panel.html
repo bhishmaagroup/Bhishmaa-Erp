@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+{% block content %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+    /* Force cleanup of base template sidebars */
+    #sidebar-wrapper, .sidebar, .side-nav, .nav-side { display: none !important; }
+    .main-content, #page-content-wrapper, .container-fluid { margin-left: 0 !important; width: 100% !important; padding: 0 !important; }
+
+    body { background: #f0f2f5; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
+
+    .main-viewport { max-width: 1300px; margin: 40px auto; padding: 0 20px; }
+
+    /* Welcome Card with Photos */
+    .identity-card {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        border-radius: 35px; padding: 40px; color: white;
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.2);
+        margin-bottom: 40px; position: relative; overflow: hidden;
+    }
+
+    .photo-stack { display: flex; gap: 15px; align-items: flex-end; }
+    .main-photo { width: 130px; height: 160px; object-fit: cover; border-radius: 20px; border: 4px solid #3b82f6; }
+    .parent-thumb { width: 70px; height: 85px; object-fit: cover; border-radius: 12px; border: 2px solid rgba(255,255,255,0.3); opacity: 0.9; }
+
+    /* Modern App Grid */
+    .app-menu { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; }
+
+    .app-item {
+        background: white; border-radius: 30px; padding: 40px 25px;
+        text-align: center; cursor: pointer; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+
+    .app-item:hover { transform: translateY(-15px); border-color: #3b82f6; box-shadow: 0 25px 40px rgba(0,0,0,0.1); }
+
+    .app-icon { width: 80px; height: 80px; border-radius: 22px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 32px; }
+
+    /* Full-Screen App Overlay */
+    .app-window {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: #f8fafc; z-index: 10000; display: none;
+        overflow-y: auto; padding: 30px;
+    }
+
+    .window-content { max-width: 1100px; margin: 0 auto; background: white; border-radius: 40px; padding: 50px; box-shadow: 0 50px 100px -20px rgba(0,0,0,0.15); }
+
+    .close-win-btn { background: #fee2e2; color: #ef4444; border: none; padding: 12px 30px; border-radius: 15px; font-weight: 800; margin-bottom: 30px; cursor: pointer; }
+
+    /* Info Styles */
+    .data-row { border-bottom: 1px solid #f1f5f9; padding: 12px 0; display: flex; justify-content: space-between; }
+    .data-label { color: #64748b; font-size: 13px; font-weight: 600; }
+    .data-value { color: #1e293b; font-weight: 800; text-align: right; }
+
+    /* Status Colors */
+    .c-blue { background: #dbeafe; color: #2563eb; }
+    .c-green { background: #dcfce7; color: #16a34a; }
+    .c-orange { background: #ffedd5; color: #ea580c; }
+    .c-indigo { background: #e0e7ff; color: #4f46e5; }
+</style>
+
+<div class="main-viewport">
+    
+    <div class="identity-card animate__animated animate__fadeInDown">
+        <div class="row align-items-center">
+            <div class="col-md-7">
+                <h1 class="fw-bold mb-1">Student: {{ student.first_name }} {{ student.last_name }}</h1>
+                <p class="opacity-75 mb-4">Adm: {{ student.admission_no }} | Class: {{ student.student_class }} - {{ student.section }}</p>
+                <div class="d-flex gap-2">
+                    <span class="badge bg-primary px-3 py-2 rounded-pill">Roll: {{ student.roll_no or 'N/A' }}</span>
+                    <span class="badge bg-info px-3 py-2 rounded-pill">Session: 2026-27</span>
+                </div>
+            </div>
+            <div class="col-md-5 d-flex justify-content-md-end mt-4 mt-md-0">
+                <div class="photo-stack">
+                    <div class="text-center">
+                        <img src="{{ url_for('uploaded_files', filename=student.mother_photo) if student.mother_photo else 'https://via.placeholder.com/100' }}" class="parent-thumb">
+                        <div class="small opacity-50 mt-1">Mother</div>
+                    </div>
+                    <div class="text-center">
+                        <img src="{{ url_for('uploaded_files', filename=student.student_photo) if student.student_photo else 'https://via.placeholder.com/150' }}" class="main-photo">
+                        <div class="small opacity-75 mt-1 fw-bold">Student</div>
+                    </div>
+                    <div class="text-center">
+                        <img src="{{ url_for('uploaded_files', filename=student.father_photo) if student.father_photo else 'https://via.placeholder.com/100' }}" class="parent-thumb">
+                        <div class="small opacity-50 mt-1">Father</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-menu">
+        <div class="app-item animate__animated animate__fadeInUp" onclick="openApp('fullInfo')">
+            <div class="app-icon c-blue"><i class="fa fa-address-card"></i></div>
+            <h4 class="fw-bold">My Full Profile</h4>
+            <p class="text-muted small">Personal, Family & Services</p>
+        </div>
+
+        <div class="app-item animate__animated animate__fadeInUp" style="animation-delay: 0.1s" onclick="openApp('feeInfo')">
+            <div class="app-icon c-green"><i class="fa fa-file-invoice-dollar"></i></div>
+            <h4 class="fw-bold">Fees & Ledger</h4>
+            <p class="text-muted small">Clearance & Payment Logs</p>
+        </div>
+
+        <div class="app-item animate__animated animate__fadeInUp" style="animation-delay: 0.2s" onclick="openApp('attInfo')">
+            <div class="app-icon c-orange"><i class="fa fa-user-check"></i></div>
+            <h4 class="fw-bold">Attendance</h4>
+            <p class="text-muted small">Daily Status Tracking</p>
+        </div>
+
+        <div class="app-item animate__animated animate__fadeInUp" style="animation-delay: 0.3s" onclick="openApp('docInfo')">
+            <div class="app-icon c-indigo"><i class="fa fa-file-shield"></i></div>
+            <h4 class="fw-bold">Vault</h4>
+            <p class="text-muted small">ID Cards & Certificates</p>
+        </div>
+    </div>
+    
+    <div class="text-center mt-5">
+        <a href="/logout" class="btn btn-outline-danger px-5 rounded-pill fw-bold">Sign Out from Portal</a>
+    </div>
+</div>
+
+<div id="fullInfo" class="app-window animate__animated">
+    <div class="window-content">
+        <button class="close-win-btn" onclick="closeApp('fullInfo')">← BACK TO HOME</button>
+        <div class="row g-5">
+            <div class="col-md-6">
+                <h5 class="fw-bold text-primary mb-4"><i class="fa fa-user me-2"></i>Personal Details</h5>
+                <div class="data-row"><span class="data-label">Full Name</span><span class="data-value">{{ student.first_name }} {{ student.last_name }}</span></div>
+                <div class="data-row"><span class="data-label">Date of Birth</span><span class="data-value">{{ student.dob }}</span></div>
+                <div class="data-row"><span class="data-label">Gender / Blood</span><span class="data-value">{{ student.gender }} / {{ student.blood_group or 'N/A' }}</span></div>
+                <div class="data-row"><span class="data-label">Category / Religion</span><span class="data-value">{{ student.category }} / {{ student.religion }}</span></div>
+                <div class="data-row"><span class="data-label">Aadhar Card No.</span><span class="data-value">{{ student.aadhar_no or 'N/A' }}</span></div>
+                
+                <h5 class="fw-bold text-primary mt-5 mb-4"><i class="fa fa-home me-2"></i>Contact Info</h5>
+                <div class="data-row"><span class="data-label">Mobile</span><span class="data-value text-primary">{{ student.father_mobile }}</span></div>
+                <div class="data-row"><span class="data-label">Address</span><span class="data-value small">{{ student.present_address }}</span></div>
+            </div>
+            <div class="col-md-6">
+                <h5 class="fw-bold text-primary mb-4"><i class="fa fa-users me-2"></i>Guardian Info</h5>
+                <div class="data-row"><span class="data-label">Father's Name</span><span class="data-value">{{ student.father_name }}</span></div>
+                <div class="data-row"><span class="data-label">Father's Job</span><span class="data-value">{{ student.father_occupation or 'N/A' }}</span></div>
+                <div class="data-row"><span class="data-label">Mother's Name</span><span class="data-value">{{ student.mother_name }}</span></div>
+                
+                <h5 class="fw-bold text-primary mt-5 mb-4"><i class="fa fa-star me-2"></i>School Services</h5>
+                <div class="data-row"><span class="data-label">Transport</span><span class="data-value">{{ 'Active (' + student.transport_route + ')' if student.transport_required else 'Not Subscribed' }}</span></div>
+                <div class="data-row"><span class="data-label">Hostel</span><span class="data-value">{{ 'Allotted' if student.hostel_required else 'Not Allotted' }}</span></div>
+                <div class="data-row"><span class="data-label">Adm. Date</span><span class="data-value">{{ student.admission_date }}</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="feeInfo" class="app-window animate__animated">
+    <div class="window-content">
+        <button class="close-win-btn" onclick="closeApp('feeInfo')">← BACK TO HOME</button>
+        <h3 class="fw-bold mb-4">Financial Overview</h3>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr><th>Installment/Month</th><th>Amount</th><th>Paid</th><th>Balance</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                    {% for f in fee_records %}
+                    <tr class="align-middle">
+                        <td class="fw-bold">{{ f.month }}</td>
+                        <td>₹{{ f.total_amount }}</td>
+                        <td class="text-success">₹{{ f.paid_amount }}</td>
+                        <td class="text-danger">₹{{ f.balance_amount }}</td>
+                        <td><span class="badge {{ 'bg-success' if f.balance_amount <= 0 else 'bg-warning text-dark' }} p-2">
+                            {{ 'CLEAR ✅' if f.balance_amount <= 0 else 'DUE ⏳' }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="attInfo" class="app-window animate__animated">
+    <div class="window-content">
+        <button class="close-win-btn" onclick="closeApp('attInfo')">← BACK TO HOME</button>
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <h3 class="fw-bold m-0">Attendance Tracker</h3>
+            <div class="bg-primary text-white p-3 rounded-4 text-center" style="min-width: 150px;">
+                <h2 class="m-0 fw-bold">{{ attendance_percent }}%</h2>
+                <small>Score</small>
+            </div>
+        </div>
+        <div class="row g-3">
+            {% for a in attendance_records %}
+            <div class="col-md-4">
+                <div class="p-3 border rounded-4 d-flex justify-content-between">
+                    <span>{{ a.attendance_date }}</span>
+                    <b class="{{ 'text-success' if a.status == 'P' else 'text-danger' }}">{{ 'PRESENT' if a.status == 'P' else 'ABSENT' }}</b>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div id="docInfo" class="app-window animate__animated">
+    <div class="window-content">
+        <button class="close-win-btn" onclick="closeApp('docInfo')">← BACK TO HOME</button>
+        <h3 class="fw-bold mb-4">E-Vault (Documents)</h3>
+        <div class="row g-4">
+            {% if student.aadhaar %}
+            <div class="col-md-4"><a href="/{{ student.aadhaar }}" target="_blank" class="btn btn-light w-100 p-4 rounded-4 border"><i class="fa fa-id-card fa-2x mb-2 text-danger"></i><br><b>Aadhar Card</b></a></div>
+            {% endif %}
+            {% if student.tc %}
+            <div class="col-md-4"><a href="/{{ student.tc }}" target="_blank" class="btn btn-light w-100 p-4 rounded-4 border"><i class="fa fa-file-contract fa-2x mb-2 text-primary"></i><br><b>TC Certificate</b></a></div>
+            {% endif %}
+            {% if student.marksheet %}
+            <div class="col-md-4"><a href="/{{ student.marksheet }}" target="_blank" class="btn btn-light w-100 p-4 rounded-4 border"><i class="fa fa-graduation-cap fa-2x mb-2 text-success"></i><br><b>Marksheet</b></a></div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    function openApp(id) {
+        let win = document.getElementById(id);
+        win.style.display = "block";
+        win.classList.remove('animate__fadeOutDown');
+        win.classList.add('animate__fadeInUp');
+        document.body.style.overflow = "hidden";
+    }
+
+    function closeApp(id) {
+        let win = document.getElementById(id);
+        win.classList.remove('animate__fadeInUp');
+        win.classList.add('animate__fadeOutDown');
+        setTimeout(() => { win.style.display = "none"; }, 500);
+        document.body.style.overflow = "auto";
+    }
+</script>
+
+{% endblock %}

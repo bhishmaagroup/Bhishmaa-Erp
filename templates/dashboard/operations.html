@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% block title %}School Operations{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1">⚙ School Operations</h3>
+            <small class="text-muted">Advanced Control Dashboard</small>
+        </div>
+        <a href="/dashboard" class="btn btn-outline-secondary btn-sm">← Back</a>
+    </div>
+
+    <!-- ================= TOP STATS ================= -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-3 col-6">
+            <div class="card shadow-sm text-center">
+                <div class="card-body">
+                    <h6>Total Notices</h6>
+                    <h3 class="fw-bold">{{ total_notices }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-6">
+            <div class="card shadow-sm text-center">
+                <div class="card-body">
+                    <h6>Sent Notices</h6>
+                    <h3 class="fw-bold text-success">{{ sent_notices }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-6">
+            <div class="card shadow-sm text-center">
+                <div class="card-body">
+                    <h6>Attendance</h6>
+                    <h3 class="fw-bold text-primary">{{ attendance_percent }}%</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-6">
+            <div class="card shadow-sm text-center">
+                <div class="card-body">
+                    <h6>Status</h6>
+                    <h5 class="fw-bold text-success">Active</h5>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ================= COLOR BUTTON GRID ================= -->
+    <div class="row g-3">
+
+        <div class="col-md-2 col-6">
+            <a href="/dashboard/holiday-notice" class="btn btn-primary w-100 py-4 shadow">
+                📢<br>Notices
+            </a>
+        </div>
+
+        <div class="col-md-2 col-6">
+            <a href="/attendance" class="btn btn-warning w-100 py-4 shadow">
+                📊<br>Attendance
+            </a>
+        </div>
+
+        {% if role == "admin" %}
+        <div class="col-md-2 col-6">
+            <a href="/exam/dashboard" class="btn btn-success w-100 py-4 shadow">
+                📝<br>Exams
+            </a>
+        </div>
+
+        <div class="col-md-2 col-6">
+            <a href="idcard\dashboard" class="btn btn-secondary w-100 py-4 shadow">
+                🆔<br>ID Cards
+            </a>
+        </div>
+        {% endif %}
+
+        <div class="col-md-2 col-6">
+            <a href="/reports" class="btn btn-info w-100 py-4 shadow">
+                📄<br>Reports
+            </a>
+        </div>
+
+        <div class="col-md-2 col-6">
+            <a href="{{ url_for('transport.dashboard') }}" class="btn btn-dark w-100 py-4 shadow">
+                📜<br>Transport
+            </a>
+        </div>
+
+
+        <div class="col-md-2 col-6">
+            <a href="/dashboard/notice-history" class="btn btn-dark w-100 py-4 shadow">
+                📜<br>History
+            </a>
+        </div>
+
+        <div class="col-md-2 col-6">
+            <a href="/bulk/assign-login" class="btn btn-dark w-100 py-4 shadow">
+                📜<br>Credential Generate
+            </a>
+        </div>
+
+        {% if role == "admin" %}
+        <!-- ✅ EXISTING : HOLIDAY PDF UPLOAD -->
+        <div class="col-md-2 col-6">
+            <a href="/dashboard/holiday-upload" class="btn btn-danger w-100 py-4 shadow">
+                📄<br>Holiday PDF
+            </a>
+        </div>
+
+        <div class="col-md-2 col-6">
+            <a href="/subject/" class="btn btn-primary w-100 py-4 shadow">
+
+                📚<br>Subject Master
+
+            </a>
+        </div>
+
+        <div class="col-md-2 col-6">
+            <a href="/subject/teacher-assign" class="btn btn-dark w-100 py-4 shadow">
+
+                👨‍🏫<br>Teacher Assign
+
+            </a>
+        </div>
+
+        <div class="col-md-2 col-6">
+            <a href="/subject/student-allocation" class="btn btn-success w-100 py-4 shadow">
+
+                🎓<br>Student Assign
+
+            </a>
+        </div>
+
+
+
+        <!-- ✅ NEW : IMPORT / EXPORT BUTTON (ADDED SAFELY) -->
+        <div class="col-md-2 col-6">
+            <a href="{{ url_for('import_export.index') }}" class="btn btn-outline-primary w-100 py-4 shadow">
+                🔄<br>Import / Export
+            </a>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- ================= GRAPHS ================= -->
+    <div class="row g-4 mt-4">
+
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-2">📊 Notice Status</h6>
+                    <canvas id="noticeChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-2">📈 Attendance</h6>
+                    <canvas id="attendanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    new Chart(document.getElementById('noticeChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Sent', 'Pending'],
+            datasets: [{
+                data: [{{ sent_notices }}, {{ total_notices - sent_notices }}],
+        backgroundColor: ['#28a745', '#ffc107']
+        }]
+    }
+});
+
+    new Chart(document.getElementById('attendanceChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Present', 'Absent'],
+            datasets: [{
+                data: [{{ attendance_percent }}, {{ 100 - attendance_percent }}],
+        backgroundColor: ['#007bff', '#dc3545']
+    }]
+    }
+});
+</script>
+
+{% endblock %}

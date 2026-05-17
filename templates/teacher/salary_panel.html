@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h4 class="mb-3">💰 Salary Dashboard</h4>
+
+<!-- ================= TOP STATS ================= -->
+<div class="row mb-3 text-center">
+
+    <div class="col-md-3">
+        <div class="card shadow-sm p-2">
+            <h6>Total Staff</h6>
+            <h4>{{ teachers|length  }}</h4>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm p-2 text-primary">
+            <h6>Total Salary</h6>
+            <h4>₹{{ total_salary | round(2) or 0 }}</h4>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm p-2 text-success">
+            <h6>Total Paid</h6>
+            <h4>₹{{ total_paid | round(2) or 0 }}</h4>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm p-2 text-danger">
+            <h6>Total Due</h6>
+            <h4>₹{{ total_due | round(2) or 0 }}</h4>
+        </div>
+    </div>
+
+</div>
+
+<!-- ================= GRAPH ================= -->
+<div class="card p-3 mb-3">
+    <h5>📊 Salary Distribution</h5>
+    <canvas id="salaryChart" height="100"></canvas>
+</div>
+
+<!-- ================= FILTER ================= -->
+<form class="row mb-3">
+
+    <div class="col-md-3">
+        <input type="month" name="month" value="{{ month }}" class="form-control">
+    </div>
+
+    <div class="col-md-2">
+        <button class="btn btn-success w-100">Load</button>
+    </div>
+
+    <div class="col-md-3">
+        <input type="text" id="search" class="form-control" placeholder="🔍 Search Staff...">
+    </div>
+
+    <div class="col-md-2">
+        {% if month %}
+        <a href="{{ url_for('teacher.generate_all_salary', month=month) }}" class="btn btn-dark w-100">
+            ⚡ Generate All
+        </a>
+        {% endif %}
+    </div>
+
+</form>
+
+<!-- ================= TABLE ================= -->
+<div class="card shadow-sm p-2">
+
+    <table class="table table-bordered table-hover" id="table">
+
+        <tr class="table-dark">
+            <th>Staff</th>
+            <th>Designation</th>
+            <th>Gross</th>
+            <th>Deduction</th>
+            <th>Net</th>
+            <th>Paid</th>
+            <th>Due</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+
+        {% for t in teachers %}
+        {% set s = salary_map.get(t.id) %}
+
+        <tr>
+
+            <td>
+                {{ t.first_name }} {{ t.last_name }}
+                <br>
+                <small class="text-muted">ID: {{ t.teacher_code }}</small>
+            </td>
+
+            <td>{{ t.designation }}</td>
+
+            <td>{{ s.gross_salary | round(2)  if s else '-' }}</td>
+
+            <td>{{ s.total_deduction if s else '-' }}</td>
+
+            <td class="fw-bold text-primary">
+                {{ s.net_salary | round(2)  if s else '-' }}
+            </td>
+
+            <td class="text-success">
+                {{ s.paid_amount | round(2) if s else 0 }}
+            </td>
+
+            <td class="text-danger">
+                {{ s.due_amount | round(2)  if s else 0 }}
+            </td>
+
+            <td>
+                {% if s %}
+                {% if s.status == "Paid" %}
+                <span class="badge bg-success">Paid</span>
+                {% elif s.status == "Partial" %}
+                <span class="badge bg-warning">Partial</span>
+                {% else %}
+                <span class="badge bg-danger">Pending</span>
+                {% endif %}
+                {% else %}
+                -
+                {% endif %}
+            </td>
+
+            <td class="d-flex gap-1">
+
+                <a href="{{ url_for('teacher.salary_structure', id=t.id) }}" class="btn btn-sm btn-primary">⚙️</a>
+
+                {% if s %}
+                <a href="{{ url_for('teacher.salary_payment', salary_id=s.id) }}" class="btn btn-sm btn-warning">💳</a>
+                {% endif %}
+
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+</div>
+
+<!-- ================= SEARCH ================= -->
+<script>
+    document.getElementById("search").addEventListener("keyup", function () {
+        let value = this.value.toLowerCase();
+        let rows = document.querySelectorAll("#table tr");
+
+        rows.forEach((row, i) => {
+            if (i === 0) return;
+
+            row.style.display = row.innerText.toLowerCase().includes(value)
+                ? ""
+                : "none";
+        });
+    });
+</script>
+
+<!-- ================= CHART ================= -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const ctx = document.getElementById('salaryChart');
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ chart_labels| tojson }},
+        datasets: [{
+            label: 'Salary',
+            data: {{ chart_data| tojson }},
+        }]
+    }
+});
+</script>
+
+{% endblock %}

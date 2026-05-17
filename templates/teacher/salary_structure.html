@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h4>⚙️ Salary Structure Setup</h4>
+
+<form method="post">
+
+       <!-- ================= HEADER ================= -->
+
+       <div class="card p-3 mb-3 border-primary">
+              <h5 class="text-primary">👤 Employee Information</h5>
+
+              <label class="fw-bold">Employee Name</label>
+              <input class="form-control mb-2" value="{{ t.first_name }} {{ t.last_name }}" readonly>
+
+              <label class="fw-bold">Employee ID</label>
+              <input class="form-control mb-2" value="{{ t.teacher_code }}" readonly>
+
+              <label class="fw-bold">Designation</label>
+              <input class="form-control mb-2" value="{{ t.designation }}" readonly>
+
+              <label class="fw-bold">Effective From Date</label>
+              <input type="date" name="effective_from" class="form-control"
+                     value="{{ s.effective_from if s and s.effective_from else '' }}">
+       </div>
+
+       <!-- ================= EARNINGS ================= -->
+       <div class="card p-3 mb-3 border-success">
+              <h5 class="text-success">🟢 Earnings (Salary Components)</h5>
+
+              <label class="fw-bold">Base Salary (Auto from Employee)</label>
+              <input name ="basic"  class="form-control mb-2" value="{{ t.salary }}" readonly>
+
+              <label>HRA (House Rent Allowance)</label>
+              <input name="hra" class="form-control mb-2" value="{{ s.hra if s else 0 }}">
+
+              <label>DA (Dearness Allowance)</label>
+              <input name="da" class="form-control mb-2" value="{{ s.da if s else 0 }}">
+
+              <label>Travel Allowance (TA)</label>
+              <input name="ta" class="form-control mb-2" value="{{ s.ta if s else 0 }}">
+
+              <label>Medical Allowance</label>
+              <input name="medical" class="form-control mb-2" value="{{ s.medical if s else 0 }}">
+
+              <label>Special Allowance (Extra Duties)</label>
+              <input name="special" class="form-control mb-2" value="{{ s.other_allowance if s else 0 }}">
+       </div>
+
+       <!-- ================= DEDUCTIONS ================= -->
+       <div class="card p-3 mb-3 border-danger">
+              <h5 class="text-danger">🔴 Deductions (Salary Cuts)</h5>
+
+              <label>EPF (Provident Fund)</label>
+              <input name="pf" class="form-control mb-2" value="{{ s.pf if s else 0 }}">
+
+              <label>Professional Tax (PT)</label>
+              <input name="pt" class="form-control mb-2" value="{{ s.pt if s else 0 }}">
+
+              <label>TDS (Income Tax)</label>
+              <input name="tds" class="form-control mb-2" value="{{ s.tds if s else 0 }}">
+
+              <label>ESI (Health Insurance)</label>
+              <input name="esi" class="form-control mb-2" value="{{ s.esi if s else 0 }}">
+
+              <label>Loan / EMI Deduction</label>
+              <input name="loan" class="form-control mb-2" value="{{ s.loan if s else 0 }}">
+       </div>
+       <!-- ================= ATTENDANCE ================= -->
+       <div class="card p-3 mb-3 border-warning">
+              <h5 class="text-warning">⏱ Attendance Rules & Penalty</h5>
+
+              <label>Absent Cut %</label>
+              <input name="absent_cut" class="form-control" value="{{ s.absent_cut_percent or 100 }}">
+
+              <label>Late Cut % (per late entry)</label>
+              <input name="late_cut" class="form-control mb-2" value="{{ s.late_cut_percent if s else 25 }}">
+
+              <label>Half Day Cut %</label>
+              <input name="half_cut" class="form-control mb-2" value="{{ s.half_day_cut_percent if s else 50 }}">
+
+              <label>Grace Time (minutes allowed late)</label>
+              <input name="grace" class="form-control mb-2" value="{{ s.grace_minutes if s else 10 }}">
+       </div>
+       <!-- ================= AUTO CALC (DISPLAY ONLY) ================= -->
+       <div class="card p-3 mb-3 bg-light border-dark">
+              <h5>💰 Salary Summary (Auto Calculated)</h5>
+
+              <label>Gross Salary (Total Earnings)</label>
+              <input class="form-control mb-2"
+                     value="{{ (s.basic + s.hra + s.da + s.ta + s.medical + s.other_allowance) if s else 0 }}" readonly>
+
+              <label>Total Deductions</label>
+              <input class="form-control mb-2" value="{{ (s.pf + s.pt + s.tds + s.esi + s.loan) if s else 0 }}"
+                     readonly>
+
+              <label><b>Net Salary (Take Home)</b></label>
+              <input class="form-control"
+                     value="{{ ((s.basic + s.hra + s.da + s.ta + s.medical + s.other_allowance) - (s.pf + s.pt + s.tds + s.esi + s.loan)) if s else 0 }}"
+                     readonly>
+       </div>
+
+       <!-- ================= BUTTONS ================= -->
+       <div class="d-grid gap-2">
+
+              <button class="btn btn-success">💾 Save Structure</button>
+
+              <a href="#" class="btn btn-primary">👁 Preview Salary Slip</a>
+
+              <a href="{{ url_for('teacher.salary_structure', id=t.id) }}" class="btn btn-secondary">
+                     📋 Copy From Last Month
+              </a>
+
+       </div>
+
+</form>
+
+{% endblock %}

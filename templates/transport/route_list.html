@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Routes{% endblock %}
+
+{% block content %}
+
+<style>
+.card-box {
+    background:#fff;
+    border-radius:15px;
+    padding:20px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.15);
+}
+.badge {
+    padding:6px 10px;
+    border-radius:10px;
+}
+</style>
+
+<div class="container-fluid">
+
+<h4 class="mb-3">🗺️ Route Management</h4>
+
+<a href="{{ url_for('transport.add_route') }}" class="btn btn-primary mb-3">
+  ➕ Add Route
+</a>
+
+<div class="card-box">
+
+<table class="table table-hover align-middle">
+
+<thead class="table-dark">
+<tr>
+  <th>Route</th>
+  <th>Start → End</th>
+  <th>Bus</th>
+  <th>Driver</th>
+  <th>Distance</th>
+  <th>Fare</th>
+  <th>Status</th>
+  <th>Action</th>
+</tr>
+</thead>
+
+<tbody>
+{% for r in routes %}
+<tr>
+
+<td>
+  <b>{{ r.route_name }}</b><br>
+  <small>{{ r.route_code }}</small>
+</td>
+
+<td>
+  {{ r.start_point }} → {{ r.end_point }}
+</td>
+
+<td>
+  {{ r.bus.bus_no if r.bus else '-' }}
+</td>
+
+<td>
+  {{ r.driver_name or '-' }}
+</td>
+
+<td>
+  {{ r.distance_km or 0 }} KM
+</td>
+
+<td>
+  ₹{{ r.base_fare or 0 }}
+</td>
+
+<td>
+  {% if r.gps_enabled %}
+    <span class="badge bg-success">Live</span>
+  {% else %}
+    <span class="badge bg-secondary">Offline</span>
+  {% endif %}
+</td>
+
+<td>
+  <a href="{{ url_for('transport.route_detail', id=r.id) }}"
+     class="btn btn-sm btn-info">View</a>
+
+  <a href="{{ url_for('transport.edit_route', id=r.id) }}"
+   class="btn btn-sm btn-warning">Edit</a>
+   
+<a href="{{ url_for('transport.delete_route', id=r.id) }}"
+   class="btn btn-sm btn-danger"
+   onclick="return confirm('Delete this route? All stops & students will be removed!')">
+   Delete
+</a>
+</td>
+
+
+</tr>
+{% endfor %}
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+{% endblock %}

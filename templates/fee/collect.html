@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+{% block title %}Collect Fee{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- ================= HEADER ================= -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1">Fee Collection</h3>
+            <small class="text-muted">ERP Grade • Multi-Month & Advance Supported</small>
+        </div>
+        <a href="/fee/dashboard" class="btn btn-outline-secondary btn-sm">
+            <i class="fa fa-arrow-left"></i> Back
+        </a>
+    </div>
+
+    <!-- ================= STUDENT + DUE ================= -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="neo-card">
+                <h6 class="fw-bold mb-2">
+                    <i class="fa fa-user me-1"></i> Student Details
+                </h6>
+                <p class="mb-1">
+                    <strong>Name:</strong>
+                    <span style="color:#0d6efd; font-weight:600;">
+                        {{ student.first_name }} {{ student.last_name }}
+                    </span>
+                </p>
+                <p class="mb-0"><strong>Father Name:</strong> {{ student.father_name }}</p>
+                <p class="mb-0"><strong>Mother Name:</strong> {{ student.mother_name }}</p>
+                <p class="mb-0"><strong>Class:</strong> {{ student.student_class }}</p>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="neo-card text-center">
+                <small class="text-muted">Previous Due</small>
+                <h4 class="fw-bold text-danger">₹ {{ total_due }}</h4>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="neo-card text-center">
+                <small class="text-muted">Advance Balance</small>
+                <h4 class="fw-bold text-success">₹ {{ advance_balance }}</h4>
+            </div>
+        </div>
+    </div>
+
+    <form method="post">
+
+        <!-- ================= MONTH SELECTION ================= -->
+        <div class="neo-card mb-4">
+            <h6 class="fw-bold mb-2">
+                <i class="fa fa-calendar-alt me-1"></i> Select Months (Monthly Fee)
+            </h6>
+
+            {% for m in months %}
+            {% if m in paid_months %}
+            <span class="badge bg-light text-muted me-2 mb-2">{{ m }} ✔</span>
+            {% else %}
+            <label class="me-3 mb-2">
+                <input type="checkbox" class="month me-1" name="months[]" value="{{ m }}">
+                {{ m }}
+            </label>
+            {% endif %}
+            {% endfor %}
+        </div>
+
+        <!-- ================= MONTHLY BREAKUP ================= -->
+        <div class="neo-card mb-4">
+            <h6 class="fw-bold mb-3">
+                <i class="fa fa-layer-group me-1"></i> Monthly Fee (Per Month)
+            </h6>
+
+            <table class="table table-sm table-bordered text-center">
+                <tr>
+                    <th>Fee Head</th>
+                    <th>Amount (₹)</th>
+                </tr>
+
+                <tr>
+                    <td>Tuition Fee</td>
+                    <td id="tuition">{{ fee_structure.tuition_fee }}</td>
+                </tr>
+
+                {% if student.transport_required %}
+                <tr>
+                    <td>Transport Fee</td>
+                    <td id="transport">{{ transport_fee | int }}</td>
+                </tr>
+                {% endif %}
+
+                {% if student.hostel_required %}
+                <tr>
+                    <td>Hostel Fee</td>
+                    <td id="hostel">{{ fee_structure.hostel_fee }}</td>
+                </tr>
+                {% endif %}
+
+                {% if fine_preview > 0 %}
+                <tr class="table-warning">
+                    <td>
+                        <strong>Late Fine</strong><br>
+                        <small class="text-muted">(Current + Previous Dues)</small>
+                    </td>
+                    <td><strong>₹ {{ fine_preview }}</strong></td>
+                </tr>
+                {% endif %}
+            </table>
+        </div>
+
+        <!-- ================= ONE TIME / TERM FEES ================= -->
+        <div class="neo-card mb-4">
+            <h6 class="fw-bold mb-3">
+                <i class="fa fa-tags me-1"></i> One-Time / Term Fees
+            </h6>
+
+            <table class="table table-sm table-bordered text-center">
+                <tr>
+                    <th>Status</th>
+                    <th>Fee Head</th>
+                    <th>Amount (₹)</th>
+                </tr>
+
+                <tr>
+                    <td>🔒 Auto</td>
+                    <td>Admission Fee</td>
+                    <td>{{ fee_structure.admission_fee }}</td>
+                </tr>
+                <tr>
+                    <td>🔒 Auto</td>
+                    <td>Registration Fee</td>
+                    <td>{{ fee_structure.registration_fee }}</td>
+                </tr>
+                <tr>
+                    <td>🔒 Auto</td>
+                    <td>Books Fee</td>
+                    <td>{{ fee_structure.book_fee }}</td>
+                </tr>
+                <tr>
+                    <td>🔒 Auto</td>
+                    <td>Dress Fee</td>
+                    <td>{{ fee_structure.dress_fee }}</td>
+                </tr>
+                <tr>
+                    <td>🔒 Auto</td>
+                    <td>Activity Fee</td>
+                    <td>{{ fee_structure.activity_fee }}</td>
+                </tr>
+                <tr>
+                    <td>🔒 Auto</td>
+                    <td>Misc Fee</td>
+                    <td>{{ fee_structure.misc_fee }}</td>
+                </tr>
+
+                <tr>
+                    <td>
+                        {% if "HALF" in paid_exam_terms %}
+                        🔒 Paid
+                        {% else %}
+                        <input type="checkbox" class="extra" name="exam_terms[]" value="HALF"
+                            data-amount="{{ fee_structure.half_yearly_exam_fee }}">
+                        {% endif %}
+                    </td>
+                    <td>Half Yearly Exam</td>
+                    <td>{{ fee_structure.half_yearly_exam_fee }}</td>
+                </tr>
+
+                <tr>
+                    <td>
+                        {% if "ANNUAL" in paid_exam_terms %}
+                        🔒 Paid
+                        {% else %}
+                        <input type="checkbox" class="extra" name="exam_terms[]" value="ANNUAL"
+                            data-amount="{{ fee_structure.annual_exam_fee }}">
+                        {% endif %}
+                    </td>
+                    <td>Annual Exam</td>
+                    <td>{{ fee_structure.annual_exam_fee }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- ================= PAYMENT ================= -->
+        <div class="neo-card mb-4">
+            <h6 class="fw-bold mb-3">
+                <i class="fa fa-wallet me-1"></i> Payment Details
+            </h6>
+
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label>Pay Now</label>
+                    <input type="number" name="paid" id="paid" class="form-control" value="0">
+                </div>
+
+                <div class="col-md-4">
+                    <label>Advance Payment</label>
+                    <input type="number" name="advance" id="advance" class="form-control" value="0">
+                </div>
+
+                <div class="col-md-4">
+                    <label>Discount</label>
+                    <input type="number" name="discount" id="discount" class="form-control" value="0">
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= FINAL SUMMARY ================= -->
+        <div class="neo-card text-center mb-4">
+            <h4 class="fw-bold text-success">₹ <span id="final_balance">0</span></h4>
+            <small class="text-muted">Final Payable / Balance</small>
+            <hr>
+            <p>Selected Months Fee: ₹ <span id="calc_month_fee">0</span></p>
+            <p>Discount: ₹ <span id="calc_discount">0</span></p>
+            <p>Advance Used: ₹ <span id="calc_advance_used">0</span></p>
+        </div>
+
+        <div class="text-end">
+            <button type="submit" class="btn btn-success px-4 py-2">
+                <i class="fa fa-save me-1"></i> Save & Generate Receipt
+            </button>
+        </div>
+
+    </form>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function calculateAll() {
+        let perMonth = 0;
+
+        perMonth += parseInt(document.getElementById("tuition")?.innerText || 0);
+        perMonth += parseInt(document.getElementById("transport")?.innerText || 0);
+        perMonth += parseInt(document.getElementById("hostel")?.innerText || 0);
+
+        let monthCount = document.querySelectorAll(".month:checked").length;
+        let monthFee = perMonth * monthCount;
+
+        let examFee = 0;
+        document.querySelectorAll(".extra:checked").forEach(cb => {
+            examFee += parseInt(cb.dataset.amount || 0);
+        });
+
+        // 🔥 USE PREVIEW FINE (CURRENT + PREVIOUS)
+        let fine = {{ fine_preview | int
+    }};
+
+    let previousDue = {{ total_due | int }};
+    let discount = parseInt(document.getElementById("discount").value || 0);
+    let paid = parseInt(document.getElementById("paid").value || 0);
+    let existingAdvance = {{ advance_balance | int }};
+
+    let gross = previousDue + monthFee + examFee + fine - discount;
+
+    let advanceUsed = Math.min(existingAdvance, gross);
+    let finalBalance = gross - advanceUsed - paid;
+
+    document.getElementById("calc_month_fee").innerText =
+        monthFee + examFee + fine;
+
+    document.getElementById("calc_discount").innerText = discount;
+    document.getElementById("calc_advance_used").innerText = advanceUsed;
+    document.getElementById("final_balance").innerText = finalBalance;
+}
+
+    document.querySelectorAll(
+        ".month,.extra,#paid,#advance,#discount"
+    ).forEach(e => {
+        e.addEventListener("input", calculateAll);
+    });
+
+    calculateAll();
+</script>
+{% endblock %}

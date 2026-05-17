@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h4 class="fw-bold mb-3">📊 Yearly Teacher Attendance</h4>
+
+<table class="table table-bordered text-center">
+<thead class="table-dark">
+<tr>
+    <th>Month</th>
+    <th>P</th>
+    <th>A</th>
+    <th>L</th>
+    <th>H</th>
+    <th>%</th>
+</tr>
+</thead>
+<tbody>
+{% for r in summary %}
+<tr>
+    <td>{{ r.month }}</td>
+    <td>{{ r.P }}</td>
+    <td>{{ r.A }}</td>
+    <td>{{ r.L }}</td>
+    <td>{{ r.H }}</td>
+    <td>{{ r.percent }}%</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
+{% endblock %}

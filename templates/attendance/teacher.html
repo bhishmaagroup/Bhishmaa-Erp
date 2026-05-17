@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% block title %}Teacher Attendance{% endblock %}
+
+{% block content %}
+
+<!-- ================= HEADER ================= -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0">🧠 Smart Teacher Attendance</h4>
+
+    <!-- ===== IMPORTANT BUTTONS (UNCHANGED) ===== -->
+    <div class="d-flex flex-wrap gap-1">
+
+        <a href="/attendance/teacher/ledger"
+           class="btn btn-outline-primary btn-sm">
+            📒 Teacher Ledger
+        </a>
+
+        <a href="/attendance/teacher/register"
+           class="btn btn-outline-primary btn-sm">
+            📘 Monthly Register
+        </a>
+
+        <a href="/attendance/teacher/yearly-register"
+           class="btn btn-outline-secondary btn-sm">
+            📊 Yearly Register
+        </a>
+
+    </div>
+</div>
+
+<!-- ================= FORM ================= -->
+<form method="post">
+
+<div class="card shadow-sm p-3">
+
+<table class="table table-bordered text-center align-middle">
+
+<thead class="table-dark">
+<tr>
+    <th>#</th>
+    <th>Teacher Name</th>
+    <th>Smart Attendance (Click Box)</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for t in teachers %}
+<tr>
+
+<td>{{ loop.index }}</td>
+
+<td class="text-start">
+    {{ t.first_name }}
+    {% if t.middle_name %} {{ t.middle_name }}{% endif %}
+    {% if t.last_name %} {{ t.last_name }}{% endif %}
+</td>
+
+<td>
+
+    <!-- CLICK BOX -->
+    <div class="att-box"
+         data-id="{{ t.id }}"
+         data-status="P"
+         onclick="changeStatus(this)">
+
+        P
+
+    </div>
+
+    <!-- HIDDEN INPUT -->
+    <input type="hidden"
+           name="status_{{ t.id }}"
+           value="P"
+           id="input_{{ t.id }}">
+
+</td>
+
+</tr>
+{% endfor %}
+
+</tbody>
+
+</table>
+
+<button class="btn btn-success w-100">💾 Save Attendance</button>
+
+</div>
+</form>
+
+<!-- ================= SUMMARY ================= -->
+{% if teachers %}
+<div class="alert alert-light border d-flex gap-3 align-items-center mt-3">
+    <span class="fw-bold">📊 Live Summary:</span>
+    <span class="text-success">P: <b id="cntP">0</b></span>
+    <span class="text-danger">A: <b id="cntA">0</b></span>
+    <span class="text-warning">L: <b id="cntL">0</b></span>
+    <span class="text-info">H: <b id="cntH">0</b></span>
+</div>
+{% endif %}
+
+<!-- ================= STYLE ================= -->
+<style>
+.att-box{
+    width:90px;
+    height:45px;
+    line-height:45px;
+    border-radius:10px;
+    font-weight:bold;
+    cursor:pointer;
+    user-select:none;
+    background:#198754;
+    color:white;
+    margin:auto;
+    transition:0.2s;
+}
+
+.att-box:hover{
+    transform:scale(1.05);
+}
+</style>
+
+<!-- ================= SCRIPT ================= -->
+<script>
+
+function changeStatus(el){
+
+    let id = el.dataset.id
+    let status = el.dataset.status
+
+    let next = "P"
+
+    // 🔥 CLICK CYCLE
+    if(status === "P") next = "A"
+    else if(status === "A") next = "H"
+    else if(status === "H") next = "L"
+    else if(status === "L") next = "P"
+
+    el.dataset.status = next
+    el.innerText = next
+
+    // 🎨 COLOR CHANGE
+    if(next === "P") el.style.background = "#198754"
+    if(next === "A") el.style.background = "#dc3545"
+    if(next === "H") el.style.background = "#0dcaf0"
+    if(next === "L") el.style.background = "#ffc107"
+
+    // 🔥 UPDATE HIDDEN INPUT
+    document.getElementById("input_"+id).value = next
+
+    recount()
+}
+
+function recount(){
+
+    let P=0,A=0,L=0,H=0
+
+    document.querySelectorAll(".att-box").forEach(el=>{
+        let s = el.dataset.status
+
+        if(s==="P") P++
+        if(s==="A") A++
+        if(s==="L") L++
+        if(s==="H") H++
+    })
+
+    if(document.getElementById("cntP")){
+        cntP.innerText=P
+        cntA.innerText=A
+        cntL.innerText=L
+        cntH.innerText=H
+    }
+}
+
+// INITIAL COUNT
+recount()
+
+</script>
+
+{% endblock %}

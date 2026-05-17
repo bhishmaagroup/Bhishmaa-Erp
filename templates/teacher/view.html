@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% block title %}Teacher Profile{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+  <!-- ================= HEADER ================= -->
+  <div class="row mb-4 align-items-center">
+    <div class="col-md-8">
+      <h3 class="section-title mb-0">
+        <i class="fa fa-chalkboard-teacher me-2"></i> Staff Profile
+      </h3>
+      <p class="text-muted small">Complete staff information & documents</p>
+    </div>
+    <div class="col-md-4 text-end">
+      <a href="{{ url_for('teacher.list_teachers') }}" class="btn btn-secondary">
+        <i class="fa fa-arrow-left"></i> Back
+      </a>
+      <a href="{{ url_for('teacher.edit_teacher', id=t.id) }}" class="btn btn-warning ms-2">
+        <i class="fa fa-edit"></i> Edit
+      </a>
+      <a href="{{ url_for('teacher.teacher_profile_pdf', id=t.id) }}"
+     class="btn btn-primary">
+    <i class="fa fa-file-pdf"></i> Download Profile PDF
+  </a>
+
+    </div>
+  </div>
+
+  <div class="row">
+
+    <!-- ================= LEFT PROFILE CARD ================= -->
+    <div class="col-md-4">
+      <div class="card shadow text-center p-4">
+
+        {% if t.photo %}
+          <img src="{{ url_for('uploaded_files', filename=t.photo) }}" class="rounded-circle mb-3"
+               style="width:160px;height:160px;object-fit:cover">
+        {% else %}
+          <i class="fa fa-user-circle fa-8x text-secondary mb-3"></i>
+        {% endif %}
+
+        <h5 class="mb-1">
+          {{ t.first_name }} {{ t.middle_name or '' }} {{ t.last_name }}
+        </h5>
+
+        <p class="text-muted mb-1">{{ t.teacher_code }}</p>
+
+        <span class="badge bg-primary">{{ t.employment_type }}</span>
+        <span class="badge bg-info ms-1">{{ t.designation }}</span>
+        <br><br>
+
+        {% if t.is_active %}
+          <span class="badge bg-success">ACTIVE</span>
+        {% else %}
+          <span class="badge bg-danger">INACTIVE</span>
+        {% endif %}
+
+        <!-- STATUS TOGGLE -->
+        <form method="post"
+              action="{{ url_for('teacher.toggle_teacher_status', id=t.id) }}"
+              class="mt-3">
+          {% if t.is_active %}
+            <button class="btn btn-outline-danger btn-sm">
+              <i class="fa fa-ban"></i> Deactivate
+            </button>
+          {% else %}
+            <button class="btn btn-outline-success btn-sm">
+              <i class="fa fa-check"></i> Activate
+            </button>
+          {% endif %}
+        </form>
+
+      </div>
+    </div>
+
+    <!-- ================= DETAILS ================= -->
+    <div class="col-md-8">
+      <div class="card shadow p-4">
+
+        <!-- BASIC -->
+        <h5 class="mb-3 text-primary">Basic Information</h5>
+        <div class="row g-3 mb-3">
+          <div class="col-md-4"><b>Gender:</b> {{ t.gender }}</div>
+          <div class="col-md-4"><b>DOB:</b> {{ t.dob }}</div>
+          <div class="col-md-4"><b>Joining Date:</b> {{ t.joining_date }}</div>
+          <div class="col-md-4"><b>Mobile:</b> {{ t.mobile }}</div>
+          <div class="col-md-4"><b>Email:</b> {{ t.email }}</div>
+          <div class="col-md-4"><b>Experience:</b> {{ t.experience }} Years</div>
+        </div>
+
+        <!-- EMPLOYMENT -->
+        <h5 class="mb-3 text-primary">Employment Details</h5>
+        <div class="row g-3 mb-3">
+          <div class="col-md-4"><b>Designation:</b> {{ t.designation }}</div>
+          <div class="col-md-4"><b>Employment Type:</b> {{ t.employment_type }}</div>
+          <div class="col-md-4"><b>Salary:</b> ₹{{ t.salary }}</div>
+        </div>
+
+        <!-- QUALIFICATION -->
+        <h5 class="mb-3 text-primary">Qualification</h5>
+        <div class="row g-3 mb-3">
+          <div class="col-md-6"><b>Qualification:</b> {{ t.qualification }}</div>
+          <div class="col-md-6"><b>Specialization:</b> {{ t.specialization }}</div>
+        </div>
+
+        <!-- ID DETAILS -->
+        <h5 class="mb-3 text-primary">Identity Details</h5>
+        <div class="row g-3 mb-3">
+          <div class="col-md-6"><b>Aadhaar:</b> {{ t.aadhaar }}</div>
+          <div class="col-md-6"><b>PAN:</b> {{ t.pan }}</div>
+        </div>
+
+        <!-- ADDRESS -->
+        <h5 class="mb-3 text-primary">Address</h5>
+        <div class="border rounded p-3 mb-4">
+          {{ t.address }}
+        </div>
+
+        <!-- DOCUMENTS -->
+        <h5 class="mb-3 text-primary">Uploaded Documents</h5>
+        <ul class="list-group">
+
+          {% if t.pass_doc %}
+          <li class="list-group-item d-flex justify-content-between">
+            Passbook
+            <a href="/{{ t.pass_doc }}" target="_blank" class="btn btn-sm btn-outline-primary">
+              View
+            </a>
+          </li>
+          {% endif %}
+
+          {% if t.resume %}
+          <li class="list-group-item d-flex justify-content-between">
+            Resume
+            <a href="/{{ t.resume }}" target="_blank" class="btn btn-sm btn-outline-primary">
+              View
+            </a>
+          </li>
+          {% endif %}
+
+          {% if t.aadhaar_doc %}
+          <li class="list-group-item d-flex justify-content-between">
+            Aadhaar Card
+            <a href="/{{ t.aadhaar_doc }}" target="_blank" class="btn btn-sm btn-outline-primary">
+              View
+            </a>
+          </li>
+          {% endif %}
+
+          {% if t.qualification_doc %}
+          <li class="list-group-item d-flex justify-content-between">
+            Qualification Certificate
+            <a href="/{{ t.qualification_doc }}" target="_blank" class="btn btn-sm btn-outline-primary">
+              View
+            </a>
+          </li>
+          {% endif %}
+
+          
+
+        </ul>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

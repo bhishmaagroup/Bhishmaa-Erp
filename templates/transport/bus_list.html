@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% block title %}Bus List{% endblock %}
+
+{% block content %}
+
+<style>
+    .card-box {
+        border-radius: 18px;
+        padding: 20px;
+        color: white;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .bg1 {
+        background: linear-gradient(45deg, #007bff, #00c6ff);
+    }
+
+    .bg2 {
+        background: linear-gradient(45deg, #28a745, #5effa0);
+    }
+
+    .bg3 {
+        background: linear-gradient(45deg, #ff7e5f, #feb47b);
+    }
+
+    .table-card {
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    .action-btn {
+        border-radius: 20px;
+        padding: 5px 12px;
+        font-size: 13px;
+    }
+</style>
+
+<div class="container-fluid">
+
+    <!-- 🔥 HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4>🚌 Bus Management</h4>
+
+        <a href="{{ url_for('transport.add_bus') }}" class="btn btn-success">
+            ➕ Add Bus
+        </a>
+    </div>
+
+    <!-- 🔥 STATS -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card-box bg1">
+                <h6>Total Buses</h6>
+                <h2>{{ buses|length }}</h2>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card-box bg2">
+                <h6>Active Buses</h6>
+                <h2>
+                    {{ buses|selectattr('status','equalto','active')|list|length }}
+                </h2>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card-box bg3">
+                <h6>Under Maintenance</h6>
+                <h2>
+                    {{ buses|selectattr('status','equalto','maintenance')|list|length }}
+                </h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📊 TABLE -->
+    <div class="card shadow-sm table-card">
+        <div class="card-body">
+
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Bus</th>
+                        <th>Registration</th>
+                        <th>Capacity</th>
+                        <th>Driver</th>
+                        <th>Status</th>
+                        <th>Documents</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for b in buses %}
+                    <tr>
+
+                        <!-- Bus -->
+                        <td>
+                            <strong>{{ b.bus_no }}</strong><br>
+                            <small class="text-muted">{{ b.model }}</small>
+                        </td>
+
+                        <!-- Registration -->
+                        <td>{{ b.registration_no or '-' }}</td>
+
+                        <!-- Capacity -->
+                        <td>
+                            {{ b.capacity or 0 }} Seats<br>
+                            <small class="text-muted">Max: {{ b.max_students or '-' }}</small>
+                        </td>
+
+                        <!-- Driver -->
+                        <td>
+                            {{ b.driver_name or '-' }}<br>
+                            <small class="text-muted">{{ b.driver_mobile }}</small>
+                        </td>
+
+                        <!-- Status -->
+                        <td>
+                            {% if b.status == 'active' %}
+                            <span class="badge bg-success">Active</span>
+                            {% elif b.status == 'maintenance' %}
+                            <span class="badge bg-warning text-dark">Maintenance</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Inactive</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Documents -->
+                        <td>
+                            {% if b.rc_book %}
+                            <a href="/{{ b.rc_book }}" target="_blank">RC</a><br>
+                            {% endif %}
+                            {% if b.insurance %}
+                            <a href="/{{ b.insurance }}" target="_blank">Insurance</a>
+                            {% endif %}
+                        </td>
+
+                        <!-- Actions -->
+                        <td>
+                            <a href="{{ url_for('transport.view_bus', id=b.id) }}"
+                                class="btn btn-outline-primary action-btn">View</a>
+                            <a href="{{ url_for('transport.edit_bus', id=b.id) }}"
+                                class="btn btn-outline-warning action-btn">Edit</a>
+                            <form action="{{ url_for('transport.delete_bus', id=b.id) }}" method="post"
+                                style="display:inline;">
+                                <button class="btn btn-outline-danger action-btn"
+                                    onclick="return confirm('Delete this bus?')">
+                                    Delete
+                                </button>
+                            </form>
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
