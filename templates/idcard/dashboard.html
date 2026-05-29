@@ -1,8 +1,213 @@
 {% extends "base.html" %}
+{% block title %}ID Card Module{% endblock %}
 {% block content %}
-<h4>🪪 ID Card Module</h4>
 
-<a href="/id-card/students" class="btn btn-primary">
-    Generate Student ID Cards
-</a>
+<style>
+  .idcard-hero {
+    background: linear-gradient(135deg, #1a3a6e 0%, #0f2044 100%);
+    border-radius: 16px;
+    padding: 32px;
+    color: white;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .idcard-hero::before {
+    content: '🪪';
+    position: absolute;
+    right: 32px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 72px;
+    opacity: 0.15;
+  }
+  .idcard-hero h2 { margin: 0 0 6px; font-size: 1.6rem; font-weight: 700; }
+  .idcard-hero p  { margin: 0; opacity: 0.8; font-size: 0.95rem; }
+
+  .stat-cards { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 28px; }
+  .stat-card {
+    flex: 1; min-width: 140px;
+    background: white;
+    border-radius: 12px;
+    padding: 20px 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    border-top: 4px solid var(--accent, #1a3a6e);
+  }
+  .stat-card .num { font-size: 2rem; font-weight: 800; color: #1a3a6e; }
+  .stat-card .lbl { font-size: 0.8rem; color: #888; margin-top: 2px; }
+
+  .template-section { margin-bottom: 28px; }
+  .template-section h5 {
+    font-weight: 700; color: #1a3a6e;
+    border-left: 4px solid #1a3a6e;
+    padding-left: 12px;
+    margin-bottom: 16px;
+  }
+
+  .template-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
+  .template-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,.08);
+    border: 2px solid transparent;
+    transition: all .2s;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+  .template-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,.15);
+    border-color: #1a3a6e;
+    text-decoration: none;
+    color: inherit;
+  }
+  .tc-preview {
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+  }
+  .tc-body { padding: 12px; }
+  .tc-body strong { display: block; font-size: 0.85rem; }
+  .tc-body span   { font-size: 0.75rem; color: #888; }
+  .tc-badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    border-radius: 99px;
+    margin-top: 6px;
+    font-weight: 600;
+  }
+
+  .action-section h5 {
+    font-weight: 700; color: #1a3a6e;
+    border-left: 4px solid #1a3a6e;
+    padding-left: 12px;
+    margin-bottom: 16px;
+  }
+  .action-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+  .action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 20px;
+    border-radius: 12px;
+    border: none;
+    text-decoration: none;
+    transition: transform .15s, box-shadow .15s;
+    color: white;
+  }
+  .action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,.2);
+    color: white;
+    text-decoration: none;
+  }
+  .action-btn .icon { font-size: 1.6rem; }
+  .action-btn strong { font-size: 0.95rem; }
+  .action-btn small  { opacity: .8; font-size: 0.78rem; }
+  .bg-blue   { background: linear-gradient(135deg, #1a3a6e, #2563eb); }
+  .bg-green  { background: linear-gradient(135deg, #0d9c5e, #16a34a); }
+  .bg-red    { background: linear-gradient(135deg, #c01313, #dc2626); }
+  .bg-dark   { background: linear-gradient(135deg, #1a1a2e, #374151); }
+  .bg-purple { background: linear-gradient(135deg, #6312a8, #7c3aed); }
+</style>
+
+<!-- Hero -->
+<div class="idcard-hero">
+  <h2>🪪 ID Card Module</h2>
+  <p>{{ school.school_name }} — Generate, print & manage student identity cards</p>
+</div>
+
+<!-- Stats -->
+<div class="stat-cards">
+  <div class="stat-card" style="--accent:#1a3a6e;">
+    <div class="num">{{ total_students }}</div>
+    <div class="lbl">Total Students</div>
+  </div>
+  <div class="stat-card" style="--accent:#0d9c5e;">
+    <div class="num">{{ classes|length }}</div>
+    <div class="lbl">Classes</div>
+  </div>
+  <div class="stat-card" style="--accent:#6312a8;">
+    <div class="num">5</div>
+    <div class="lbl">Card Templates</div>
+  </div>
+</div>
+
+<!-- Template Selection -->
+<div class="template-section">
+  <h5>Choose ID Card Template</h5>
+  <div class="template-grid">
+
+    <a href="{{ url_for('idcard.student_search', template='1') }}" class="template-card">
+      <div class="tc-preview" style="background: linear-gradient(135deg,#1a3a6e,#2563eb);">🪪</div>
+      <div class="tc-body">
+        <strong>Classic Blue</strong>
+        <span>Horizontal • Professional</span><br>
+        <span class="tc-badge" style="background:#e8f0fc;color:#1a3a6e;">Template 1</span>
+      </div>
+    </a>
+
+    <a href="{{ url_for('idcard.student_search', template='2') }}" class="template-card">
+      <div class="tc-preview" style="background: linear-gradient(135deg,#0d9c5e,#16a34a);">🎓</div>
+      <div class="tc-body">
+        <strong>Modern Green</strong>
+        <span>Vertical • Fresh</span><br>
+        <span class="tc-badge" style="background:#e8faf2;color:#0d9c5e;">Template 2</span>
+      </div>
+    </a>
+
+    <a href="{{ url_for('idcard.student_search', template='3') }}" class="template-card">
+      <div class="tc-preview" style="background: linear-gradient(135deg,#c01313,#b45309);">🏅</div>
+      <div class="tc-body">
+        <strong>Red Premium</strong>
+        <span>Horizontal • Elite</span><br>
+        <span class="tc-badge" style="background:#fef2f2;color:#c01313;">Template 3</span>
+      </div>
+    </a>
+
+    <a href="{{ url_for('idcard.student_search', template='4') }}" class="template-card">
+      <div class="tc-preview" style="background: linear-gradient(135deg,#1a1a2e,#374151);">🌙</div>
+      <div class="tc-body">
+        <strong>Dark Mode</strong>
+        <span>Vertical • Modern</span><br>
+        <span class="tc-badge" style="background:#f3f4f6;color:#374151;">Template 4</span>
+      </div>
+    </a>
+
+    <a href="{{ url_for('idcard.student_search', template='5') }}" class="template-card">
+      <div class="tc-preview" style="background: linear-gradient(135deg,#6312a8,#7c3aed);">✨</div>
+      <div class="tc-body">
+        <strong>Purple Diagonal</strong>
+        <span>Horizontal • Stylish</span><br>
+        <span class="tc-badge" style="background:#f5f3ff;color:#6312a8;">Template 5</span>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="action-section">
+  <h5>Quick Actions</h5>
+  <div class="action-grid">
+    <a href="{{ url_for('idcard.student_search', template='1') }}" class="action-btn bg-blue">
+      <span class="icon">🔍</span>
+      <strong>Search Students</strong>
+      <small>Find by name, class, admission no</small>
+    </a>
+    <a href="{{ url_for('idcard.student_search') }}" class="action-btn bg-green">
+      <span class="icon">📦</span>
+      <strong>Bulk Generate</strong>
+      <small>Select multiple & print all</small>
+    </a>
+  </div>
+</div>
+
 {% endblock %}

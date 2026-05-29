@@ -5,9 +5,11 @@
 
 <!-- ================= HEADER ================= -->
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="fw-bold mb-0">🧠 Smart Teacher Attendance</h4>
 
-    <!-- ===== IMPORTANT BUTTONS (UNCHANGED) ===== -->
+    <h4 class="fw-bold mb-0">
+        🧠 Smart Teacher Attendance
+    </h4>
+
     <div class="d-flex flex-wrap gap-1">
 
         <a href="/attendance/teacher/ledger"
@@ -26,9 +28,59 @@
         </a>
 
     </div>
+
 </div>
 
-<!-- ================= FORM ================= -->
+<!-- ================= GPS BUTTONS ================= -->
+
+<div class="card shadow-sm border-0 mb-3">
+
+    <div class="card-body">
+
+        <div class="row g-2">
+
+            <div class="col-md-6">
+
+                <button
+                    type="button"
+                    class="btn btn-success w-100"
+                    onclick="gpsCheckin()">
+
+                    📍 GPS Check-In
+
+                </button>
+
+            </div>
+
+            <div class="col-md-6">
+
+                <button
+                    type="button"
+                    class="btn btn-danger w-100"
+                    onclick="gpsCheckout()">
+
+                    🚪 GPS Check-Out
+
+                </button>
+
+            </div>
+
+        </div>
+
+        <div
+            id="gpsStatus"
+            class="alert alert-light border mt-3 mb-0">
+
+            GPS Attendance Ready
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ================= MANUAL ATTENDANCE ================= -->
+
 <form method="post">
 
 <div class="card shadow-sm p-3">
@@ -36,117 +88,192 @@
 <table class="table table-bordered text-center align-middle">
 
 <thead class="table-dark">
+
 <tr>
+
     <th>#</th>
+
     <th>Teacher Name</th>
-    <th>Smart Attendance (Click Box)</th>
+
+    <th>Smart Attendance</th>
+
 </tr>
+
 </thead>
 
 <tbody>
 
 {% for t in teachers %}
+
 <tr>
 
 <td>{{ loop.index }}</td>
 
 <td class="text-start">
+
     {{ t.first_name }}
-    {% if t.middle_name %} {{ t.middle_name }}{% endif %}
-    {% if t.last_name %} {{ t.last_name }}{% endif %}
+
+    {% if t.middle_name %}
+        {{ t.middle_name }}
+    {% endif %}
+
+    {% if t.last_name %}
+        {{ t.last_name }}
+    {% endif %}
+
 </td>
 
 <td>
 
-    <!-- CLICK BOX -->
-    <div class="att-box"
-         data-id="{{ t.id }}"
-         data-status="P"
-         onclick="changeStatus(this)">
+    <div
+        class="att-box"
+
+        data-id="{{ t.id }}"
+
+        data-status="P"
+
+        onclick="changeStatus(this)">
 
         P
 
     </div>
 
-    <!-- HIDDEN INPUT -->
-    <input type="hidden"
-           name="status_{{ t.id }}"
-           value="P"
-           id="input_{{ t.id }}">
+    <input
+        type="hidden"
+
+        name="status_{{ t.id }}"
+
+        value="P"
+
+        id="input_{{ t.id }}">
 
 </td>
 
 </tr>
+
 {% endfor %}
 
 </tbody>
 
 </table>
 
-<button class="btn btn-success w-100">💾 Save Attendance</button>
+<button class="btn btn-primary w-100">
+
+    💾 Save Manual Attendance
+
+</button>
 
 </div>
+
 </form>
 
 <!-- ================= SUMMARY ================= -->
+
 {% if teachers %}
+
 <div class="alert alert-light border d-flex gap-3 align-items-center mt-3">
-    <span class="fw-bold">📊 Live Summary:</span>
-    <span class="text-success">P: <b id="cntP">0</b></span>
-    <span class="text-danger">A: <b id="cntA">0</b></span>
-    <span class="text-warning">L: <b id="cntL">0</b></span>
-    <span class="text-info">H: <b id="cntH">0</b></span>
+
+    <span class="fw-bold">
+
+        📊 Live Summary:
+
+    </span>
+
+    <span class="text-success">
+        P: <b id="cntP">0</b>
+    </span>
+
+    <span class="text-danger">
+        A: <b id="cntA">0</b>
+    </span>
+
+    <span class="text-warning">
+        L: <b id="cntL">0</b>
+    </span>
+
+    <span class="text-info">
+        H: <b id="cntH">0</b>
+    </span>
+
 </div>
+
 {% endif %}
 
 <!-- ================= STYLE ================= -->
+
 <style>
+
 .att-box{
+
     width:90px;
+
     height:45px;
+
     line-height:45px;
+
     border-radius:10px;
+
     font-weight:bold;
+
     cursor:pointer;
+
     user-select:none;
+
     background:#198754;
+
     color:white;
+
     margin:auto;
+
     transition:0.2s;
 }
 
 .att-box:hover{
+
     transform:scale(1.05);
 }
+
 </style>
 
 <!-- ================= SCRIPT ================= -->
+
 <script>
 
 function changeStatus(el){
 
     let id = el.dataset.id
+
     let status = el.dataset.status
 
     let next = "P"
 
-    // 🔥 CLICK CYCLE
     if(status === "P") next = "A"
+
     else if(status === "A") next = "H"
+
     else if(status === "H") next = "L"
+
     else if(status === "L") next = "P"
 
     el.dataset.status = next
+
     el.innerText = next
 
-    // 🎨 COLOR CHANGE
-    if(next === "P") el.style.background = "#198754"
-    if(next === "A") el.style.background = "#dc3545"
-    if(next === "H") el.style.background = "#0dcaf0"
-    if(next === "L") el.style.background = "#ffc107"
+    if(next === "P")
+        el.style.background = "#198754"
 
-    // 🔥 UPDATE HIDDEN INPUT
-    document.getElementById("input_"+id).value = next
+    if(next === "A")
+        el.style.background = "#dc3545"
+
+    if(next === "H")
+        el.style.background = "#0dcaf0"
+
+    if(next === "L")
+        el.style.background = "#ffc107"
+
+    document.getElementById(
+        "input_"+id
+    ).value = next
 
     recount()
 }
@@ -155,25 +282,169 @@ function recount(){
 
     let P=0,A=0,L=0,H=0
 
-    document.querySelectorAll(".att-box").forEach(el=>{
+    document.querySelectorAll(".att-box")
+    .forEach(el=>{
+
         let s = el.dataset.status
 
         if(s==="P") P++
+
         if(s==="A") A++
+
         if(s==="L") L++
+
         if(s==="H") H++
     })
 
     if(document.getElementById("cntP")){
+
         cntP.innerText=P
+
         cntA.innerText=A
+
         cntL.innerText=L
+
         cntH.innerText=H
     }
 }
 
-// INITIAL COUNT
 recount()
+
+// =====================================================
+// GPS CHECK-IN
+// =====================================================
+
+function gpsCheckin(){
+
+    let statusBox = document.getElementById(
+        "gpsStatus"
+    )
+
+    statusBox.innerHTML =
+        "📡 Fetching GPS..."
+
+    navigator.geolocation.getCurrentPosition(
+
+        function(position){
+
+            fetch(
+                "/attendance/teacher/gps-checkin",
+                {
+
+                    method:"POST",
+
+                    headers:{
+                        "Content-Type":
+                        "application/json"
+                    },
+
+                    body:JSON.stringify({
+
+                        latitude:
+                        position.coords.latitude,
+
+                        longitude:
+                        position.coords.longitude
+                    })
+                }
+            )
+
+            .then(res=>res.json())
+
+            .then(data=>{
+
+                if(data.status==="success"){
+
+                    statusBox.className =
+                        "alert alert-success mt-3"
+
+                    statusBox.innerHTML =
+                        "✅ "
+                        +
+                        data.message
+                }
+
+                else{
+
+                    statusBox.className =
+                        "alert alert-danger mt-3"
+
+                    statusBox.innerHTML =
+                        "❌ "
+                        +
+                        data.message
+                }
+            })
+        },
+
+        function(error){
+
+            statusBox.className =
+                "alert alert-danger mt-3"
+
+            statusBox.innerHTML =
+                "❌ GPS Permission Denied"
+        }
+    )
+}
+
+// =====================================================
+// GPS CHECK-OUT
+// =====================================================
+
+function gpsCheckout(){
+
+    let statusBox = document.getElementById(
+        "gpsStatus"
+    )
+
+    fetch(
+        "/attendance/teacher/gps-checkout",
+        {
+
+            method:"POST",
+
+            headers:{
+                "Content-Type":
+                "application/json"
+            }
+        }
+    )
+
+    .then(res=>res.json())
+
+    .then(data=>{
+
+        if(data.status==="success"){
+
+            statusBox.className =
+                "alert alert-info mt-3"
+
+            statusBox.innerHTML =
+
+                "⏱ Working Hours: "
+                +
+                data.working_hours
+
+                +
+
+                "<br>📘 Attendance Type: "
+                +
+                data.attendance_type
+        }
+
+        else{
+
+            statusBox.className =
+                "alert alert-danger mt-3"
+
+            statusBox.innerHTML =
+                "❌ "
+                +
+                data.message
+        }
+    })
+}
 
 </script>
 

@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700;800;900&family=Barlow+Condensed:wght@600;700;800&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    margin: 0; padding: 16px;
+    background: #e8ecf0;
+    font-family: 'Barlow', Arial, sans-serif;
+    display: flex; flex-wrap: wrap; gap: 20px;
+  }
+
+  /* ── CR80 card: 85.6mm × 53.98mm @ 96dpi × 3 = 972px × 613px (scaled for screen) */
+  .id-card {
+    width: 646px;
+    height: 408px;
+    border-radius: 14px;
+    overflow: hidden;
+    position: relative;
+    background: #ffffff;
+    box-shadow: 0 8px 32px rgba(0,0,0,.22);
+    flex-shrink: 0;
+  }
+
+  /* ═══ TOP HEADER BAND ═══ */
+  .t1-header {
+    background: linear-gradient(135deg, #0d2b6e 0%, #1a4ba8 60%, #1565c0 100%);
+    height: 112px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 0 20px 0 16px;
+    gap: 14px;
+    overflow: hidden;
+  }
+  /* Wave cutout at bottom of header */
+  .t1-header::after {
+    content: '';
+    position: absolute;
+    bottom: -28px; right: -10px;
+    width: 220px; height: 80px;
+    background: white;
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+    transform: scaleX(1.4);
+  }
+  .t1-logo-box {
+    width: 72px; height: 80px;
+    background: white;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,.2);
+  }
+  .t1-logo-box img { width: 100%; height: 100%; object-fit: contain; }
+  .t1-logo-box .logo-placeholder {
+    font-size: 28px; color: #1a4ba8;
+  }
+  .t1-school-text { flex: 1; min-width: 0; }
+  .t1-school-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 26px; font-weight: 900;
+    color: white;
+    letter-spacing: .5px;
+    line-height: 1.1;
+    text-transform: uppercase;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .t1-school-tagline {
+    font-size: 12px; color: rgba(255,255,255,.85);
+    font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .t1-school-meta {
+    font-size: 10px; color: rgba(255,255,255,.75);
+    line-height: 1.6;
+  }
+  .t1-school-meta span { margin-right: 10px; }
+
+  /* "STUDENT ID CARD" pill */
+  .t1-id-pill {
+    position: absolute;
+    top: 14px; right: 16px;
+    background: linear-gradient(90deg, #1565c0, #0d47a1);
+    border: 1.5px solid rgba(255,255,255,.35);
+    border-radius: 99px;
+    padding: 5px 14px;
+    font-size: 10px; font-weight: 800;
+    color: white; letter-spacing: 1.5px;
+    text-transform: uppercase;
+    box-shadow: 0 2px 8px rgba(0,0,0,.25);
+  }
+
+  /* ═══ SESSION STRIP (LEFT SIDE) ═══ */
+  .t1-session-strip {
+    position: absolute;
+    left: 0; top: 112px; bottom: 0;
+    width: 30px;
+    background: linear-gradient(180deg, #0d2b6e, #1a4ba8);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .t1-session-text {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+    color: white;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px; font-weight: 800;
+    letter-spacing: 2px;
+  }
+
+  /* ═══ BODY ═══ */
+  .t1-body {
+    position: absolute;
+    left: 30px; top: 112px; right: 0; bottom: 0;
+    display: flex;
+    padding: 14px 16px 10px 14px;
+    gap: 14px;
+  }
+
+  /* LEFT COLUMN: photo + adm */
+  .t1-photo-col {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 6px;
+    flex-shrink: 0;
+  }
+  .t1-photo {
+    width: 110px; height: 128px;
+    border: 3px solid #1a4ba8;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #dde8f8;
+    display: flex; align-items: center; justify-content: center;
+    color: #8099c0; font-size: 11px;
+  }
+  .t1-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .t1-adm-badge {
+    background: linear-gradient(90deg, #0d2b6e, #1a4ba8);
+    color: white; border-radius: 6px;
+    padding: 4px 10px; font-size: 9px; font-weight: 800;
+    text-align: center; letter-spacing: .5px;
+    width: 110px;
+  }
+  .t1-adm-no {
+    font-size: 11px; font-weight: 700; color: #1a3a6e;
+    text-align: center; font-family: monospace;
+    letter-spacing: .5px;
+  }
+
+  /* RIGHT COLUMN: details */
+  .t1-details-col {
+    flex: 1; min-width: 0;
+    display: flex; flex-direction: column;
+    gap: 0;
+  }
+  .t1-student-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 22px; font-weight: 900;
+    color: #0d2b6e; text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-bottom: 8px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* Watermark logo behind details */
+  .t1-watermark {
+    position: absolute;
+    right: 14px; bottom: 30px;
+    width: 110px; height: 110px;
+    opacity: 0.06;
+    pointer-events: none;
+    font-size: 80px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .t1-watermark img { width: 100%; height: 100%; object-fit: contain; filter: grayscale(1); }
+
+  .t1-field-row {
+    display: flex; align-items: flex-start;
+    font-size: 11px; margin-bottom: 4px;
+  }
+  .t1-field-label {
+    font-weight: 600; color: #374151;
+    min-width: 90px;
+  }
+  .t1-field-colon { color: #374151; margin: 0 6px; font-weight: 600; }
+  .t1-field-value {
+    font-weight: 600; color: #111827;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .t1-field-value.wrap { white-space: normal; line-height: 1.4; }
+
+  /* Barcode + signature row */
+  .t1-bottom-row {
+    position: absolute;
+    bottom: 8px; left: 44px; right: 12px;
+    display: flex; align-items: flex-end; justify-content: space-between;
+  }
+  .t1-barcode {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+  }
+  .t1-barcode-bars {
+    display: flex; gap: 1px; align-items: flex-end;
+  }
+  .t1-barcode-bars span {
+    display: inline-block;
+    background: #111827;
+    width: 2px;
+  }
+  .t1-adm-under { font-size: 8px; color: #6b7280; letter-spacing: .5px; }
+
+  .t1-sign-area { text-align: center; }
+  .t1-sign-line {
+    width: 120px; height: 1px;
+    background: #374151;
+    margin-bottom: 3px;
+  }
+  .t1-sign-label { font-size: 10px; color: #374151; font-weight: 600; }
+</style>
+</head>
+<body style="margin:0;padding:0;background:transparent;">
+
+<div class="id-card">
+
+  <!-- Watermark -->
+  <div class="t1-watermark">
+    {% if school.logo %}<img src="/uploads/{{ school.logo }}" alt="">{% else %}🏫{% endif %}
+  </div>
+
+  <!-- Header -->
+  <div class="t1-header">
+    <div class="t1-logo-box">
+      {% if school.logo %}
+        <img src="/uploads/{{ school.logo }}" alt="logo">
+      {% else %}<span class="logo-placeholder">🏫</span>{% endif %}
+    </div>
+    <div class="t1-school-text">
+      <div class="t1-school-name">{{ school.school_name }}</div>
+      <div class="t1-school-meta">
+        <span>📍 {{ school.address }}, {{ school.city }}</span><br>
+        <span>🌐 {{ school.website or '' }}</span>
+        <span>📞 {{ school.phone }}</span>
+      </div>
+    </div>
+    <div class="t1-id-pill">STUDENT ID CARD</div>
+  </div>
+
+  <!-- Session Strip -->
+  <div class="t1-session-strip">
+    <span class="t1-session-text">{{ student.session or '2024-2025' }}</span>
+  </div>
+
+  <!-- Body -->
+  <div class="t1-body">
+    <!-- Photo Column -->
+    <div class="t1-photo-col">
+      <div class="t1-photo">
+        {% if student.student_photo %}
+          <img src="/uploads/{{ student.student_photo }}" alt="photo">
+        {% else %}Photo{% endif %}
+      </div>
+      <div class="t1-adm-badge">Admn No.</div>
+      <div class="t1-adm-no">{{ student.admission_no }}</div>
+    </div>
+
+    <!-- Details Column -->
+    <div class="t1-details-col">
+      <div class="t1-student-name">{{ student.first_name }} {{ student.middle_name or '' }} {{ student.last_name }}</div>
+
+      <div class="t1-field-row">
+        <span class="t1-field-label">Class</span>
+        <span class="t1-field-colon">:</span>
+        <span class="t1-field-value">{{ student.student_class }} - {{ student.section }}</span>
+      </div>
+      <div class="t1-field-row">
+        <span class="t1-field-label">Date of Birth</span>
+        <span class="t1-field-colon">:</span>
+        <span class="t1-field-value">{{ student.dob or 'N/A' }}</span>
+      </div>
+      <div class="t1-field-row">
+        <span class="t1-field-label">Father's Name</span>
+        <span class="t1-field-colon">:</span>
+        <span class="t1-field-value">{{ student.father_name or 'N/A' }}</span>
+      </div>
+      <div class="t1-field-row">
+        <span class="t1-field-label">Mother's Name</span>
+        <span class="t1-field-colon">:</span>
+        <span class="t1-field-value">{{ student.mother_name or 'N/A' }}</span>
+      </div>
+      <div class="t1-field-row">
+        <span class="t1-field-label">Address</span>
+        <span class="t1-field-colon">:</span>
+        <span class="t1-field-value wrap">{{ student.present_address or 'N/A' }}</span>
+      </div>
+      <div class="t1-field-row">
+        <span class="t1-field-label">Blood Group</span>
+        <span class="t1-field-colon">:</span>
+        <span class="t1-field-value">{{ student.blood_group or 'N/A' }}</span>
+      </div>
+      <div class="t1-field-row">
+        <span class="t1-field-label">Contact No.</span>
+        <span class="t1-field-colon">:</span>
+        <span class="t1-field-value">{{ student.father_mobile or student.guardian_mobile or 'N/A' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom row: barcode + signature -->
+  <div class="t1-bottom-row">
+    <div class="t1-barcode">
+      <div class="t1-barcode-bars">
+        {% set bars = [3,1,2,1,3,2,1,2,3,1,2,1,3,2,1,3,1,2,1,2,3,2,1,3,1,2,3,1,2,1,3,2,1,2,3,1,2,1,3,2] %}
+        {% for h in bars %}
+          <span style="height: {{ 6 + h * 4 }}px;"></span>
+        {% endfor %}
+      </div>
+      <span class="t1-adm-under">{{ student.admission_no }}</span>
+    </div>
+    <div class="t1-sign-area">
+      <div class="t1-sign-line"></div>
+      <div class="t1-sign-label">Principal</div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

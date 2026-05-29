@@ -199,13 +199,13 @@ def create_app():
     from fee.routes import fee_bp
     from attendance.routes import attendance
     from transport.routes import transport
-    from idcard import idcard_bp
+    from idcard.routes import idcard_bp
     from import_export.routes import import_export
     from bulk.routes import bulk_bp
-    from face_attendance.routes import face_bp
+    
 
     app.register_blueprint(bulk_bp)
-    app.register_blueprint(face_bp)
+    app.register_blueprint(idcard_bp)
     app.register_blueprint(attendance)
     app.register_blueprint(auth)
     app.register_blueprint(dashboard)
@@ -215,10 +215,7 @@ def create_app():
     app.register_blueprint(transport)
     app.register_blueprint(subject)
 
-    app.register_blueprint(
-        idcard_bp,
-        url_prefix="/dashboard/idcard"
-    )
+  
 
     app.register_blueprint(import_export)
     app.register_blueprint(teacher)

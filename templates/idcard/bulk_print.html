@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Bulk ID Card Print</title>
+  <style>
+    @media print {
+      body { margin: 0; }
+      .no-print { display: none !important; }
+      .page-break { page-break-after: always; }
+    }
+
+    body { font-family: Arial, sans-serif; background: #f3f4f6; }
+
+    .no-print {
+      background: #1a3a6e;
+      color: white;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .no-print h5 { margin: 0; font-size: 1rem; flex: 1; }
+    .btn-print {
+      background: white; color: #1a3a6e;
+      border: none; border-radius: 8px;
+      padding: 8px 20px; font-weight: 700;
+      cursor: pointer; font-size: 0.9rem;
+    }
+    .btn-close-pg {
+      background: transparent; color: white;
+      border: 1px solid rgba(255,255,255,.4);
+      border-radius: 8px;
+      padding: 8px 20px; font-weight: 600;
+      cursor: pointer; font-size: 0.9rem;
+      text-decoration: none;
+    }
+
+    .cards-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding: 24px;
+      justify-content: flex-start;
+    }
+
+    .card-wrapper {
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,.12);
+    }
+  </style>
+</head>
+<body>
+
+<div class="no-print">
+  <h5>🖨️ Bulk Print — {{ students|length }} ID Cards</h5>
+  <button class="btn-print" onclick="window.print()">🖨️ Print Now</button>
+  <a href="javascript:history.back()" class="btn-close-pg">← Back</a>
+</div>
+
+<div class="cards-grid">
+  {% for student in students %}
+  <div class="card-wrapper">
+    {% include card_template %}
+  </div>
+  {% endfor %}
+</div>
+
+<script>
+  // Auto-trigger print dialog
+  window.addEventListener('load', () => setTimeout(() => window.print(), 500));
+</script>
+
+</body>
+</html>

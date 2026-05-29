@@ -2,6 +2,7 @@ import os, uuid
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
 from extensions import db
+from models import school
 from models.school import School
 
 school_bp = Blueprint('school', __name__, url_prefix='/school')
@@ -50,6 +51,11 @@ def school_settings():
         school.pincode = request.form.get('pincode')
         school.phone = request.form.get('phone')
         school.email = request.form.get('email')
+        school.latitude = request.form.get('latitude')
+
+        school.longitude = request.form.get('longitude')
+
+        school.radius = request.form.get('radius')
 
         logo = request.files.get('logo')
         if logo and logo.filename:

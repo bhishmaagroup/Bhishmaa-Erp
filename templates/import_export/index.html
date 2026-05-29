@@ -1,33 +1,573 @@
 {% extends "base.html" %}
+
 {% block content %}
-<div class="neo-card p-4">
-  <h4 class="mb-3">Import / Export (Student, Teacher, Fee)</h4>
 
-  <form method="post" enctype="multipart/form-data">
-    <select name="module" class="form-select mb-2" required>
-      <option value="">Select Module</option>
-      <option value="student">Student</option>
-      <option value="teacher">Teacher</option>
-      <option value="fee">Fee Ledger</option>
-    </select>
+<div class="container-fluid py-4">
 
-    <input type="file" name="file" class="form-control mb-2" required>
+    <!-- ========================= -->
+    <!-- PAGE HEADER -->
+    <!-- ========================= -->
 
-    <button type="submit" class="btn btn-success w-100">Import Data</button>
-  </form>
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
 
-  <hr>
+        <div>
 
-  <div class="d-flex flex-wrap gap-2">
-    <a href="{{ url_for('import_export.export', module='student') }}" class="btn btn-outline-primary btn-sm">
-      Export Students
-    </a>
-    <a href="{{ url_for('import_export.export', module='teacher') }}" class="btn btn-outline-primary btn-sm">
-      Export Teachers
-    </a>
-    <a href="{{ url_for('import_export.export', module='fee') }}" class="btn btn-outline-primary btn-sm">
-      Export Fee Records
-    </a>
-  </div>
+            <h2 class="fw-bold mb-1">
+                Universal Import / Export
+            </h2>
+
+            <p class="text-muted mb-0">
+                Bhishmaa ERP Centralized Data Management System
+            </p>
+
+        </div>
+
+        <div>
+
+            <span class="badge bg-success px-3 py-2 fs-6">
+                ERP Backup Center
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================= -->
+    <!-- MAIN WRAPPER -->
+    <!-- ========================= -->
+
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+
+        <!-- TOP BAR -->
+
+        <div class="bg-dark text-white p-3">
+
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+
+                <div>
+
+                    <h5 class="mb-0">
+                        ERP Data Operations
+                    </h5>
+
+                </div>
+
+                <div class="small text-light">
+
+                    Secure • Dynamic • Backup Ready
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- BODY -->
+
+        <div class="card-body p-4">
+
+            <div class="row g-4">
+
+                <!-- ========================= -->
+                <!-- IMPORT SECTION -->
+                <!-- ========================= -->
+
+                <div class="col-lg-5">
+
+                    <div class="border rounded-4 p-4 h-100 bg-light">
+
+                        <div class="d-flex align-items-center mb-3">
+
+                            <div class="me-3">
+
+                                <i class="fa-solid fa-file-import fa-2x text-success"></i>
+
+                            </div>
+
+                            <div>
+
+                                <h4 class="mb-0">
+                                    Import Module Data
+                                </h4>
+
+                                <small class="text-muted">
+                                    Upload Excel or CSV files
+                                </small>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- IMPORT FORM -->
+
+                        <form method="POST"
+                              enctype="multipart/form-data">
+
+                            <!-- MODULE -->
+
+                            <div class="mb-3">
+
+                                <label class="form-label fw-semibold">
+                                    Select Module
+                                </label>
+
+                                <select
+                                    name="module"
+                                    class="form-select form-select-lg"
+                                    required
+                                >
+
+                                    <option value="">
+                                        Choose Module
+                                    </option>
+
+                                    <option value="student">
+                                        Student Records
+                                    </option>
+
+                                    <option value="teacher">
+                                        Teacher Records
+                                    </option>
+
+                                    <option value="fee">
+                                        Fee Ledger
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <!-- FILE -->
+
+                            <div class="mb-4">
+
+                                <label class="form-label fw-semibold">
+                                    Upload File
+                                </label>
+
+                                <input
+                                    type="file"
+                                    name="file"
+                                    class="form-control form-control-lg"
+                                    accept=".xlsx,.xls,.csv"
+                                    required
+                                >
+
+                                <small class="text-muted">
+                                    Supported formats: XLSX, XLS, CSV
+                                </small>
+
+                            </div>
+
+
+                            <!-- BUTTON -->
+
+                            <button
+                                type="submit"
+                                class="btn btn-success btn-lg w-100 rounded-3"
+                            >
+
+                                <i class="fa-solid fa-upload me-2"></i>
+
+                                Import Data
+
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- ========================= -->
+                <!-- EXPORT SECTION -->
+                <!-- ========================= -->
+
+                <div class="col-lg-7">
+
+                    <div class="border rounded-4 p-4 h-100">
+
+                        <div class="d-flex align-items-center mb-4">
+
+                            <div class="me-3">
+
+                                <i class="fa-solid fa-file-export fa-2x text-primary"></i>
+
+                            </div>
+
+                            <div>
+
+                                <h4 class="mb-0">
+                                    Export Data
+                                </h4>
+
+                                <small class="text-muted">
+                                    Download ERP module records
+                                </small>
+
+                            </div>
+
+                        </div>
+
+
+
+                        <!-- EXPORT GRID -->
+
+                        <div class="row g-3">
+
+
+                            <!-- STUDENT -->
+
+                            <div class="col-md-6">
+
+                                <div class="card border-0 shadow-sm rounded-4 h-100">
+
+                                    <div class="card-body">
+
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+
+                                            <div>
+
+                                                <h5 class="mb-1">
+                                                    Students
+                                                </h5>
+
+                                                <small class="text-muted">
+                                                    Export student records
+                                                </small>
+
+                                            </div>
+
+                                            <i class="fa-solid fa-user-graduate fa-2x text-primary"></i>
+
+                                        </div>
+
+                                        <a
+                                            href="{{ url_for('import_export.export', module='student') }}"
+                                            class="btn btn-outline-primary w-100 rounded-3"
+                                        >
+
+                                            Download Excel
+
+                                        </a>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+
+                            <!-- TEACHERS -->
+
+                            <div class="col-md-6">
+
+                                <div class="card border-0 shadow-sm rounded-4 h-100">
+
+                                    <div class="card-body">
+
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+
+                                            <div>
+
+                                                <h5 class="mb-1">
+                                                    Teachers
+                                                </h5>
+
+                                                <small class="text-muted">
+                                                    Export teacher records
+                                                </small>
+
+                                            </div>
+
+                                            <i class="fa-solid fa-chalkboard-user fa-2x text-success"></i>
+
+                                        </div>
+
+                                        <a
+                                            href="{{ url_for('import_export.export', module='teacher') }}"
+                                            class="btn btn-outline-success w-100 rounded-3"
+                                        >
+
+                                            Download Excel
+
+                                        </a>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+
+                            <!-- FEES -->
+
+                            <div class="col-md-6">
+
+                                <div class="card border-0 shadow-sm rounded-4 h-100">
+
+                                    <div class="card-body">
+
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+
+                                            <div>
+
+                                                <h5 class="mb-1">
+                                                    Fee Ledger
+                                                </h5>
+
+                                                <small class="text-muted">
+                                                    Export fee records
+                                                </small>
+
+                                            </div>
+
+                                            <i class="fa-solid fa-money-bill-wave fa-2x text-warning"></i>
+
+                                        </div>
+
+                                        <a
+                                            href="{{ url_for('import_export.export', module='fee') }}"
+                                            class="btn btn-outline-warning w-100 rounded-3"
+                                        >
+
+                                            Download Excel
+
+                                        </a>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+
+                            <!-- FUTURE -->
+
+                            <div class="col-md-6">
+
+                                <div class="card border-0 bg-dark text-white rounded-4 h-100">
+
+                                    <div class="card-body">
+
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+
+                                            <div>
+
+                                                <h5 class="mb-1">
+                                                    Future Modules
+                                                </h5>
+
+                                                <small class="text-light">
+                                                    Attendance, Transport, Exam
+                                                </small>
+
+                                            </div>
+
+                                            <i class="fa-solid fa-database fa-2x"></i>
+
+                                        </div>
+
+                                        <button
+                                            class="btn btn-light w-100 rounded-3"
+                                            disabled
+                                        >
+
+                                            Coming Soon
+
+                                        </button>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+
+                        <!-- ========================= -->
+                        <!-- FULL BACKUP SECTION -->
+                        <!-- ========================= -->
+
+                        <hr class="my-4">
+
+
+                        <div class="row g-3">
+
+
+                            <!-- FULL EXPORT -->
+
+                            <div class="col-md-6">
+
+                                <div class="card border-0 bg-primary text-white rounded-4">
+
+                                    <div class="card-body">
+
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+
+                                            <div>
+
+                                                <h4 class="mb-1">
+                                                    Full ERP Backup
+                                                </h4>
+
+                                                <small>
+                                                    Download all ERP data in ZIP
+                                                </small>
+
+                                            </div>
+
+                                            <i class="fa-solid fa-download fa-2x"></i>
+
+                                        </div>
+
+                                        <a
+                                            href="{{ url_for('import_export.export_all') }}"
+                                            class="btn btn-light w-100 rounded-3"
+                                        >
+
+                                            Download Full Backup
+
+                                        </a>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+
+                            <!-- FULL IMPORT -->
+
+                            <div class="col-md-6">
+
+                                <div class="card border-0 bg-success text-white rounded-4">
+
+                                    <div class="card-body">
+
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+
+                                            <div>
+
+                                                <h4 class="mb-1">
+                                                    Restore Backup
+                                                </h4>
+
+                                                <small>
+                                                    Restore ERP ZIP backup
+                                                </small>
+
+                                            </div>
+
+                                            <i class="fa-solid fa-upload fa-2x"></i>
+
+                                        </div>
+
+
+                                        <form
+                                            method="POST"
+                                            action="{{ url_for('import_export.import_all') }}"
+                                            enctype="multipart/form-data"
+                                        >
+
+                                            <input
+                                                type="file"
+                                                name="backup_zip"
+                                                class="form-control mb-3"
+                                                accept=".zip"
+                                                required
+                                            >
+
+                                            <button
+                                                type="submit"
+                                                class="btn btn-light w-100 rounded-3"
+                                            >
+
+                                                Restore ERP Backup
+
+                                            </button>
+
+                                        </form>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+
+                        <!-- ========================= -->
+                        <!-- INFO -->
+                        <!-- ========================= -->
+
+                        <div class="alert alert-info mt-4 mb-0 rounded-4">
+
+                            <div class="d-flex align-items-start">
+
+                                <i class="fa-solid fa-circle-info me-3 mt-1"></i>
+
+                                <div>
+
+                                    <strong>
+                                        ERP Import / Export Notes
+                                    </strong>
+
+                                    <ul class="mb-0 mt-2">
+
+                                        <li>
+                                            Dynamic field detection enabled
+                                        </li>
+
+                                        <li>
+                                            New database fields auto-supported
+                                        </li>
+
+                                        <li>
+                                            Duplicate rows auto-update existing records
+                                        </li>
+
+                                        <li>
+                                            Full ERP ZIP backup supported
+                                        </li>
+
+                                        <li>
+                                            XLSX, XLS and CSV supported
+                                        </li>
+
+                                    </ul>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </div>
+
 {% endblock %}

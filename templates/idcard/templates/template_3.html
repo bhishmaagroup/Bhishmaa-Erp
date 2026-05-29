@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;700;800;900&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { margin: 0; padding: 0; font-family: 'Raleway', Arial, sans-serif; background: transparent; }
+
+  .id-card {
+    width: 646px; height: 408px;
+    border-radius: 14px; overflow: hidden;
+    position: relative; background: #fff;
+    box-shadow: 0 8px 32px rgba(0,0,0,.22);
+  }
+
+  /* HEADER */
+  .t3-header {
+    background: linear-gradient(135deg, #7f1d1d 0%, #b91c1c 50%, #dc2626 100%);
+    height: 112px; position: relative;
+    display: flex; align-items: center;
+    padding: 0 20px 0 16px; gap: 14px; overflow: hidden;
+  }
+  .t3-header::after {
+    content: '';
+    position: absolute; bottom: -28px; right: -10px;
+    width: 220px; height: 80px; background: white;
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+    transform: scaleX(1.4);
+  }
+  /* Gold decorative line at top */
+  .t3-header::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #fbbf24, #f59e0b, #fbbf24);
+  }
+  .t3-logo-box {
+    width: 72px; height: 80px; background: white;
+    border-radius: 8px; border: 2px solid #fbbf24;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,.2);
+  }
+  .t3-logo-box img { width: 100%; height: 100%; object-fit: contain; }
+  .t3-logo-box .lp { font-size: 28px; }
+  .t3-school-text { flex: 1; min-width: 0; }
+  .t3-school-name {
+    font-size: 24px; font-weight: 900; color: white;
+    letter-spacing: .5px; line-height: 1.1; text-transform: uppercase;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .t3-school-meta { font-size: 10px; color: rgba(255,255,255,.8); line-height: 1.6; }
+  .t3-id-pill {
+    position: absolute; top: 14px; right: 16px;
+    background: rgba(0,0,0,.3); border: 1.5px solid #fbbf24;
+    border-radius: 99px; padding: 5px 14px;
+    font-size: 10px; font-weight: 800; color: #fbbf24;
+    letter-spacing: 1.5px; text-transform: uppercase;
+  }
+
+  /* Bottom gold line of header */
+  .t3-gold-line {
+    position: absolute; top: 108px; left: 30px; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #fbbf24, #f59e0b, #fbbf24);
+  }
+
+  /* Session strip */
+  .t3-session-strip {
+    position: absolute; left: 0; top: 112px; bottom: 0;
+    width: 30px;
+    background: linear-gradient(180deg, #7f1d1d, #b91c1c);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .t3-session-text {
+    writing-mode: vertical-rl; transform: rotate(180deg);
+    color: #fbbf24; font-size: 13px; font-weight: 800; letter-spacing: 2px;
+  }
+
+  /* Body */
+  .t3-body {
+    position: absolute; left: 30px; top: 115px; right: 0; bottom: 0;
+    display: flex; padding: 12px 16px 10px 14px; gap: 14px;
+  }
+
+  .t3-photo-col {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 6px; flex-shrink: 0;
+  }
+  .t3-photo {
+    width: 110px; height: 126px;
+    border: 3px solid #b91c1c;
+    border-radius: 10px; overflow: hidden;
+    background: #fee2e2;
+    display: flex; align-items: center; justify-content: center;
+    color: #fca5a5; font-size: 11px;
+  }
+  .t3-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .t3-adm-badge {
+    background: linear-gradient(90deg, #7f1d1d, #b91c1c);
+    color: white; border-radius: 6px;
+    padding: 4px 10px; font-size: 9px; font-weight: 800;
+    text-align: center; letter-spacing: .5px; width: 110px;
+  }
+  .t3-adm-no {
+    font-size: 11px; font-weight: 700; color: #7f1d1d;
+    text-align: center; font-family: monospace; letter-spacing: .5px;
+  }
+
+  .t3-details-col {
+    flex: 1; min-width: 0;
+    display: flex; flex-direction: column;
+  }
+  .t3-student-name {
+    font-size: 21px; font-weight: 900;
+    color: #7f1d1d; text-transform: uppercase;
+    letter-spacing: .5px; margin-bottom: 8px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  .t3-watermark {
+    position: absolute; right: 14px; bottom: 30px;
+    width: 110px; height: 110px;
+    opacity: 0.05; pointer-events: none;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .t3-watermark img { width: 100%; height: 100%; object-fit: contain; filter: grayscale(1); }
+
+  .t3-field-row { display: flex; align-items: flex-start; font-size: 11px; margin-bottom: 4px; }
+  .t3-field-label { font-weight: 700; color: #374151; min-width: 90px; }
+  .t3-field-colon { color: #374151; margin: 0 6px; font-weight: 700; }
+  .t3-field-value { font-weight: 600; color: #111827; }
+  .t3-field-value.wrap { white-space: normal; line-height: 1.4; }
+
+  .t3-bottom-row {
+    position: absolute; bottom: 8px; left: 44px; right: 12px;
+    display: flex; align-items: flex-end; justify-content: space-between;
+  }
+  .t3-barcode-bars { display: flex; gap: 1px; align-items: flex-end; }
+  .t3-barcode-bars span { display: inline-block; background: #111827; width: 2px; }
+  .t3-adm-under { font-size: 8px; color: #6b7280; letter-spacing: .5px; margin-top: 2px; }
+  .t3-sign-area { text-align: center; }
+  .t3-sign-line { width: 120px; height: 1px; background: #374151; margin-bottom: 3px; }
+  .t3-sign-label { font-size: 10px; color: #374151; font-weight: 700; }
+</style>
+</head>
+<body style="margin:0;padding:0;background:transparent;">
+
+<div class="id-card">
+
+  <div class="t3-watermark">
+    {% if school.logo %}<img src="/uploads/{{ school.logo }}" alt="">{% else %}🏫{% endif %}
+  </div>
+
+  <div class="t3-header">
+    <div class="t3-logo-box">
+      {% if school.logo %}<img src="/uploads/{{ school.logo }}" alt="logo">{% else %}<span class="lp">🏫</span>{% endif %}
+    </div>
+    <div class="t3-school-text">
+      <div class="t3-school-name">{{ school.school_name }}</div>
+      <div class="t3-school-meta">
+        <span>📍 {{ school.address }}, {{ school.city }}</span><br>
+        <span>🌐 {{ school.website or '' }}</span>
+        <span>📞 {{ school.phone }}</span>
+      </div>
+    </div>
+    <div class="t3-id-pill">STUDENT ID CARD</div>
+  </div>
+  <div class="t3-gold-line"></div>
+
+  <div class="t3-session-strip">
+    <span class="t3-session-text">{{ student.session or '2024-2025' }}</span>
+  </div>
+
+  <div class="t3-body">
+    <div class="t3-photo-col">
+      <div class="t3-photo">
+        {% if student.student_photo %}<img src="/uploads/{{ student.student_photo }}" alt="photo">{% else %}Photo{% endif %}
+      </div>
+      <div class="t3-adm-badge">Admn No.</div>
+      <div class="t3-adm-no">{{ student.admission_no }}</div>
+    </div>
+
+    <div class="t3-details-col">
+      <div class="t3-student-name">{{ student.first_name }} {{ student.middle_name or '' }} {{ student.last_name }}</div>
+
+      <div class="t3-field-row"><span class="t3-field-label">Class</span><span class="t3-field-colon">:</span><span class="t3-field-value">{{ student.student_class }} - {{ student.section }}</span></div>
+      <div class="t3-field-row"><span class="t3-field-label">Date of Birth</span><span class="t3-field-colon">:</span><span class="t3-field-value">{{ student.dob or 'N/A' }}</span></div>
+      <div class="t3-field-row"><span class="t3-field-label">Father's Name</span><span class="t3-field-colon">:</span><span class="t3-field-value">{{ student.father_name or 'N/A' }}</span></div>
+      <div class="t3-field-row"><span class="t3-field-label">Mother's Name</span><span class="t3-field-colon">:</span><span class="t3-field-value">{{ student.mother_name or 'N/A' }}</span></div>
+      <div class="t3-field-row"><span class="t3-field-label">Address</span><span class="t3-field-colon">:</span><span class="t3-field-value wrap">{{ student.present_address or 'N/A' }}</span></div>
+      <div class="t3-field-row"><span class="t3-field-label">Blood Group</span><span class="t3-field-colon">:</span><span class="t3-field-value">{{ student.blood_group or 'N/A' }}</span></div>
+      <div class="t3-field-row"><span class="t3-field-label">Contact No.</span><span class="t3-field-colon">:</span><span class="t3-field-value">{{ student.father_mobile or student.guardian_mobile or 'N/A' }}</span></div>
+    </div>
+  </div>
+
+  <div class="t3-bottom-row">
+    <div>
+      <div class="t3-barcode-bars">
+        {% set bars = [3,1,2,1,3,2,1,2,3,1,2,1,3,2,1,3,1,2,1,2,3,2,1,3,1,2,3,1,2,1,3,2,1,2,3,1,2,1,3,2] %}
+        {% for h in bars %}<span style="height: {{ 6 + h * 4 }}px;"></span>{% endfor %}
+      </div>
+      <div class="t3-adm-under">{{ student.admission_no }}</div>
+    </div>
+    <div class="t3-sign-area">
+      <div class="t3-sign-line"></div>
+      <div class="t3-sign-label">Principal</div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

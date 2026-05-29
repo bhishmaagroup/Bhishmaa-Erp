@@ -121,7 +121,8 @@ def home():
             salary_records=salary_records,
             total_salary=total_salary,
             notices=notices,
-            attendance_records=records
+            attendance_records=records,
+            attendance_logs=records
         )
 
     if current_user.role == 'admin':

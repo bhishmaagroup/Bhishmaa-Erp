@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  .id-card {
+    width: 214px; height: 340px;
+    border-radius: 14px;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    background: #111827;
+    box-shadow: 0 4px 20px rgba(0,0,0,.4);
+    position: relative;
+    border: 1px solid #374151;
+  }
+
+  .t4-accent-top { height: 3px; background: linear-gradient(90deg, #06b6d4, #0ea5e9, #06b6d4); }
+  .t4-accent-bot {
+    height: 3px; background: linear-gradient(90deg, #06b6d4, #0ea5e9, #06b6d4);
+    position: absolute; bottom: 0; left: 0; right: 0;
+  }
+
+  .t4-header {
+    background: #1f2937;
+    padding: 9px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .t4-logo {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: rgba(6,182,212,.2);
+    border: 1px solid #06b6d4;
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .t4-logo img { width: 100%; height: 100%; object-fit: cover; }
+  .t4-school-info { flex: 1; min-width: 0; }
+  .t4-school-info strong {
+    display: block; font-size: 8px;
+    color: #06b6d4;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .t4-school-info span { font-size: 6px; color: #6b7280; }
+
+  .t4-id-label {
+    text-align: center;
+    padding: 6px 0 3px;
+    font-size: 6.5px; font-weight: 800;
+    color: #06b6d4; letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .t4-photo-wrap { display: flex; justify-content: center; margin-bottom: 8px; }
+  .t4-photo {
+    width: 76px; height: 76px;
+    border-radius: 10px;
+    border: 2px solid #06b6d4;
+    overflow: hidden;
+    background: #1f2937;
+    display: flex; align-items: center; justify-content: center;
+    color: #4b5563; font-size: 8px;
+    box-shadow: 0 0 14px rgba(6,182,212,.25);
+  }
+  .t4-photo img { width: 100%; height: 100%; object-fit: cover; }
+
+  .t4-name {
+    text-align: center;
+    font-size: 9.5px; font-weight: 800;
+    color: #f9fafb;
+    padding: 0 10px 6px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  .t4-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 4px 12px;
+    border-bottom: 1px solid #1f2937;
+    font-size: 7px;
+  }
+  .t4-row .lbl { font-weight: 700; color: #06b6d4; letter-spacing: .3px; }
+  .t4-row .val { color: #d1d5db; max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Parent section */
+  .t4-parent-header {
+    background: #1f2937;
+    padding: 3px 12px;
+    font-size: 6px; font-weight: 800;
+    color: #06b6d4; letter-spacing: .5px;
+    text-transform: uppercase;
+    border-top: 1px solid #374151;
+  }
+
+  .t4-footer {
+    background: #1f2937;
+    padding: 6px 12px;
+    text-align: center;
+    position: absolute; bottom: 3px; left: 0; right: 0;
+  }
+  .t4-footer span { color: #4b5563; font-size: 6px; }
+</style>
+</head>
+<body style="margin:0;padding:8px;background:transparent;">
+
+<div class="id-card">
+  <div class="t4-accent-top"></div>
+  <div class="t4-accent-bot"></div>
+
+  <div class="t4-header">
+    <div class="t4-logo">
+      {% if school.logo %}<img src="/uploads/{{ school.logo }}" alt="logo">{% else %}🏫{% endif %}
+    </div>
+    <div class="t4-school-info">
+      <strong>{{ school.school_name }}</strong>
+      <span>{{ school.city }}</span>
+    </div>
+  </div>
+
+  <div class="t4-id-label">◆ Student ID Card ◆</div>
+
+  <div class="t4-photo-wrap">
+    <div class="t4-photo">
+      {% if student.student_photo %}<img src="/uploads/{{ student.student_photo }}" alt="photo">{% else %}Photo{% endif %}
+    </div>
+  </div>
+
+  <div class="t4-name">{{ student.first_name }} {{ student.middle_name or '' }} {{ student.last_name }}</div>
+
+  <div class="t4-row"><span class="lbl">CLASS</span><span class="val">{{ student.student_class }}-{{ student.section }}</span></div>
+  <div class="t4-row"><span class="lbl">ADM NO</span><span class="val">{{ student.admission_no }}</span></div>
+  <div class="t4-row"><span class="lbl">DOB</span><span class="val">{{ student.dob or 'N/A' }}</span></div>
+  <div class="t4-row"><span class="lbl">SESSION</span><span class="val">{{ student.session or '' }}</span></div>
+
+  <div class="t4-parent-header">Parent / Guardian</div>
+  <div class="t4-row"><span class="lbl">FATHER</span><span class="val">{{ student.father_name or 'N/A' }}</span></div>
+  <div class="t4-row"><span class="lbl">MOBILE</span><span class="val">{{ student.father_mobile or '—' }}</span></div>
+  <div class="t4-row"><span class="lbl">MOTHER</span><span class="val">{{ student.mother_name or 'N/A' }}</span></div>
+
+  <div class="t4-footer">
+    <span>Principal Signature: ___________________</span>
+  </div>
+</div>
+
+</body>
+</html>

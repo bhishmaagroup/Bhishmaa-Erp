@@ -1,39 +1,325 @@
 {% extends "base.html" %}
+{% block title %}Student ID Card Search{% endblock %}
 {% block content %}
 
-<h4>🎓 Student ID Card Generator</h4>
+<style>
+  /* ── Page Header ── */
+  .page-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
+  }
+  .page-header h4 { margin: 0; font-weight: 700; color: #1a3a6e; }
+  .back-link { color: #6b7280; font-size: 0.85rem; text-decoration: none; }
+  .back-link:hover { color: #1a3a6e; }
 
-<form method="get" class="row g-2 mb-3">
-    <div class="col-md-3">
-        <input type="text" name="q" class="form-control"
-               placeholder="Name / Admission No">
+  /* ── Template Switcher ── */
+  .template-switcher {
+    background: white;
+    border-radius: 12px;
+    padding: 16px 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  .template-switcher label { font-weight: 600; font-size: 0.85rem; color: #374151; margin: 0; }
+  .tpl-btn {
+    padding: 6px 14px;
+    border-radius: 99px;
+    border: 2px solid #e5e7eb;
+    background: white;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+    text-decoration: none;
+    color: #374151;
+  }
+  .tpl-btn:hover, .tpl-btn.active {
+    border-color: #1a3a6e;
+    background: #1a3a6e;
+    color: white;
+    text-decoration: none;
+  }
+  .tpl-btn.t2.active  { background: #0d9c5e; border-color: #0d9c5e; }
+  .tpl-btn.t3.active  { background: #c01313; border-color: #c01313; }
+  .tpl-btn.t4.active  { background: #374151; border-color: #374151; }
+  .tpl-btn.t5.active  { background: #6312a8; border-color: #6312a8; }
+
+  /* ── Search Card ── */
+  .search-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    margin-bottom: 20px;
+  }
+
+  /* ── Table ── */
+  .students-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  }
+  .students-card .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid #f3f4f6;
+    flex-wrap: wrap; gap: 12px;
+  }
+  .students-card .card-header h6 { margin: 0; font-weight: 700; color: #1a3a6e; }
+
+  .table { margin: 0; }
+  .table thead th {
+    background: #f8fafc;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: #6b7280;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 12px 16px;
+  }
+  .table td { padding: 12px 16px; vertical-align: middle; font-size: 0.875rem; }
+  .table tbody tr:hover { background: #f8fafc; }
+
+  .class-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: #e8f0fc;
+    color: #1a3a6e;
+  }
+
+  /* ── Action Buttons ── */
+  .bulk-bar {
+    background: #1a3a6e;
+    border-radius: 10px;
+    padding: 12px 20px;
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    display: none;
+  }
+  .bulk-bar.show { display: flex; }
+  .bulk-bar .count { color: white; font-weight: 600; font-size: 0.9rem; flex: 1; }
+  .btn-bulk-pdf {
+    background: white; color: #1a3a6e; border: none;
+    padding: 7px 18px; border-radius: 8px;
+    font-weight: 700; font-size: 0.82rem; cursor: pointer;
+  }
+  .btn-bulk-print {
+    background: #e8f0fc; color: #1a3a6e; border: none;
+    padding: 7px 18px; border-radius: 8px;
+    font-weight: 700; font-size: 0.82rem; cursor: pointer;
+  }
+
+  .btn-pdf {
+    background: #fee2e2; color: #c01313;
+    border: none; border-radius: 6px;
+    padding: 4px 10px; font-size: 0.75rem; font-weight: 600;
+    text-decoration: none; cursor: pointer;
+    transition: background .15s;
+  }
+  .btn-pdf:hover { background: #c01313; color: white; }
+  .btn-preview {
+    background: #e8f0fc; color: #1a3a6e;
+    border: none; border-radius: 6px;
+    padding: 4px 10px; font-size: 0.75rem; font-weight: 600;
+    text-decoration: none; cursor: pointer;
+    transition: background .15s;
+  }
+  .btn-preview:hover { background: #1a3a6e; color: white; }
+
+  .empty-state {
+    text-align: center; padding: 48px 24px; color: #9ca3af;
+  }
+  .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+
+  /* Checkbox styling */
+  input[type="checkbox"] {
+    width: 16px; height: 16px;
+    accent-color: #1a3a6e;
+    cursor: pointer;
+  }
+</style>
+
+<div class="page-header">
+  <div>
+    <a href="{{ url_for('idcard.dashboard') }}" class="back-link">← Back to ID Card Module</a>
+    <h4 class="mt-1">🎓 Student ID Card Generator</h4>
+  </div>
+</div>
+
+<!-- Template Switcher -->
+<div class="template-switcher">
+  <label>Template:</label>
+  {% for t, name, cls in [
+      ('1','Classic Blue',''),
+      ('2','Modern Green','t2'),
+      ('3','Red Premium','t3'),
+      ('4','Dark Mode','t4'),
+      ('5','Purple Diagonal','t5')
+  ] %}
+  <a href="?q={{ request.args.get('q','') }}&class={{ request.args.get('class','') }}&section={{ request.args.get('section','') }}&template={{ t }}"
+     class="tpl-btn {{ cls }} {% if template_no == t %}active{% endif %}">
+    {{ name }}
+  </a>
+  {% endfor %}
+</div>
+
+<!-- Search Filters -->
+<div class="search-card">
+  <form method="get" class="row g-2 align-items-end">
+    <input type="hidden" name="template" value="{{ template_no }}">
+    <div class="col-md-4">
+      <label class="form-label fw-semibold" style="font-size:.82rem;color:#374151;">Search</label>
+      <input type="text" name="q" class="form-control form-control-sm"
+             placeholder="Name or Admission No"
+             value="{{ request.args.get('q', '') }}">
     </div>
     <div class="col-md-2">
-        <input type="text" name="class" class="form-control" placeholder="Class">
+      <label class="form-label fw-semibold" style="font-size:.82rem;color:#374151;">Class</label>
+      <select name="class" class="form-select form-select-sm">
+        <option value="">All Classes</option>
+        {% for cls in all_classes %}
+        <option value="{{ cls }}" {% if request.args.get('class') == cls %}selected{% endif %}>{{ cls }}</option>
+        {% endfor %}
+      </select>
     </div>
     <div class="col-md-2">
-        <input type="text" name="section" class="form-control" placeholder="Section">
+      <label class="form-label fw-semibold" style="font-size:.82rem;color:#374151;">Section</label>
+      <input type="text" name="section" class="form-control form-control-sm"
+             placeholder="Section"
+             value="{{ request.args.get('section', '') }}">
     </div>
     <div class="col-md-2">
-        <button class="btn btn-primary">Search</button>
+      <button class="btn btn-primary btn-sm w-100">🔍 Search</button>
     </div>
+    {% if request.args.get('q') or request.args.get('class') or request.args.get('section') %}
+    <div class="col-md-2">
+      <a href="?template={{ template_no }}" class="btn btn-outline-secondary btn-sm w-100">✕ Clear</a>
+    </div>
+    {% endif %}
+  </form>
+</div>
+
+<!-- Bulk Action Bar -->
+<form id="bulkForm" method="post">
+  <input type="hidden" name="template" value="{{ template_no }}">
+  <input type="hidden" name="class"    value="{{ request.args.get('class', '') }}">
+  <input type="hidden" name="section"  value="{{ request.args.get('section', '') }}">
+
+  <div class="bulk-bar" id="bulkBar">
+    <span class="count"><span id="selectedCount">0</span> students selected</span>
+    <button type="submit" formaction="{{ url_for('idcard.bulk_idcard_pdf') }}"
+            class="btn-bulk-pdf">
+      📄 Download PDF
+    </button>
+    <button type="submit" formaction="{{ url_for('idcard.bulk_print') }}"
+            class="btn-bulk-print">
+      🖨️ Print Cards
+    </button>
+  </div>
+
+  <!-- Students Table -->
+  <div class="students-card">
+    <div class="card-header">
+      <h6>
+        {{ students|length }} student{% if students|length != 1 %}s{% endif %} found
+        {% if request.args.get('class') %} · Class {{ request.args.get('class') }}{% endif %}
+      </h6>
+      {% if students %}
+      <div style="display:flex;gap:8px;align-items:center;">
+        <label style="font-size:0.8rem;color:#6b7280;margin:0;">
+          <input type="checkbox" id="selectAll" style="margin-right:6px;">
+          Select All
+        </label>
+      </div>
+      {% endif %}
+    </div>
+
+    {% if students %}
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th width="40">☐</th>
+            <th>#</th>
+            <th>Name</th>
+            <th>Class</th>
+            <th>Adm No</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in students %}
+          <tr>
+            <td>
+              <input type="checkbox" name="student_ids" value="{{ s.id }}"
+                     class="student-check">
+            </td>
+            <td style="color:#9ca3af;">{{ loop.index }}</td>
+            <td>
+              <div style="font-weight:600;">
+                {{ s.first_name }}
+                {% if s.middle_name %}{{ s.middle_name }}{% endif %}
+                {{ s.last_name }}
+              </div>
+            </td>
+            <td>
+              <span class="class-badge">{{ s.student_class }}-{{ s.section }}</span>
+            </td>
+            <td style="font-family:monospace;font-size:0.82rem;">{{ s.admission_no }}</td>
+            <td>
+              <div style="display:flex;gap:6px;">
+                <a href="{{ url_for('idcard.single_idcard_pdf', student_id=s.id, template=template_no) }}"
+                   class="btn-pdf">📄 PDF</a>
+                <a href="{{ url_for('idcard.preview_card', student_id=s.id, template=template_no) }}"
+                   class="btn-preview" target="_blank">👁 Preview</a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% else %}
+    <div class="empty-state">
+      <div class="icon">🔍</div>
+      <div>No students found. Try adjusting your search filters.</div>
+    </div>
+    {% endif %}
+  </div>
 </form>
 
-<table class="table table-bordered">
-<tr>
-<th>#</th><th>Name</th><th>Class</th><th>Action</th>
-</tr>
-{% for s in students %}
-<tr>
-<td>{{ loop.index }}</td>
-<td>{{ s.first_name }} {{ s.last_name }}</td>
-<td>{{ s.student_class }}-{{ s.section }}</td>
-<td>
-    <a href="/id-card/student/{{ s.id }}/pdf"
-       class="btn btn-sm btn-danger">PDF</a>
-</td>
-</tr>
-{% endfor %}
-</table>
+<script>
+  // Select All
+  const selectAll = document.getElementById('selectAll');
+  const checks    = document.querySelectorAll('.student-check');
+  const bulkBar   = document.getElementById('bulkBar');
+  const countEl   = document.getElementById('selectedCount');
+
+  function updateBulkBar() {
+    const selected = document.querySelectorAll('.student-check:checked').length;
+    countEl.textContent = selected;
+    bulkBar.classList.toggle('show', selected > 0);
+  }
+
+  if (selectAll) {
+    selectAll.addEventListener('change', () => {
+      checks.forEach(c => c.checked = selectAll.checked);
+      updateBulkBar();
+    });
+  }
+
+  checks.forEach(c => c.addEventListener('change', () => {
+    updateBulkBar();
+    if (!c.checked && selectAll) selectAll.checked = false;
+  }));
+</script>
 
 {% endblock %}

@@ -13,7 +13,7 @@ from flask import current_app
 from sqlalchemy import extract
 from models.teacher import SalaryStructure, SalaryRecord, SalaryPayment
 from models.attendance import TeacherAttendance
-from face_attendance.face_engine import encode_face
+
 
 teacher = Blueprint('teacher', __name__, url_prefix='/teacher')
 
@@ -1002,24 +1002,3 @@ def salary_panel():
     )
 
 
-@teacher_bp.route("/register-face/<int:id>", methods=["POST"])
-def register_face(id):
-
-    teacher = Teacher.query.get_or_404(id)
-
-    image = request.files.get("image")
-
-    filepath = f"uploads/{image.filename}"
-
-    image.save(filepath)
-
-    encoding = encode_face(filepath)
-
-    if not encoding:
-        return "No face detected"
-
-    teacher.face_encoding = encoding
-
-    db.session.commit()
-
-    return "Face Registered"

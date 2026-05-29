@@ -12,6 +12,11 @@ class TeacherAttendance(db.Model):
     teacher_id = db.Column(db.Integer, nullable=False)
     attendance_date = db.Column(db.Date, default=date.today)
     status = db.Column(db.String(10), nullable=False)  # Present / Absent
+    login_time = db.Column(db.DateTime)
+    logout_time = db.Column(db.DateTime)
+    working_hours = db.Column(db.Float, default=0)
+
+    attendance_type = db.Column(db.String(20))
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
 

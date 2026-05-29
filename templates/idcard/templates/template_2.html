@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@700;800;900&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    margin: 0; padding: 16px;
+    font-family: 'Nunito', Arial, sans-serif;
+    background: transparent;
+  }
+
+  .id-card {
+    width: 646px;
+    height: 408px;
+    border-radius: 14px;
+    overflow: hidden;
+    position: relative;
+    background: #ffffff;
+    box-shadow: 0 8px 32px rgba(0,0,0,.22);
+    flex-shrink: 0;
+  }
+
+  /* ═══ HEADER ═══ */
+  .t2-header {
+    background: linear-gradient(135deg, #065f46 0%, #059669 55%, #10b981 100%);
+    height: 112px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 0 20px 0 16px;
+    gap: 14px;
+    overflow: hidden;
+  }
+  .t2-header::after {
+    content: '';
+    position: absolute;
+    bottom: -28px; right: -10px;
+    width: 220px; height: 80px;
+    background: white;
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+    transform: scaleX(1.4);
+  }
+  .t2-logo-box {
+    width: 72px; height: 80px;
+    background: white;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,.2);
+  }
+  .t2-logo-box img { width: 100%; height: 100%; object-fit: contain; }
+  .t2-logo-box .lp { font-size: 28px; }
+  .t2-school-text { flex: 1; min-width: 0; }
+  .t2-school-name {
+    font-family: 'Nunito Sans', sans-serif;
+    font-size: 24px; font-weight: 900;
+    color: white; letter-spacing: .5px; line-height: 1.1;
+    text-transform: uppercase;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .t2-school-sub {
+    font-size: 11.5px; font-weight: 700;
+    color: rgba(255,255,255,.85); text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .t2-school-meta { font-size: 10px; color: rgba(255,255,255,.75); line-height: 1.6; }
+
+  .t2-id-pill {
+    position: absolute;
+    top: 14px; right: 16px;
+    background: rgba(0,0,0,.25);
+    border: 1.5px solid rgba(255,255,255,.4);
+    border-radius: 99px;
+    padding: 5px 14px;
+    font-size: 10px; font-weight: 800;
+    color: white; letter-spacing: 1.5px; text-transform: uppercase;
+  }
+
+  /* Session strip */
+  .t2-session-strip {
+    position: absolute;
+    left: 0; top: 112px; bottom: 0;
+    width: 30px;
+    background: linear-gradient(180deg, #065f46, #059669);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .t2-session-text {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    color: white;
+    font-family: 'Nunito Sans', sans-serif;
+    font-size: 13px; font-weight: 800; letter-spacing: 2px;
+  }
+
+  /* Body */
+  .t2-body {
+    position: absolute;
+    left: 30px; top: 112px; right: 0; bottom: 0;
+    display: flex;
+    padding: 14px 16px 10px 14px;
+    gap: 14px;
+  }
+
+  .t2-photo-col {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 6px; flex-shrink: 0;
+  }
+  .t2-photo {
+    width: 110px; height: 128px;
+    border: 3px solid #059669;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #d1fae5;
+    display: flex; align-items: center; justify-content: center;
+    color: #6ee7b7; font-size: 11px;
+  }
+  .t2-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .t2-adm-badge {
+    background: linear-gradient(90deg, #065f46, #059669);
+    color: white; border-radius: 6px;
+    padding: 4px 10px; font-size: 9px; font-weight: 800;
+    text-align: center; letter-spacing: .5px; width: 110px;
+  }
+  .t2-adm-no {
+    font-size: 11px; font-weight: 700; color: #065f46;
+    text-align: center; font-family: monospace; letter-spacing: .5px;
+  }
+
+  .t2-details-col {
+    flex: 1; min-width: 0;
+    display: flex; flex-direction: column;
+  }
+  .t2-student-name {
+    font-family: 'Nunito Sans', sans-serif;
+    font-size: 21px; font-weight: 900;
+    color: #065f46; text-transform: uppercase;
+    letter-spacing: .5px; margin-bottom: 8px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* watermark */
+  .t2-watermark {
+    position: absolute;
+    right: 14px; bottom: 30px;
+    width: 110px; height: 110px;
+    opacity: 0.05; pointer-events: none;
+    font-size: 80px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .t2-watermark img { width: 100%; height: 100%; object-fit: contain; filter: grayscale(1); }
+
+  .t2-field-row {
+    display: flex; align-items: flex-start;
+    font-size: 11px; margin-bottom: 4px;
+  }
+  .t2-field-label { font-weight: 700; color: #374151; min-width: 90px; }
+  .t2-field-colon { color: #374151; margin: 0 6px; font-weight: 700; }
+  .t2-field-value { font-weight: 600; color: #111827; }
+  .t2-field-value.wrap { white-space: normal; line-height: 1.4; }
+
+  .t2-bottom-row {
+    position: absolute;
+    bottom: 8px; left: 44px; right: 12px;
+    display: flex; align-items: flex-end; justify-content: space-between;
+  }
+  .t2-barcode-bars { display: flex; gap: 1px; align-items: flex-end; }
+  .t2-barcode-bars span { display: inline-block; background: #111827; width: 2px; }
+  .t2-adm-under { font-size: 8px; color: #6b7280; letter-spacing: .5px; margin-top: 2px; }
+  .t2-sign-area { text-align: center; }
+  .t2-sign-line { width: 120px; height: 1px; background: #374151; margin-bottom: 3px; }
+  .t2-sign-label { font-size: 10px; color: #374151; font-weight: 700; }
+</style>
+</head>
+<body style="margin:0;padding:0;background:transparent;">
+
+<div class="id-card">
+
+  <div class="t2-watermark">
+    {% if school.logo %}<img src="/uploads/{{ school.logo }}" alt="">{% else %}🏫{% endif %}
+  </div>
+
+  <div class="t2-header">
+    <div class="t2-logo-box">
+      {% if school.logo %}<img src="/uploads/{{ school.logo }}" alt="logo">{% else %}<span class="lp">🏫</span>{% endif %}
+    </div>
+    <div class="t2-school-text">
+      <div class="t2-school-name">{{ school.school_name }}</div>
+      <div class="t2-school-meta">
+        <span>📍 {{ school.address }}, {{ school.city }}</span><br>
+        <span>🌐 {{ school.website or '' }}</span>
+        <span>📞 {{ school.phone }}</span>
+      </div>
+    </div>
+    <div class="t2-id-pill">STUDENT ID CARD</div>
+  </div>
+
+  <div class="t2-session-strip">
+    <span class="t2-session-text">{{ student.session or '2024-2025' }}</span>
+  </div>
+
+  <div class="t2-body">
+    <div class="t2-photo-col">
+      <div class="t2-photo">
+        {% if student.student_photo %}<img src="/uploads/{{ student.student_photo }}" alt="photo">{% else %}Photo{% endif %}
+      </div>
+      <div class="t2-adm-badge">Admn No.</div>
+      <div class="t2-adm-no">{{ student.admission_no }}</div>
+    </div>
+
+    <div class="t2-details-col">
+      <div class="t2-student-name">{{ student.first_name }} {{ student.middle_name or '' }} {{ student.last_name }}</div>
+
+      <div class="t2-field-row"><span class="t2-field-label">Class</span><span class="t2-field-colon">:</span><span class="t2-field-value">{{ student.student_class }} - {{ student.section }}</span></div>
+      <div class="t2-field-row"><span class="t2-field-label">Date of Birth</span><span class="t2-field-colon">:</span><span class="t2-field-value">{{ student.dob or 'N/A' }}</span></div>
+      <div class="t2-field-row"><span class="t2-field-label">Father's Name</span><span class="t2-field-colon">:</span><span class="t2-field-value">{{ student.father_name or 'N/A' }}</span></div>
+      <div class="t2-field-row"><span class="t2-field-label">Mother's Name</span><span class="t2-field-colon">:</span><span class="t2-field-value">{{ student.mother_name or 'N/A' }}</span></div>
+      <div class="t2-field-row"><span class="t2-field-label">Address</span><span class="t2-field-colon">:</span><span class="t2-field-value wrap">{{ student.present_address or 'N/A' }}</span></div>
+      <div class="t2-field-row"><span class="t2-field-label">Blood Group</span><span class="t2-field-colon">:</span><span class="t2-field-value">{{ student.blood_group or 'N/A' }}</span></div>
+      <div class="t2-field-row"><span class="t2-field-label">Contact No.</span><span class="t2-field-colon">:</span><span class="t2-field-value">{{ student.father_mobile or student.guardian_mobile or 'N/A' }}</span></div>
+    </div>
+  </div>
+
+  <div class="t2-bottom-row">
+    <div>
+      <div class="t2-barcode-bars">
+        {% set bars = [3,1,2,1,3,2,1,2,3,1,2,1,3,2,1,3,1,2,1,2,3,2,1,3,1,2,3,1,2,1,3,2,1,2,3,1,2,1,3,2] %}
+        {% for h in bars %}<span style="height: {{ 6 + h * 4 }}px;"></span>{% endfor %}
+      </div>
+      <div class="t2-adm-under">{{ student.admission_no }}</div>
+    </div>
+    <div class="t2-sign-area">
+      <div class="t2-sign-line"></div>
+      <div class="t2-sign-label">Principal</div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

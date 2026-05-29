@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, flash, send_file
+from flask import Blueprint, render_template, request, redirect, flash, send_file, jsonify, session
 from flask_login import login_required, current_user
 from datetime import date, datetime
 from sqlalchemy import extract
@@ -15,6 +15,11 @@ from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Table, TableStyle,
     Spacer, Image
 )
+from math import radians
+from math import sin
+from math import cos
+from math import sqrt
+from math import atan2
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
@@ -26,6 +31,39 @@ from models.subject import Subject
 
 
 attendance = Blueprint("attendance", __name__, url_prefix="/attendance")
+
+
+def inside_school(
+    school_lat,
+    school_lng,
+    current_lat,
+    current_lng,
+    radius=100
+):
+
+    R = 6371000
+
+    dlat = radians(current_lat - school_lat)
+    dlon = radians(current_lng - school_lng)
+
+    a = (
+        sin(dlat / 2) ** 2
+        +
+        cos(radians(school_lat))
+        *
+        cos(radians(current_lat))
+        *
+        sin(dlon / 2) ** 2
+    )
+
+    c = 2 * atan2(
+        sqrt(a),
+        sqrt(1 - a)
+    )
+
+    distance = R * c
+
+    return distance <= radius
 
 # ======================================================
 # ATTENDANCE DASHBOARD
@@ -1678,3 +1716,149 @@ def subject_attendance():
 
         subject_obj=subject_obj
     )
+
+
+# ======================================================
+# CHECK GPS SESSION
+# ======================================================
+
+@attendance.route(
+    "/check-gps-session"
+)
+@login_required
+def check_gps_session():
+
+    pending = session.get(
+        "gps_attendance_pending",
+        False
+    )
+
+    return jsonify({
+        "pending": pending
+    })
+
+
+# ======================================================
+# AUTO GPS CHECK-IN
+# ======================================================
+
+@attendance.route(
+    "/teacher/gps-checkin",
+    methods=["POST"]
+)
+@login_required
+def teacher_gps_checkin():
+
+    latitude = float(
+        request.json.get("latitude")
+    )
+
+    longitude = float(
+        request.json.get("longitude")
+    )
+
+    teacher = Teacher.query.filter_by(
+
+    school_id=current_user.school_id,
+
+    id=current_user.employee_id
+
+).first()
+
+    if not teacher:
+
+        return jsonify({
+            "status": "error",
+            "message": "Teacher not found"
+        })
+
+    school = School.query.get(
+        current_user.school_id
+    )
+
+    if not school.latitude:
+
+        return jsonify({
+            "status": "error",
+            "message": "School GPS not set"
+        })
+
+    allowed = inside_school(
+
+        school.latitude,
+        school.longitude,
+
+        latitude,
+        longitude,
+
+        school.radius
+    )
+
+    if not allowed:
+
+        return jsonify({
+            "status": "error",
+            "message":
+            "Outside School Campus"
+        })
+
+    today = date.today()
+
+    existing = TeacherAttendance.query.filter_by(
+
+        school_id=current_user.school_id,
+
+        teacher_id=teacher.id,
+
+        attendance_date=today
+
+    ).first()
+
+    if existing:
+
+        session[
+            "gps_attendance_pending"
+        ] = False
+
+        return jsonify({
+            "status": "success",
+            "message":
+            "Attendance Already Marked"
+        })
+
+    attendance_record = TeacherAttendance(
+
+        school_id=current_user.school_id,
+
+        teacher_id=teacher.id,
+
+        attendance_date=today,
+
+        status="P",
+
+        method="gps",
+
+        latitude=latitude,
+
+        longitude=longitude,
+
+        login_time=datetime.now()
+    )
+
+    db.session.add(
+        attendance_record
+    )
+
+    db.session.commit()
+
+    session[
+        "gps_attendance_pending"
+    ] = False
+
+    return jsonify({
+
+        "status": "success",
+
+        "message":
+        "Attendance Marked Successfully"
+    })

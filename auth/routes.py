@@ -1,6 +1,7 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from flask_login import login_user, logout_user, login_required, current_user
 from extensions import db, login_manager
+from models import user
 from models.user import User
 from models.school import School
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -70,7 +71,18 @@ def login():
 
             login_user(user)
 
-            # 🕒 TRACK LAST LOGIN
+            allowed_roles = [
+                "teacher",
+                "employee",
+                "staff",
+                "director",
+                "accountant"
+                ]
+
+            if user.role.lower() in allowed_roles:
+                session["gps_attendance_pending"] = True
+
+            # 🕒 TRACK LAST LOGIN123    
             user.last_login = datetime.utcnow()
             db.session.commit()
 

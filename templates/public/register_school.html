@@ -1,116 +1,826 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>School Registration | Bhishmaa ERP</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>School Registration | Bhishmaa Intelligent School ERP</title>
 
-```
-<style>
+  <!-- SEO -->
+  <meta name="description" content="Register your school on Bhishmaa Intelligent School ERP – India's most advanced cloud-based school management system. Apply for onboarding today.">
+  <meta name="keywords" content="Bhishmaa ERP school registration, school onboarding, school management system India, apply school ERP">
+  <meta name="author" content="Bhishmaa ERP">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#0eb86a">
+  <link rel="canonical" href="https://bhishmaaerp.com/register">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Register Your School | Bhishmaa ERP">
+  <meta property="og:description" content="Onboard your school to Bhishmaa's intelligent ERP platform.">
+  <meta property="og:image" content="/static/logo/logo7.png">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo/logo7.png') }}">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #0eb86a;
+      --green-dark: #09894e;
+      --green-deep: #065e36;
+      --green-bright: #1dd882;
+      --green-glow: rgba(14,184,106,0.35);
+      --white: #ffffff;
+      --text-dark: #0a1f14;
+      --text-mid: #3d5c4a;
+      --text-soft: #7a9488;
+      --border: #dff0e8;
+      --input-bg: #f3fbf6;
+    }
+
+    html, body { height: 100%; }
+
     body {
-        background: linear-gradient(135deg, #1dbf73, #0b1e3c);
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      background: linear-gradient(135deg, #065e36 0%, #0eb86a 50%, #044a2b 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+      position: relative;
+      overflow-x: hidden;
     }
-    .register-card {
-        background: #ffffff;
-        width: 100%;
-        max-width: 500px;
-        border-radius: 20px;
-        box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-        overflow: hidden;
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 10% 20%, rgba(120,255,180,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 55% at 90% 80%, rgba(0,80,40,0.35) 0%, transparent 60%);
+      pointer-events: none;
     }
-    .register-header {
-        background: #1dbf73;
-        color: white;
-        padding: 30px;
-        text-align: center;
+
+    /* ── CARD ── */
+    .card-shell {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 780px;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(5,40,20,0.35), 0 0 0 1px rgba(255,255,255,0.1);
+      display: flex;
+      animation: cardIn 0.75s cubic-bezier(0.22,1,0.36,1) both;
     }
-    .form-control { border-radius: 10px; padding: 12px; }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(30px) scale(0.97); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    /* ── LEFT PANEL ── */
+    .left-panel {
+      flex: 0 0 40%;
+      background: linear-gradient(160deg, var(--green-bright) 0%, var(--green) 40%, var(--green-deep) 100%);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 32px 28px;
+    }
+
+    .left-panel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(circle at 25% 75%, rgba(255,255,255,0.07) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255,255,255,0.04) 0%, transparent 45%);
+      pointer-events: none;
+    }
+
+    /* Wave cut right edge */
+    .left-panel::after {
+      content: '';
+      position: absolute;
+      right: -60px; top: 0; bottom: 0;
+      width: 120px;
+      background: white;
+      border-radius: 60% 0 0 60% / 50% 0 0 50%;
+    }
+
+    /* ── SPHERES ── */
+    .spheres-wrap { position: absolute; inset: 0; pointer-events: none; }
+
+    .sphere {
+      position: absolute;
+      border-radius: 50%;
+    }
+
+    .s1 {
+      width: 150px; height: 150px;
+      bottom: -28px; left: 50%; transform: translateX(-50%);
+      background: radial-gradient(circle at 35% 30%,
+        rgba(255,255,255,0.5) 0%,
+        rgba(120,240,180,0.65) 28%,
+        rgba(10,160,80,0.9) 62%,
+        rgba(4,60,28,1) 100%);
+      box-shadow:
+        inset -22px -22px 44px rgba(2,40,18,0.55),
+        inset 14px 14px 32px rgba(255,255,255,0.28),
+        0 22px 60px rgba(4,50,22,0.5);
+      animation: floatBig 9s ease-in-out infinite alternate;
+    }
+
+    .s2 {
+      width: 90px; height: 90px;
+      top: 20px; left: -14px;
+      background: radial-gradient(circle at 38% 32%,
+        rgba(255,255,255,0.45) 0%,
+        rgba(100,230,160,0.6) 32%,
+        rgba(8,140,65,0.9) 68%,
+        rgba(3,50,22,1) 100%);
+      box-shadow:
+        inset -12px -12px 28px rgba(2,35,14,0.5),
+        inset 8px 8px 20px rgba(255,255,255,0.22),
+        0 12px 36px rgba(3,45,18,0.4);
+      animation: floatReg 11s ease-in-out infinite alternate;
+    }
+
+    .s3 {
+      width: 52px; height: 52px;
+      bottom: 80px; right: 65px;
+      background: radial-gradient(circle at 38% 30%,
+        rgba(255,255,255,0.38) 0%,
+        rgba(80,220,140,0.55) 38%,
+        rgba(6,120,55,0.9) 72%,
+        rgba(2,42,18,1) 100%);
+      box-shadow:
+        inset -7px -7px 18px rgba(1,30,12,0.5),
+        inset 5px 5px 12px rgba(255,255,255,0.18);
+      animation: floatReg 13s ease-in-out infinite alternate-reverse;
+    }
+
+    .s4 {
+      width: 34px; height: 34px;
+      top: 100px; right: 72px;
+      background: radial-gradient(circle at 38% 30%,
+        rgba(255,255,255,0.32) 0%,
+        rgba(100,240,160,0.5) 38%,
+        rgba(8,130,60,0.88) 74%,
+        rgba(3,40,16,1) 100%);
+      box-shadow: inset -4px -4px 12px rgba(1,28,10,0.5);
+      animation: floatReg 7s ease-in-out infinite alternate;
+    }
+
+    /* tiny decorative */
+    .s5 {
+      width: 30px; height: 30px;
+      top: 55%; left: 18%;
+      background: radial-gradient(circle at 38% 30%,
+        rgba(255,255,255,0.28) 0%,
+        rgba(60,200,120,0.45) 40%,
+        rgba(5,100,45,0.85) 78%,
+        rgba(2,35,14,1) 100%);
+      animation: floatReg 15s ease-in-out infinite alternate-reverse;
+    }
+
+    @keyframes floatBig {
+      0%   { transform: translateX(-50%) translateY(0); }
+      100% { transform: translateX(-50%) translateY(-20px); }
+    }
+    @keyframes floatReg {
+      0%   { transform: translateY(0) scale(1); }
+      100% { transform: translateY(-14px) scale(1.05); }
+    }
+
+    /* ── LEFT CONTENT ── */
+    .left-content { position: relative; z-index: 5; }
+
+    .brand-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.14);
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 100px;
+      padding: 5px 14px 5px 6px;
+      margin-bottom: 26px;
+    }
+
+    .brand-pill .logo-mini {
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.22);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+
+    .brand-pill .logo-mini img {
+      width: 22px; height: 22px; object-fit: contain;
+    }
+
+    .brand-pill span {
+      font-size: 11px; font-weight: 700;
+      color: rgba(255,255,255,0.9); letter-spacing: 0.5px;
+    }
+
+    .left-content h2 {
+      font-family: 'Sora', sans-serif;
+      font-size: 28px; font-weight: 700;
+      color: #fff; line-height: 1.1;
+      letter-spacing: -0.5px; margin-bottom: 6px;
+    }
+
+    .left-content h3 {
+      font-size: 10px; font-weight: 700;
+      color: rgba(255,255,255,0.65);
+      letter-spacing: 1.6px; text-transform: uppercase; margin-bottom: 12px;
+    }
+
+    .left-content p {
+      font-size: 12px; color: rgba(255,255,255,0.52);
+      line-height: 1.65; max-width: 190px;
+    }
+
+    /* Steps list */
+    .steps-list { margin-top: 18px; display: flex; flex-direction: column; gap: 9px; }
+
+    .step-item {
+      display: flex; align-items: center; gap: 12px;
+      animation: fadeUp 0.6s ease both;
+    }
+    .step-item:nth-child(1) { animation-delay: 0.3s; }
+    .step-item:nth-child(2) { animation-delay: 0.45s; }
+    .step-item:nth-child(3) { animation-delay: 0.6s; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    .step-dot {
+      width: 28px; height: 28px; flex-shrink: 0;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      border: 1.5px solid rgba(255,255,255,0.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: #fff;
+    }
+
+    .step-text { font-size: 12px; color: rgba(255,255,255,0.65); font-weight: 500; }
+
+    /* ── RIGHT PANEL ── */
+    .right-panel {
+      flex: 1;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 24px 32px;
+      position: relative;
+      overflow-y: auto;
+    }
+
+    /* Bottom right sphere peek */
+    .right-panel::after {
+      content: '';
+      position: absolute;
+      bottom: -30px; right: -30px;
+      width: 90px; height: 90px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 38% 32%,
+        rgba(140,240,185,0.65) 0%,
+        rgba(14,184,106,0.75) 45%,
+        rgba(6,80,40,0.85) 100%);
+      box-shadow: inset -8px -8px 20px rgba(2,40,18,0.4);
+      pointer-events: none;
+    }
+
+    /* ── PROGRESS BAR ── */
+    .progress-wrap { margin-bottom: 14px; }
+
+    .progress-labels {
+      display: flex; justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .prog-step {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      font-size: 10px; font-weight: 600;
+      color: var(--text-soft); letter-spacing: 0.4px; text-transform: uppercase;
+      transition: color 0.3s;
+      flex: 1;
+    }
+
+    .prog-step.active { color: var(--green); }
+    .prog-step.done { color: var(--green-dark); }
+
+    .prog-icon {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; color: var(--text-soft);
+      background: #fff;
+      transition: all 0.3s;
+    }
+
+    .prog-step.active .prog-icon {
+      border-color: var(--green);
+      color: var(--green);
+      background: rgba(14,184,106,0.08);
+      box-shadow: 0 0 0 3px rgba(14,184,106,0.12);
+    }
+
+    .prog-step.done .prog-icon {
+      border-color: var(--green-dark);
+      background: var(--green-dark);
+      color: #fff;
+    }
+
+    .prog-track {
+      height: 4px;
+      background: var(--border);
+      border-radius: 100px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .prog-fill {
+      height: 100%;
+      border-radius: 100px;
+      background: linear-gradient(90deg, var(--green-bright), var(--green));
+      width: 0%;
+      transition: width 0.5s cubic-bezier(0.34,1.56,0.64,1);
+      box-shadow: 0 0 8px var(--green-glow);
+    }
+
+    /* ── FORM HEADING ── */
+    .form-heading { margin-bottom: 12px; }
+
+    .form-heading h1 {
+      font-family: 'Sora', sans-serif;
+      font-size: 20px; font-weight: 700;
+      color: var(--text-dark); letter-spacing: -0.3px; margin-bottom: 2px;
+    }
+
+    .form-heading p { font-size: 12px; color: var(--text-soft); }
+
+    /* section label */
+    .section-label {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 10px; font-weight: 700;
+      color: var(--green-dark); letter-spacing: 1px;
+      text-transform: uppercase; margin: 12px 0 8px;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1; height: 1px;
+      background: linear-gradient(90deg, var(--border), transparent);
+    }
+
+    /* ── FIELDS ── */
+    .fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .field-full { grid-column: 1 / -1; }
+
+    .field-wrap { display: flex; flex-direction: column; gap: 4px; }
+
+    .field-label {
+      font-size: 10px; font-weight: 700;
+      color: var(--text-mid); letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .field-inner {
+      display: flex; align-items: center;
+      background: var(--input-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      padding: 0 12px;
+      gap: 8px;
+      transition: all 0.22s ease;
+    }
+
+    .field-inner:focus-within {
+      border-color: var(--green);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(14,184,106,0.12);
+    }
+
+    .fi-icon {
+      color: var(--text-soft); font-size: 12px; flex-shrink: 0;
+      transition: color 0.2s;
+    }
+
+    .field-inner:focus-within .fi-icon { color: var(--green); }
+
+    .field-inner input {
+      flex: 1; background: none; border: none; outline: none;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 13px; color: var(--text-dark);
+      padding: 9px 0;
+    }
+
+    .field-inner input::placeholder { color: var(--text-soft); font-size: 12px; }
+
+    .show-btn {
+      background: none; border: none;
+      font-size: 10px; font-weight: 800;
+      color: var(--green); cursor: pointer;
+      letter-spacing: 0.5px; padding: 4px;
+      transition: color 0.2s;
+    }
+    .show-btn:hover { color: var(--green-dark); }
+
+    /* ── ALERTS ── */
+    .alert {
+      border-radius: 10px; font-size: 13px;
+      padding: 10px 14px; margin-bottom: 14px;
+      display: flex; align-items: center; gap: 8px; border: none;
+    }
+    .alert-danger { background: #fff0f0; color: #c0392b; border: 1px solid #fcc; }
+    .alert-success { background: #f0fff5; color: #0a7a38; border: 1px solid #b0ead0; }
+
+    /* ── BUTTON ── */
     .btn-register {
-        background: #1dbf73;
-        color: white;
-        border-radius: 10px;
-        padding: 12px;
-        font-weight: 700;
-        border: none;
+      width: 100%;
+      padding: 14px;
+      border: none; border-radius: 12px;
+      background: linear-gradient(135deg, var(--green-bright), var(--green), var(--green-dark));
+      color: #fff;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 15px; font-weight: 700;
+      cursor: pointer;
+      position: relative; overflow: hidden;
+      transition: all 0.25s ease;
+      box-shadow: 0 6px 24px var(--green-glow);
+      letter-spacing: 0.2px;
+      margin-top: 20px;
     }
-    .btn-register:hover { background: #158a53; }
-</style>
-```
 
+    .btn-register::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%; width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+      transition: left 0.45s ease;
+    }
+
+    .btn-register:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 32px rgba(14,184,106,0.48);
+    }
+
+    .btn-register:hover::after { left: 100%; }
+    .btn-register:active { transform: none; }
+
+    .btn-inner {
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px; position: relative; z-index: 1;
+    }
+
+    .btn-register.loading .btn-text { display: none; }
+    .btn-register .btn-loader { display: none; }
+    .btn-register.loading .btn-loader {
+      display: flex; align-items: center; gap: 8px;
+      position: relative; z-index: 1;
+    }
+
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── LOGIN LINK ── */
+    .login-row {
+      text-align: center; margin-top: 16px;
+      font-size: 13px; color: var(--text-soft);
+    }
+    .login-row a {
+      color: var(--green-dark); font-weight: 700;
+      text-decoration: none;
+    }
+    .login-row a:hover { text-decoration: underline; }
+
+    /* ── THEME TOGGLE ── */
+    .theme-btn {
+      position: fixed; top: 18px; right: 18px; z-index: 100;
+      width: 40px; height: 40px; border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.22);
+      color: rgba(255,255,255,0.8); font-size: 14px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      backdrop-filter: blur(10px); transition: all 0.2s;
+    }
+    .theme-btn:hover { background: rgba(255,255,255,0.25); color: #fff; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 700px) {
+      .card-shell { flex-direction: column; max-width: 420px; min-height: unset; }
+      .left-panel { flex: none; padding: 30px 26px 80px; }
+      .left-panel::after { display: none; }
+      .left-content h2 { font-size: 28px; }
+      .steps-list { display: none; }
+      .right-panel { padding: 28px 22px 34px; }
+      .right-panel::after { width: 80px; height: 80px; bottom: -24px; right: -24px; }
+      .fields-grid { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
-
 <body>
 
-<div class="register-card">
-    <div class="register-header">
-        <h3 class="fw-bold mb-0">Apply for Admission</h3>
-        <p class="mb-0 opacity-75">Onboard your school to Bhishmaa ERP</p>
-    </div>
+  <!-- Schema -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"WebPage",
+    "name":"School Registration | Bhishmaa ERP",
+    "url":"https://bhishmaaerp.com/register",
+    "description":"Register your school on Bhishmaa Intelligent School ERP.",
+    "author":{"@type":"Organization","name":"Bhishmaa ERP"}
+  }
+  </script>
 
-```
-<div class="p-4 p-md-5">
+  <button class="theme-btn" onclick="toggleTheme()" aria-label="Toggle theme">
+    <i id="themeIcon" class="fa fa-moon"></i>
+  </button>
 
-    <!-- Flash Messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% for category, message in messages %}
-        <div class="alert alert-{{ category }} small">{{ message }}</div>
-      {% endfor %}
-    {% endwith %}
+  <div class="card-shell" role="main">
 
-    <form method="POST">
+    <!-- ── LEFT PANEL ── -->
+    <aside class="left-panel" aria-label="Registration info">
+      <div class="spheres-wrap" aria-hidden="true">
+        <div class="sphere s1"></div>
+        <div class="sphere s2"></div>
+        <div class="sphere s3"></div>
+        <div class="sphere s4"></div>
+        <div class="sphere s5"></div>
+      </div>
 
-        <!-- SCHOOL -->
-        <div class="mb-3">
-            <label class="form-label small fw-bold">School Name</label>
-            <input type="text" name="school_name" class="form-control" required>
+      <div class="left-content">
+        <div class="brand-pill">
+          <div class="logo-mini">
+            <img src="{{ url_for('static', filename='logo/logo7.png') }}" alt="Bhishmaa Logo">
+          </div>
+          <span>BHISHMAA ERP</span>
         </div>
 
-        <div class="mb-3">
-            <label class="form-label small fw-bold">School Code</label>
-            <input type="text" name="school_code" class="form-control" required>
+        <h2>JOIN US</h2>
+        <h3>School Onboarding</h3>
+        <p>Register your school and unlock India's most intelligent ERP platform — free to apply.</p>
+
+        <div class="steps-list">
+          <div class="step-item">
+            <div class="step-dot">1</div>
+            <span class="step-text">Fill school & admin details</span>
+          </div>
+          <div class="step-item">
+            <div class="step-dot">2</div>
+            <span class="step-text">Submit your application</span>
+          </div>
+          <div class="step-item">
+            <div class="step-dot">3</div>
+            <span class="step-text">Get approved & go live</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── RIGHT PANEL ── -->
+    <section class="right-panel" aria-label="Registration form">
+
+      <!-- Progress -->
+      <div class="progress-wrap" id="progressWrap">
+        <div class="progress-labels">
+          <div class="prog-step active" id="step1">
+            <div class="prog-icon"><i class="fa fa-school"></i></div>
+            School
+          </div>
+          <div class="prog-step" id="step2">
+            <div class="prog-icon"><i class="fa fa-user-shield"></i></div>
+            Admin
+          </div>
+          <div class="prog-step" id="step3">
+            <div class="prog-icon"><i class="fa fa-check"></i></div>
+            Done
+          </div>
+        </div>
+        <div class="prog-track">
+          <div class="prog-fill" id="progFill"></div>
+        </div>
+      </div>
+
+      <div class="form-heading">
+        <h1>Apply for Admission</h1>
+        <p>Onboard your school to Bhishmaa ERP — fill all fields below.</p>
+      </div>
+
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}" role="alert">
+              <i class="fa fa-{% if category == 'danger' %}exclamation-circle{% else %}check-circle{% endif %}"></i>
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST" id="regForm" novalidate>
+
+        <!-- SCHOOL INFO -->
+        <div class="section-label"><i class="fa fa-school"></i> School Information</div>
+
+        <div class="fields-grid">
+
+          <div class="field-wrap field-full">
+            <label class="field-label" for="school_name">School Name</label>
+            <div class="field-inner">
+              <i class="fa fa-building fi-icon" aria-hidden="true"></i>
+              <input type="text" id="school_name" name="school_name"
+                placeholder="e.g. Delhi Public School" required autocomplete="organization">
+            </div>
+          </div>
+
+          <div class="field-wrap">
+            <label class="field-label" for="school_code">School Code</label>
+            <div class="field-inner">
+              <i class="fa fa-hashtag fi-icon" aria-hidden="true"></i>
+              <input type="text" id="school_code" name="school_code"
+                placeholder="e.g. SCH-2024" required spellcheck="false">
+            </div>
+          </div>
+
+          <div class="field-wrap">
+            <label class="field-label" for="email">Email Address</label>
+            <div class="field-inner">
+              <i class="fa fa-envelope fi-icon" aria-hidden="true"></i>
+              <input type="email" id="email" name="email"
+                placeholder="school@email.com" required autocomplete="email">
+            </div>
+          </div>
+
         </div>
 
-        <!-- 🔥 NEW EMAIL FIELD -->
-        <div class="mb-3">
-            <label class="form-label small fw-bold">Email Address</label>
-            <input type="email" name="email" class="form-control" placeholder="Enter your email" required>
+        <!-- ADMIN INFO -->
+        <div class="section-label"><i class="fa fa-user-shield"></i> Admin Credentials</div>
+
+        <div class="fields-grid">
+
+          <div class="field-wrap field-full">
+            <label class="field-label" for="admin_username">Admin Username</label>
+            <div class="field-inner">
+              <i class="fa fa-user fi-icon" aria-hidden="true"></i>
+              <input type="text" id="admin_username" name="admin_username"
+                placeholder="Choose a username" required autocomplete="username" spellcheck="false">
+            </div>
+          </div>
+
+          <div class="field-wrap field-full">
+            <label class="field-label" for="password">Admin Password</label>
+            <div class="field-inner">
+              <i class="fa fa-lock fi-icon" aria-hidden="true"></i>
+              <input type="password" id="password" name="password"
+                placeholder="Min. 8 characters" required autocomplete="new-password">
+              <button type="button" class="show-btn" onclick="togglePass()" aria-label="Toggle password">SHOW</button>
+            </div>
+          </div>
+
         </div>
 
-        <hr class="my-4">
-
-        <!-- ADMIN -->
-        <div class="mb-3">
-            <label class="form-label small fw-bold">Admin Username</label>
-            <input type="text" name="admin_username" class="form-control" required>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label small fw-bold">Admin Password</label>
-            <input type="password" name="password" class="form-control" required>
-        </div>
-
-        <button type="submit" class="btn btn-register w-100 mb-3">
+        <!-- Submit -->
+        <button type="submit" class="btn-register" id="regBtn">
+          <span class="btn-inner btn-text">
+            <i class="fa fa-paper-plane" aria-hidden="true"></i>
             Submit Application
+          </span>
+          <span class="btn-loader" aria-live="polite">
+            <span class="spinner" aria-hidden="true"></span>
+            Submitting…
+          </span>
         </button>
 
-        <div class="text-center">
-            <a href="{{ url_for('auth.login') }}" class="small text-muted">
-                Already registered? Log in here
-            </a>
-        </div>
+      </form>
 
-    </form>
-</div>
-```
+      <div class="login-row">
+        Already registered? <a href="{{ url_for('auth.login') }}">Sign in here</a>
+      </div>
 
-</div>
+    </section>
+  </div>
 
+  <script>
+    // Password toggle
+    function togglePass() {
+      const p = document.getElementById('password');
+      const b = document.querySelector('.show-btn');
+      p.type = p.type === 'password' ? 'text' : 'password';
+      b.textContent = p.type === 'password' ? 'SHOW' : 'HIDE';
+    }
+
+    // Progress bar based on field fill
+    const allInputs = document.querySelectorAll('#regForm input');
+    const schoolInputs = ['school_name','school_code','email'];
+    const adminInputs  = ['admin_username','password'];
+
+    function updateProgress() {
+      const schoolFilled = schoolInputs.every(id => document.getElementById(id)?.value.trim());
+      const adminFilled  = adminInputs.every(id => document.getElementById(id)?.value.trim());
+
+      const s1 = document.getElementById('step1');
+      const s2 = document.getElementById('step2');
+      const s3 = document.getElementById('step3');
+      const fill = document.getElementById('progFill');
+
+      if (adminFilled && schoolFilled) {
+        s1.className = 'prog-step done';
+        s2.className = 'prog-step done';
+        s3.className = 'prog-step active';
+        fill.style.width = '100%';
+      } else if (schoolFilled) {
+        s1.className = 'prog-step done';
+        s2.className = 'prog-step active';
+        s3.className = 'prog-step';
+        fill.style.width = '50%';
+      } else {
+        s1.className = 'prog-step active';
+        s2.className = 'prog-step';
+        s3.className = 'prog-step';
+        fill.style.width = '0%';
+      }
+    }
+
+    allInputs.forEach(el => el.addEventListener('input', updateProgress));
+
+    // Loading on submit
+    document.getElementById('regForm').addEventListener('submit', () => {
+      document.getElementById('regBtn').classList.add('loading');
+    });
+
+    // 3D card tilt
+    const card = document.querySelector('.card-shell');
+    let tx = 0, ty = 0, gx = 0, gy = 0;
+    document.addEventListener('mousemove', e => {
+      const cx = window.innerWidth/2, cy = window.innerHeight/2;
+      tx = (e.clientY - cy)/cy * 3.5;
+      ty = (cx - e.clientX)/cx * 3.5;
+    });
+    (function tilt() {
+      gx += (tx-gx)*0.05; gy += (ty-gy)*0.05;
+      card.style.transform = `perspective(1200px) rotateX(${gx}deg) rotateY(${gy}deg)`;
+      requestAnimationFrame(tilt);
+    })();
+    document.addEventListener('mouseleave', () => { tx=0; ty=0; });
+
+    // Theme
+    let isDark = localStorage.getItem('bhishmaa-theme') === 'dark';
+    if (isDark) applyDark();
+
+    function toggleTheme() {
+      isDark = !isDark;
+      localStorage.setItem('bhishmaa-theme', isDark ? 'dark' : 'light');
+      isDark ? applyDark() : applyLight();
+    }
+
+    function applyDark() {
+      const rp = document.querySelector('.right-panel');
+      rp.style.background = '#0a1f14';
+      document.querySelectorAll('.field-inner').forEach(el => {
+        el.style.background = 'rgba(255,255,255,0.05)';
+        el.style.borderColor = 'rgba(255,255,255,0.1)';
+      });
+      document.querySelectorAll('.field-inner input').forEach(el => el.style.color = '#d0f0e0');
+      document.querySelector('.form-heading h1').style.color = '#d0f0e0';
+      document.querySelector('.form-heading p').style.color = 'rgba(180,230,200,0.5)';
+      document.querySelector('.login-row').style.color = 'rgba(180,230,200,0.5)';
+      document.getElementById('themeIcon').classList.replace('fa-moon','fa-sun');
+    }
+
+    function applyLight() {
+      const rp = document.querySelector('.right-panel');
+      rp.style.background = '#ffffff';
+      document.querySelectorAll('.field-inner').forEach(el => {
+        el.style.background = ''; el.style.borderColor = '';
+      });
+      document.querySelectorAll('.field-inner input').forEach(el => el.style.color = '');
+      document.querySelector('.form-heading h1').style.color = '';
+      document.querySelector('.form-heading p').style.color = '';
+      document.querySelector('.login-row').style.color = '';
+      document.getElementById('themeIcon').classList.replace('fa-sun','fa-moon');
+    }
+  </script>
 </body>
 </html>

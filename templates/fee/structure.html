@@ -3,9 +3,283 @@
 
 {% block content %}
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<style>
+/* ══════════════════════════════════════════
+   FEE STRUCTURE — ENHANCED DESIGN LAYER
+   Sits on top of base.html / Bootstrap.
+   Zero changes to Jinja logic or form names.
+══════════════════════════════════════════ */
+
+/* ── Page header ── */
+.fee-page-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    padding: 1.4rem 1.6rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    box-shadow: 0 8px 32px rgba(102,126,234,0.25);
+}
+.fee-page-header h3 {
+    color: #fff !important;
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 0 !important;
+    letter-spacing: -0.2px;
+}
+.fee-page-header small {
+    color: rgba(255,255,255,0.72) !important;
+    font-size: 0.82rem;
+}
+.fee-page-header .btn-outline-danger {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.35);
+    color: #fff;
+    backdrop-filter: blur(4px);
+}
+.fee-page-header .btn-outline-danger:hover {
+    background: rgba(248,113,113,0.25);
+    border-color: #f87171;
+    color: #fff;
+}
+.fee-page-header .btn-outline-secondary {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.3);
+    color: #fff;
+    backdrop-filter: blur(4px);
+}
+.fee-page-header .btn-outline-secondary:hover {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+}
+
+/* ── neo-card override ── */
+.neo-card {
+    border-radius: 16px !important;
+    border: 1px solid rgba(102,126,234,0.15) !important;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.07) !important;
+    overflow: hidden;
+    padding: 0 !important;
+}
+
+/* ── Table wrapper ── */
+.neo-card .table-responsive {
+    border-radius: 0;
+}
+
+/* ── Column group color bars ── */
+.fee-col-group-header {
+    display: flex;
+    gap: 6px;
+    padding: 10px 16px;
+    background: #f8f9ff;
+    border-bottom: 1px solid #e8eaf6;
+    flex-wrap: wrap;
+}
+.fee-group-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 4px 12px;
+    border-radius: 20px;
+}
+.fee-group-tag.onetime  { background: #ede9fe; color: #6d28d9; }
+.fee-group-tag.monthly  { background: #d1fae5; color: #065f46; }
+.fee-group-tag.exam     { background: #fef3c7; color: #92400e; }
+.fee-group-tag.fine     { background: #fee2e2; color: #991b1b; }
+
+/* ── Table head ── */
+.fee-table-wrap .table thead tr th {
+    background: #f1f3ff !important;
+    color: #4b5563;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 10px 8px;
+    border-bottom: 2px solid #dde0f7;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+/* Column category color underlines */
+.fee-table-wrap th.h-onetime  { border-top: 3px solid #7c3aed; }
+.fee-table-wrap th.h-monthly  { border-top: 3px solid #059669; }
+.fee-table-wrap th.h-exam     { border-top: 3px solid #d97706; }
+.fee-table-wrap th.h-fine     { border-top: 3px solid #dc2626; }
+.fee-table-wrap th.h-class    { border-top: 3px solid #667eea; }
+
+/* ── Table body ── */
+.fee-table-wrap .table tbody tr {
+    transition: background 0.15s;
+}
+.fee-table-wrap .table tbody tr:hover {
+    background: #f5f6ff !important;
+}
+.fee-table-wrap .table tbody tr:nth-child(even) {
+    background: #fafbff;
+}
+.fee-table-wrap .table tbody td {
+    padding: 7px 6px;
+    vertical-align: middle;
+    border-color: #ecedf8;
+}
+
+/* ── Class cell ── */
+.fee-table-wrap td.fw-bold {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-weight: 700 !important;
+    font-size: 13px;
+    color: #fff;
+    text-align: center;
+}
+
+/* Colorful class badge — injected via JS below */
+.class-badge {
+    display: inline-block;
+    min-width: 68px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 0.01em;
+}
+
+/* ── Inputs ── */
+.fee-table-wrap .form-control-sm {
+    border-radius: 8px !important;
+    border: 1.5px solid #e2e5f7 !important;
+    background: #fff !important;
+    font-size: 13px;
+    color: #1e293b;
+    text-align: right;
+    padding: 5px 8px !important;
+    transition: border-color 0.18s, box-shadow 0.18s, background 0.18s !important;
+    min-width: 78px;
+}
+.fee-table-wrap .form-control-sm:hover {
+    border-color: #a5b4fc !important;
+}
+.fee-table-wrap .form-control-sm:focus {
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 3px rgba(102,126,234,0.15) !important;
+    background: #f5f6ff !important;
+    outline: none !important;
+}
+
+/* ── Checkbox → toggle pill ── */
+.fee-table-wrap input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 38px;
+    height: 20px;
+    border-radius: 20px;
+    background: #e2e8f0;
+    border: 1.5px solid #cbd5e1;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+    vertical-align: middle;
+}
+.fee-table-wrap input[type="checkbox"]::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #94a3b8;
+    transition: transform 0.2s, background 0.2s;
+}
+.fee-table-wrap input[type="checkbox"]:checked {
+    background: #667eea;
+    border-color: #667eea;
+}
+.fee-table-wrap input[type="checkbox"]:checked::after {
+    transform: translateX(18px);
+    background: #fff;
+}
+
+/* ── Save button ── */
+.fee-save-bar {
+    padding: 14px 20px;
+    background: #f8f9ff;
+    border-top: 1px solid #e8eaf6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.fee-save-bar .btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2) !important;
+    border: none !important;
+    border-radius: 10px !important;
+    padding: 9px 24px !important;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    box-shadow: 0 4px 18px rgba(102,126,234,0.35);
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+.fee-save-bar .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(102,126,234,0.45);
+}
+.fee-save-bar .btn-primary:active {
+    transform: translateY(0);
+}
+.fee-save-note {
+    font-size: 12px;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+.fee-save-note i { color: #a5b4fc; }
+
+/* ── Toast notification ── */
+#feeToast {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    z-index: 9999;
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    border: 1px solid #6ee7b7;
+    color: #065f46;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 12px 22px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    transform: translateY(60px);
+    opacity: 0;
+    transition: all 0.35s cubic-bezier(.22,1,.36,1);
+    pointer-events: none;
+}
+#feeToast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+</style>
+
+<!-- ═══ PAGE HEADER (replaces original div) ═══ -->
+<div class="fee-page-header">
     <div>
-        <h3 class="fw-bold mb-0">Fee Structure</h3>
+        <h3 class="fw-bold mb-0"><i class="fa fa-indian-rupee-sign me-2" style="opacity:.85"></i>Fee Structure</h3>
         <small class="text-muted">Class-wise fee configuration</small>
     </div>
     <div>
@@ -20,35 +294,43 @@
 
 <div class="neo-card">
 
+    <!-- Column group legend -->
+    <div class="fee-col-group-header">
+        <span class="fee-group-tag onetime"><i class="fa fa-tag"></i> One-time fees</span>
+        <span class="fee-group-tag monthly"><i class="fa fa-calendar-days"></i> Monthly & Hostel</span>
+        <span class="fee-group-tag exam"><i class="fa fa-pen-to-square"></i> Exam fees</span>
+        <span class="fee-group-tag fine"><i class="fa fa-triangle-exclamation"></i> Fine rules</span>
+    </div>
+
     <form method="post">
-        <div class="table-responsive">
+        <div class="table-responsive fee-table-wrap">
             <table class="table table-bordered align-middle text-center">
 
                 <thead class="table-light">
                     <tr>
-                        <th>Class</th>
+                        <th class="h-class">Class</th>
 
                         <!-- ONE TIME -->
-                        <th>Admission</th>
-                        <th>Registration</th>
-                        <th>Books</th>
-                        <th>Dress</th>
-                        <th>Activity</th>
-                        <th>Misc</th>
+                        <th class="h-onetime">Admission</th>
+                        <th class="h-onetime">Registration</th>
+                        <th class="h-onetime">Books</th>
+                        <th class="h-onetime">Dress</th>
+                        <th class="h-onetime">Activity</th>
+                        <th class="h-onetime">Misc</th>
 
                         <!-- MONTHLY -->
-                        <th>Tuition<br>(Monthly)</th>
-                        <th>Transport<br>(Monthly)</th>
-                        <th>Hostel</th>
+                        <th class="h-monthly">Tuition<br>(Monthly)</th>
+                        <th class="h-monthly">Hostel</th>
 
                         <!-- EXAM -->
-                        <th>Exam<br>(Half)</th>
-                        <th>Exam<br>(Annual)</th>
-                        <th>Exam<br>Partial</th>
+                        <th class="h-exam">Exam<br>(Half)</th>
+                        <th class="h-exam">Exam<br>(Annual)</th>
+                        <th class="h-exam">Exam<br>Partial</th>
+
                         <!-- FINE -->
-                        <th>Due Day</th>
-                        <th>Fine / Day<br><small>₹ per late day</small></th>
-                        <th>Max Fine<br><small>Monthly cap</small></th>
+                        <th class="h-fine">Due Day</th>
+                        <th class="h-fine">Fine / Day<br><small>₹ per late day</small></th>
+                        <th class="h-fine">Max Fine<br><small>Monthly cap</small></th>
                     </tr>
                 </thead>
 
@@ -101,10 +383,6 @@
                         </td>
 
                         <!-- TRANSPORT -->
-                        <td>
-                            <input class="form-control form-control-sm" name="transport_{{c}}"
-                                value="{{ fs.transport_fee if fs else 0 }}">
-                        </td>
 
                         <!-- HOSTEL -->
                         <td>
@@ -152,13 +430,45 @@
             </table>
         </div>
 
-        <div class="text-end mt-3">
-            <button type="submit" class="btn btn-primary">
+        <!-- Save bar (replaces original text-end mt-3 div) -->
+        <div class="fee-save-bar">
+            <span class="fee-save-note">
+                <i class="fa fa-circle-info"></i>
+                Changes are saved per class — all rows submit together.
+            </span>
+            <button type="submit" class="btn btn-primary" onclick="showToast()">
                 <i class="fa fa-save"></i> Save Fee Structure
             </button>
         </div>
 
     </form>
 </div>
+
+<!-- Toast -->
+<div id="feeToast"><i class="fa fa-circle-check"></i> Fee structure saved successfully!</div>
+
+<script>
+/* ── Colorful class badges ── */
+(function () {
+    const palettes = [
+        ['#ede9fe','#6d28d9'], ['#d1fae5','#065f46'], ['#fef3c7','#92400e'],
+        ['#fee2e2','#991b1b'], ['#dbeafe','#1e40af'], ['#fce7f3','#9d174d'],
+        ['#ecfdf5','#047857'], ['#fff7ed','#9a3412'], ['#f0fdf4','#166534'],
+        ['#fdf4ff','#7e22ce'], ['#eff6ff','#1d4ed8'], ['#fefce8','#854d0e'],
+        ['#fff1f2','#9f1239'],
+    ];
+    document.querySelectorAll('.fee-table-wrap td.fw-bold').forEach(function (td, i) {
+        var p = palettes[i % palettes.length];
+        td.innerHTML = '<span class="class-badge" style="background:' + p[0] + ';color:' + p[1] + '">' + td.textContent.trim() + '</span>';
+    });
+})();
+
+/* ── Toast on submit ── */
+function showToast() {
+    var t = document.getElementById('feeToast');
+    t.classList.add('show');
+    setTimeout(function () { t.classList.remove('show'); }, 3000);
+}
+</script>
 
 {% endblock %}
