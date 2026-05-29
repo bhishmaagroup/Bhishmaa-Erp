@@ -73,9 +73,7 @@ def create_app():
             "max_overflow": 2,
             "pool_timeout": 30,
 
-            "connect_args": {
-                "sslmode": "require"
-            }
+            "connect_args": {}        
         }
 
     else:
