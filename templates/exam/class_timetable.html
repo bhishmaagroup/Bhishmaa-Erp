@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% block title %}Class Timetable Matrix{% endblock %}
+
+{% block content %}
+<div class="neo-card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0 text-primary"><i class="fa fa-calendar-alt me-2"></i>Class Timetable Management</h4>
+        <a href="/exam/" class="btn btn-outline-secondary btn-sm">
+            <i class="fa fa-arrow-left me-1"></i> Back to Exams
+        </a>
+    </div>
+
+    <!-- FILTER BAR -->
+    <form method="GET" action="{{ url_for('exam.class_timetable') }}" class="row g-3 bg-light p-3 rounded mb-4">
+        <div class="col-md-4">
+            <label class="form-label">Class</label>
+            <select class="form-select" name="class_name" required>
+                <option value="">Select Class</option>
+                {% for c in classes %}
+                <option value="{{ c }}" {% if selected_class == c %}selected{% endif %}>{{ c }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Section</label>
+            <select class="form-select" name="section" required>
+                <option value="">Select Section</option>
+                {% for s in sections %}
+                <option value="{{ s }}" {% if selected_section == s %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100"><i class="fa fa-search me-1"></i> View Timetable</button>
+        </div>
+    </form>
+
+    {% if selected_class and selected_section %}
+    <div class="alert alert-info py-2">
+        Showing Timetable for <strong>{{ selected_class }} - {{ selected_section }}</strong>. Click on any cell/period to schedule or clear it.
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle text-center" style="min-width: 800px;">
+            <thead class="table-dark">
+                <tr>
+                    <th width="120">Day / Period</th>
+                    {% for p in periods %}
+                    <th>Period {{ p }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for day in days %}
+                <tr>
+                    <td class="table-light"><strong>{{ day }}</strong></td>
+                    {% for p in periods %}
+                    {% set record = matrix[day][p] %}
+                    <td style="cursor: pointer; height: 80px;" 
+                        class="{% if record %}table-success{% else %}table-light text-muted{% endif %}"
+                        onclick="openScheduleModal('{{ day }}', '{{ p }}', '{{ record.subject_id if record else '' }}', '{{ record.teacher_id if record else '' }}', '{{ record.room_no if record else '' }}', '{{ record.start_time if record else '' }}', '{{ record.end_time if record else '' }}')">
+                        
+                        {% if record %}
+                        <div class="fw-bold text-success">{{ record.subject.subject_name }}</div>
+                        <div class="small text-secondary">{{ record.teacher.first_name if record.teacher else '' }}</div>
+                        <div class="small text-muted"><i class="fa fa-door-open"></i> {{ record.room_no or '-' }}</div>
+                        <div class="small text-muted" style="font-size: 0.75rem;">{{ record.start_time or '' }} - {{ record.end_time or '' }}</div>
+                        {% else %}
+                        <div class="small opacity-50">+ Add</div>
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+
+<!-- SCHEDULE MODAL -->
+<div class="modal fade" id="scheduleModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fa fa-calendar-plus me-1"></i>Schedule Period</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('exam.class_timetable') }}">
+                <div class="modal-body">
+                    <input type="hidden" name="post_class" value="{{ selected_class }}">
+                    <input type="hidden" name="post_section" value="{{ selected_section }}">
+                    <input type="hidden" name="day_of_week" id="modalDay">
+                    <input type="hidden" name="period_no" id="modalPeriod">
+
+                    <div class="alert alert-secondary py-2">
+                        Scheduling for <strong><span id="labelDay"></span></strong> - <strong>Period <span id="labelPeriod"></span></strong>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Subject</label>
+                        <select class="form-select" name="subject_id" id="modalSubject">
+                            <option value="">-- Clear / No Class --</option>
+                            {% for sub in subjects %}
+                            <option value="{{ sub.id }}">{{ sub.subject_name }}</option>
+                            {% endfor %}
+                        </select>
+                        <small class="text-muted">Select empty option to clear this period.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Teacher</label>
+                        <select class="form-select" name="teacher_id" id="modalTeacher">
+                            <option value="">Select Teacher</option>
+                            {% for t in teachers %}
+                            <option value="{{ t.id }}">{{ t.first_name }} {{ t.last_name }} ({{ t.teacher_code }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Room No</label>
+                            <input type="text" class="form-control" name="room_no" id="modalRoom" placeholder="e.g. 101">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Start Time</label>
+                            <input type="text" class="form-control" name="start_time" id="modalStart" placeholder="09:00 AM">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">End Time</label>
+                            <input type="text" class="form-control" name="end_time" id="modalEnd" placeholder="09:45 AM">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save Schedule</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+var myModal = new bootstrap.Modal(document.getElementById('scheduleModal'));
+
+function openScheduleModal(day, period, subId, teacherId, room, start, end) {
+    document.getElementById('modalDay').value = day;
+    document.getElementById('modalPeriod').value = period;
+    document.getElementById('labelDay').innerText = day;
+    document.getElementById('labelPeriod').innerText = period;
+
+    document.getElementById('modalSubject').value = subId;
+    document.getElementById('modalTeacher').value = teacherId;
+    document.getElementById('modalRoom').value = room;
+    document.getElementById('modalStart').value = start || getDefaultTimes(period).start;
+    document.getElementById('modalEnd').value = end || getDefaultTimes(period).end;
+
+    myModal.show();
+}
+
+function getDefaultTimes(period) {
+    // Basic automatic start/end times helper for periods
+    var times = {
+        1: { start: '08:00 AM', end: '08:45 AM' },
+        2: { start: '08:45 AM', end: '09:30 AM' },
+        3: { start: '09:30 AM', end: '10:15 AM' },
+        4: { start: '10:15 AM', end: '11:00 AM' },
+        5: { start: '11:30 AM', end: '12:15 PM' },
+        6: { start: '12:15 PM', end: '01:00 PM' },
+        7: { start: '01:00 PM', end: '01:45 PM' },
+        8: { start: '01:45 PM', end: '02:30 PM' },
+    };
+    return times[period] || { start: '', end: '' };
+}
+</script>
+{% endblock %}
+{% endblock %}

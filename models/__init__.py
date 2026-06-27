@@ -4,3 +4,7 @@ from models.subject import Subject
 from models.teacher_subject import TeacherSubject
 from models.student_subject import StudentSubject
 from models.subject_attendance import SubjectAttendance
+from models.exam import Exam, ExamSubject, ExamMark, ExamResult, ClassTimetable
+from models.tc import TransferCertificate
+from models.promotion import PromotionHistory
+from models.sync import SyncQueue, ConflictLog, DeletedRecord

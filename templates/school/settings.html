@@ -55,6 +55,16 @@
         <input class="form-control" name="email" value="{{ school.email }}">
       </div>
 
+      <div class="col-md-6">
+        <label>CBSE Affiliation Number</label>
+        <input class="form-control" name="affiliation_no" value="{{ school.affiliation_no or '' }}">
+      </div>
+
+      <div class="col-md-6">
+        <label>Website URL</label>
+        <input class="form-control" name="website" value="{{ school.website or '' }}">
+      </div>
+
       <div class="col-md-4">
         <label>School Latitude</label>
         <input class="form-control" name="latitude" value="{{ school.latitude or '' }}">

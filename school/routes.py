@@ -51,6 +51,8 @@ def school_settings():
         school.pincode = request.form.get('pincode')
         school.phone = request.form.get('phone')
         school.email = request.form.get('email')
+        school.affiliation_no = request.form.get('affiliation_no')
+        school.website = request.form.get('website')
         school.latitude = request.form.get('latitude')
 
         school.longitude = request.form.get('longitude')
