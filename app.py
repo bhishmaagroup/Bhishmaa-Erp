@@ -74,8 +74,8 @@ def create_app():
             "pool_timeout": 30,
 
             "connect_args": {
-                "sslmode": "require"
-            }
+                "sslmode": "prefer"
+                }
         }
 
     else:
@@ -268,51 +268,10 @@ def create_app():
     with app.app_context():
 
         try:
-
-            db.create_all()
-            
-            # Migrate SQLite tables (adds tracking columns and backfills UUIDs)
-            migrate_sqlite_db(app)
-            
-            # Dynamic migration for new columns
-            from sqlalchemy import inspect, text
-            inspector = inspect(db.engine)
-            
-            # Check schools table
-            school_cols = [c['name'] for c in inspector.get_columns('schools')]
-            if 'affiliation_no' not in school_cols:
-                db.session.execute(text("ALTER TABLE schools ADD COLUMN affiliation_no VARCHAR(100)"))
-            if 'website' not in school_cols:
-                db.session.execute(text("ALTER TABLE schools ADD COLUMN website VARCHAR(200)"))
-                
-            # Check transfer_certificates table
-            tc_cols = [c['name'] for c in inspector.get_columns('transfer_certificates')]
-            new_tc_cols = {
-                "nationality": "VARCHAR(100) DEFAULT 'INDIAN'",
-                "caste_category": "VARCHAR(100) DEFAULT 'GENERAL'",
-                "birth_words": "VARCHAR(255)",
-                "class_in_words": "VARCHAR(255)",
-                "last_exam_result": "VARCHAR(255)",
-                "whether_failed": "VARCHAR(100) DEFAULT 'NO'",
-                "subjects_studied": "VARCHAR(255) DEFAULT 'ENGLISH, HINDI, MATHEMATICS, SCIENCE, SOCIAL SCIENCE, SANSKRIT, COMPUTER'",
-                "promotion_status": "VARCHAR(100) DEFAULT 'YES'",
-                "dues_paid_upto": "VARCHAR(100) DEFAULT 'MARCH'",
-                "fee_concession": "VARCHAR(100) DEFAULT 'NO'",
-                "total_working_days": "INTEGER DEFAULT 220",
-                "days_present": "INTEGER DEFAULT 198",
-                "ncc_scout_guide": "VARCHAR(100) DEFAULT 'NO'",
-                "application_date": "DATE"
-            }
-            for col, col_type in new_tc_cols.items():
-                if col not in tc_cols:
-                    db.session.execute(text(f"ALTER TABLE transfer_certificates ADD COLUMN {col} {col_type}"))
-            
-            db.session.commit()
-
+            from utils.auto_migrate import auto_migrate
+            auto_migrate(app)
             create_default_super_admin()
-
         except Exception as e:
-
             print("⚠ DB INIT SKIPPED:", e)
 
     # Start sync scheduler background thread
@@ -331,9 +290,16 @@ app = create_app()
 # 💻 LOCAL / EXE RUN
 # =========================================================
 if __name__ == '__main__':
+    import webbrowser
+    from threading import Timer
+
+    def open_browser():
+        webbrowser.open("http://127.0.0.1:8000/")
+
+    Timer(1.5, open_browser).start()
 
     app.run(
-        host="0.0.0.0",
-        port=5000,
+        host="127.0.0.1",
+        port=8000,
         debug=False
     )
