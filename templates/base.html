@@ -118,6 +118,12 @@
             </a>
 
             <ul class="navbar-nav">
+                <!-- 🔄 SYNC STATUS BADGE -->
+                <li class="nav-item d-flex align-items-center me-2">
+                  <a href="/sync/status" class="text-decoration-none">
+                    <span id="global-sync-badge" class="badge bg-secondary" style="font-size:.75rem;padding:5px 10px;">⏳ Sync</span>
+                  </a>
+                </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
                         <i class="fa fa-user-circle me-1"></i>
@@ -136,6 +142,12 @@
                         <li>
                             <a class="dropdown-item" href="/change-password">
                                 <i class="fa fa-key"></i> Change Password
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item" href="/sync/status">
+                                <i class="fa fa-sync"></i> Sync Dashboard
                             </a>
                         </li>
 
@@ -199,5 +211,41 @@
 
 {% block scripts %}{% endblock %}
 
+<script>
+// 🔄 GLOBAL SYNC BADGE — polls every 15 seconds
+(function() {
+  function updateGlobalBadge() {
+    fetch('/sync/api/live-status')
+      .then(r => r.json())
+      .then(data => {
+        var badge = document.getElementById('global-sync-badge');
+        if (!badge) return;
+        if (data.status === 'success') {
+          badge.className = 'badge bg-success';
+          badge.textContent = '✅ Synced';
+        } else if (data.status === 'offline') {
+          badge.className = 'badge bg-danger';
+          badge.textContent = '📵 Offline';
+        } else if (data.status === 'syncing') {
+          badge.className = 'badge bg-warning text-dark';
+          badge.textContent = '🔄 Syncing...';
+        } else if (data.status === 'failed') {
+          badge.className = 'badge bg-danger';
+          badge.textContent = '❌ Error';
+        } else {
+          badge.className = 'badge bg-secondary';
+          badge.textContent = '⏳ Sync';
+        }
+        // Show pending count if any
+        if (data.pending > 0) {
+          badge.textContent += ' (' + data.pending + ')';
+        }
+      })
+      .catch(function() {});
+  }
+  updateGlobalBadge();
+  setInterval(updateGlobalBadge, 15000);
+})();
+</script>
 </body>
 </html>

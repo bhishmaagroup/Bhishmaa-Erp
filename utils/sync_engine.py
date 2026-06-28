@@ -1,470 +1,516 @@
+"""
+sync_engine.py — Bhishmaa ERP Sync Engine (No .env required)
+=============================================================
+- Local SQLite always available
+- Cloud PostgreSQL sync when internet is available
+- Bidirectional, automatic, no data loss
+"""
+
 import os
+import sys
 import json
 import uuid
-import requests
-import base64
-import hashlib
+import logging
+import threading
 import time
 from datetime import datetime, date
-from threading import Thread
+from threading import Thread, Lock
 from flask import current_app
 from cryptography.fernet import Fernet
-from sqlalchemy import event, inspect, text
+from sqlalchemy import event, inspect, text, create_engine
+from sqlalchemy.pool import NullPool
 from extensions import db, CustomModel
-from models.sync import SyncQueue, ConflictLog, DeletedRecord
+from models.sync import SyncQueue, ConflictLog, DeletedRecord, SyncSession
 from models.school import School
 
-# Tables to exclude from synchronization
-EXCLUDE_TABLES = {'sync_queue', 'conflict_logs', 'deleted_records', 'super_admins', 'license_request', 'audit_logs'}
+logger = logging.getLogger('sync')
+logging.basicConfig(level=logging.INFO, format='[%(name)s] %(message)s')
 
+# ══════════════════════════════════════════════════════════════
+# Tables excluded from sync
+# ══════════════════════════════════════════════════════════════
+EXCLUDE_TABLES = {
+    'sync_queue', 'conflict_logs', 'deleted_records',
+    'sync_sessions', 'super_admins', 'audit_logs', 'license_request'
+}
+
+# ══════════════════════════════════════════════════════════════
+# Global sync state (accessible by routes)
+# ══════════════════════════════════════════════════════════════
+sync_status = {}
+# { school_id: {status, last_sync, pushed, pulled, conflicts, message} }
+
+_sync_running = False
+_was_online   = False
+
+# ══════════════════════════════════════════════════════════════
+# Encryption (for REST API mode — kept for backward compat)
+# ══════════════════════════════════════════════════════════════
+import base64, hashlib
 def get_fernet():
     secret_key = current_app.config.get('SECRET_KEY', 'secret-key')
     key = base64.urlsafe_b64encode(hashlib.sha256(secret_key.encode()).digest())
     return Fernet(key)
 
 def encrypt_data(data_str):
-    f = get_fernet()
-    return f.encrypt(data_str.encode()).decode()
+    return get_fernet().encrypt(data_str.encode()).decode()
 
 def decrypt_data(enc_str):
-    f = get_fernet()
-    return f.decrypt(enc_str.encode()).decode()
+    return get_fernet().decrypt(enc_str.encode()).decode()
 
-# =========================================================
-# 🔄 SQLITE DATABASE SCHEMA MIGRATION
-# =========================================================
+
+# ══════════════════════════════════════════════════════════════
+# 🌐 INTERNET / CLOUD CHECK
+# ══════════════════════════════════════════════════════════════
+_internet_cache = {'result': False, 'checked_at': None}
+_internet_lock  = Lock()
+
+def check_internet():
+    """Check cloud DB availability. Cached 20 seconds."""
+    global _internet_cache
+    with _internet_lock:
+        now = datetime.utcnow()
+        if (_internet_cache['checked_at'] and
+                (now - _internet_cache['checked_at']).total_seconds() < 20):
+            return _internet_cache['result']
+        result = _check_cloud_reachable()
+        _internet_cache['result']     = result
+        _internet_cache['checked_at'] = now
+        return result
+
+def _check_cloud_reachable():
+    """Try connecting to cloud PostgreSQL."""
+    from utils.dual_db import get_cloud_url
+    url = get_cloud_url()
+    if not url:
+        return False
+    try:
+        engine = create_engine(url, poolclass=NullPool,
+                               connect_args={"connect_timeout": 4})
+        with engine.connect() as c:
+            c.execute(text("SELECT 1"))
+        engine.dispose()
+        return True
+    except Exception:
+        return False
+
+def _force_internet_check():
+    """Bypass cache."""
+    global _internet_cache
+    _internet_cache['checked_at'] = None
+    return check_internet()
+
+
+# ══════════════════════════════════════════════════════════════
+# 🔄 SQLITE WAL MODE + MIGRATION
+# ══════════════════════════════════════════════════════════════
 def migrate_sqlite_db(app):
-    """
-    Dynamically migrates local SQLite tables to include tracking columns and UUIDs.
-    """
     if os.environ.get("IS_ONLINE", "false").lower() == "true":
         return
 
     with app.app_context():
         engine = db.engine
+        try:
+            with engine.connect() as conn:
+                conn.execute(text("PRAGMA journal_mode=WAL"))
+                conn.execute(text("PRAGMA synchronous=NORMAL"))
+                conn.execute(text("PRAGMA cache_size=-32000"))
+                conn.commit()
+        except Exception as e:
+            logger.warning(f"WAL mode: {e}")
+
+        db.create_all()
         inspector = inspect(engine)
         existing_tables = inspector.get_table_names()
 
-        # 1. Create any missing tables (like sync_queue, conflict_logs, deleted_records)
-        db.create_all()
-
-        columns_to_add = [
-            ("uuid", "VARCHAR(36)"),
-            ("school_id", "INTEGER"),
-            ("created_at", "DATETIME"),
-            ("updated_at", "DATETIME"),
-            ("last_synced_at", "DATETIME"),
-            ("sync_version", "INTEGER DEFAULT 1")
+        tracking_cols = [
+            ("uuid",          "VARCHAR(36)"),
+            ("school_id",     "INTEGER"),
+            ("created_at",    "DATETIME"),
+            ("updated_at",    "DATETIME"),
+            ("last_synced_at","DATETIME"),
+            ("sync_version",  "INTEGER DEFAULT 1"),
         ]
 
-        connection = engine.connect()
-        transaction = connection.begin()
-        try:
-            # 2. Add missing columns to existing tables
-            for table_name in existing_tables:
-                if table_name in EXCLUDE_TABLES:
+        with engine.begin() as conn:
+            for tbl in existing_tables:
+                if tbl in EXCLUDE_TABLES:
                     continue
-                current_columns = [col['name'] for col in inspector.get_columns(table_name)]
-                for col_name, col_type in columns_to_add:
-                    if col_name not in current_columns:
-                        sql = f"ALTER TABLE {table_name} ADD COLUMN {col_name} {col_type}"
-                        connection.execute(text(sql))
+                existing_cols = {c['name'] for c in inspector.get_columns(tbl)}
+                for col_name, col_type in tracking_cols:
+                    base = col_name.split()[0]
+                    if base not in existing_cols:
+                        try:
+                            conn.execute(text(
+                                f'ALTER TABLE "{tbl}" ADD COLUMN "{col_name}" {col_type}'
+                            ))
+                        except Exception:
+                            pass
 
-            transaction.commit()
-        except Exception as e:
-            transaction.rollback()
-            print(f"[Migration Error] Failed to alter tables: {e}")
-
-        # 3. Generate UUIDs for existing rows and fix school_id values
-        transaction = connection.begin()
-        try:
-            for table_name in existing_tables:
-                if table_name in EXCLUDE_TABLES:
+        # Backfill UUIDs
+        with engine.begin() as conn:
+            for tbl in existing_tables:
+                if tbl in EXCLUDE_TABLES:
                     continue
-                
-                # Assign UUIDs
-                res = connection.execute(text(f"SELECT rowid FROM {table_name} WHERE uuid IS NULL OR uuid = ''"))
-                rows = res.fetchall()
-                for r in rows:
-                    new_uuid = str(uuid.uuid4())
-                    connection.execute(text(f"UPDATE {table_name} SET uuid = :uuid WHERE rowid = :rowid"), {"uuid": new_uuid, "rowid": r[0]})
+                try:
+                    rows = conn.execute(text(
+                        f"SELECT rowid FROM \"{tbl}\" WHERE uuid IS NULL OR uuid = ''"
+                    )).fetchall()
+                    for r in rows:
+                        conn.execute(text(
+                            f'UPDATE "{tbl}" SET uuid = :u WHERE rowid = :rid'
+                        ), {"u": str(uuid.uuid4()), "rid": r[0]})
+                except Exception:
+                    pass
 
-            # Backfill child tables' school_id if they are empty
-            # - fee_discount
-            if 'fee_discount' in existing_tables and 'students' in existing_tables:
-                connection.execute(text(
-                    "UPDATE fee_discount SET school_id = (SELECT school_id FROM students WHERE students.id = fee_discount.student_id) "
-                    "WHERE school_id IS NULL"
-                ))
-            # - salary_payment
-            if 'salary_payment' in existing_tables and 'salary_record' in existing_tables:
-                connection.execute(text(
-                    "UPDATE salary_payment SET school_id = (SELECT school_id FROM salary_record WHERE salary_record.id = salary_payment.salary_id) "
-                    "WHERE school_id IS NULL"
-                ))
-            # - ticket_messages
-            if 'ticket_messages' in existing_tables and 'tickets' in existing_tables:
-                connection.execute(text(
-                    "UPDATE ticket_messages SET school_id = (SELECT school_id FROM tickets WHERE tickets.id = ticket_messages.ticket_id) "
-                    "WHERE school_id IS NULL"
-                ))
-            # - stops
-            if 'stops' in existing_tables and 'routes' in existing_tables:
-                connection.execute(text(
-                    "UPDATE stops SET school_id = (SELECT school_id FROM routes WHERE routes.id = stops.route_id) "
-                    "WHERE school_id IS NULL"
-                ))
+        logger.info("✅ SQLite migration + WAL mode done")
 
-            transaction.commit()
-            print("✅ SQLite database migration and UUID backfilling completed.")
-        except Exception as e:
-            transaction.rollback()
-            print(f"[Migration Error] Failed to backfill values: {e}")
-        finally:
-            connection.close()
 
-# =========================================================
-# 📢 SYNC QUEUE EVENT LISTENERS
-# =========================================================
+# ══════════════════════════════════════════════════════════════
+# 📢 ORM EVENT LISTENERS — Track all local changes
+# ══════════════════════════════════════════════════════════════
+_PRIORITY = {'schools': 1, 'students': 2}
+
 def init_sync_engine(app):
-    """
-    Registers ORM event listeners to track changes.
-    """
     @event.listens_for(db.Session, "before_flush")
-    def track_sync_queue(session, flush_context, instances):
-        # 1. Local changes logged to local queue
-        if os.environ.get("IS_ONLINE", "false").lower() != "true":
+    def track_changes(session, flush_context, instances):
+        # Only log in offline (SQLite) mode
+        if os.environ.get("IS_ONLINE", "false").lower() == "true":
+            # On server: track deletes for sync
             if getattr(session, "no_sync_logging", False):
                 return
-
-            def queue_op(obj, op_type):
-                tbl_name = obj.__class__.__tablename__
-                if tbl_name in EXCLUDE_TABLES:
-                    return
-
-                # Get record ID (uuid)
-                rec_id = getattr(obj, 'uuid', None)
-                if not rec_id:
-                    rec_id = str(uuid.uuid4())
-                    obj.uuid = rec_id
-
-                school_id = getattr(obj, 'school_id', None)
-                # If school_id not set on object, check if we can resolve it
-                if not school_id:
-                    # Default to current_user school_id or search DB
-                    try:
-                        from flask_login import current_user
-                        school_id = current_user.school_id
-                        obj.school_id = school_id
-                    except Exception:
-                        pass
-
-                payload = None
-                if op_type in ('CREATE', 'UPDATE'):
-                    payload = obj.to_dict()
-
-                sq = SyncQueue(
-                    school_id=school_id,
-                    table_name=tbl_name,
-                    record_id=rec_id,
-                    operation_type=op_type,
-                    payload_json=json.dumps(payload) if payload else None,
-                    status='PENDING'
-                )
-                session.add(sq)
-
-            for obj in session.new:
-                if isinstance(obj, CustomModel):
-                    queue_op(obj, 'CREATE')
-
-            for obj in session.dirty:
-                if isinstance(obj, CustomModel):
-                    if session.is_modified(obj):
-                        queue_op(obj, 'UPDATE')
-
             for obj in session.deleted:
                 if isinstance(obj, CustomModel):
-                    queue_op(obj, 'DELETE')
-
-        # 2. Server changes logged to DeletedRecord
-        else:
-            if getattr(session, "no_sync_logging", False):
-                return
-
-            for obj in session.deleted:
-                if isinstance(obj, CustomModel):
-                    tbl_name = obj.__class__.__tablename__
-                    if tbl_name in EXCLUDE_TABLES:
+                    tbl = obj.__class__.__tablename__
+                    if tbl in EXCLUDE_TABLES:
                         continue
                     rec_uuid = getattr(obj, 'uuid', None)
-                    school_id = getattr(obj, 'school_id', None)
                     if rec_uuid:
                         dr = DeletedRecord(
-                            school_id=school_id,
-                            table_name=tbl_name,
+                            school_id=getattr(obj, 'school_id', None),
+                            table_name=tbl,
                             record_uuid=rec_uuid
                         )
                         session.add(dr)
+            return
 
-# =========================================================
-# 🌐 BIDIRECTIONAL SYNC ENGINE METHODS
-# =========================================================
-def check_internet():
-    """
-    Checks connection to the cloud server.
-    """
-    cloud_url = os.environ.get("CLOUD_SERVER_URL", "http://localhost:5000")
-    try:
-        res = requests.get(f"{cloud_url}/api/sync/status", timeout=5)
-        return res.status_code == 200
-    except Exception:
-        return False
+        if getattr(session, "no_sync_logging", False):
+            return
 
-def generate_client_token(school_id):
-    """
-    Generates a secure token using itsdangerous serializer.
-    """
-    from itsdangerous import URLSafeSerializer
-    secret_key = current_app.config.get('SECRET_KEY', 'secret-key')
-    s = URLSafeSerializer(secret_key)
-    return s.dumps({"school_id": school_id, "role": "sync_client"})
+        def _q(obj, op):
+            tbl = obj.__class__.__tablename__
+            if tbl in EXCLUDE_TABLES:
+                return
+            rec_id = getattr(obj, 'uuid', None) or str(uuid.uuid4())
+            if not getattr(obj, 'uuid', None):
+                obj.uuid = rec_id
+            school_id = getattr(obj, 'school_id', None)
+            if not school_id:
+                try:
+                    from flask_login import current_user
+                    school_id = current_user.school_id
+                    obj.school_id = school_id
+                except Exception:
+                    pass
+            payload = obj.to_dict() if op in ('CREATE', 'UPDATE') else None
+            session.add(SyncQueue(
+                school_id=school_id,
+                table_name=tbl,
+                record_id=rec_id,
+                operation_type=op,
+                payload_json=json.dumps(payload, default=str) if payload else None,
+                status='PENDING',
+                priority=_PRIORITY.get(tbl, 5),
+            ))
+            # Immediate background sync trigger (non-blocking)
+            _schedule_immediate_sync(school_id, obj._sa_class_manager.mapper.class_.__module__)
 
-def perform_push(school_id):
-    """
-    Pushes local SyncQueue pending operations to the cloud server.
-    """
-    cloud_url = os.environ.get("CLOUD_SERVER_URL", "http://localhost:5000")
-    
-    # Get pending sync queue items
-    pending = SyncQueue.query.filter_by(status='PENDING', school_id=school_id).order_by(SyncQueue.created_at.asc()).all()
-    if not pending:
-        return 0, []
+        for obj in session.new:
+            if isinstance(obj, CustomModel): _q(obj, 'CREATE')
+        for obj in session.dirty:
+            if isinstance(obj, CustomModel) and session.is_modified(obj): _q(obj, 'UPDATE')
+        for obj in session.deleted:
+            if isinstance(obj, CustomModel):
+                _q(obj, 'DELETE')
+                # Also log to deleted_records
+                tbl = obj.__class__.__tablename__
+                if tbl not in EXCLUDE_TABLES and getattr(obj, 'uuid', None):
+                    session.add(DeletedRecord(
+                        school_id=getattr(obj, 'school_id', None),
+                        table_name=tbl, record_uuid=obj.uuid
+                    ))
 
-    # Format payload
-    ops = []
-    for item in pending:
-        ops.append({
-            "queue_id": item.id,
-            "table_name": item.table_name,
-            "record_id": item.record_id,
-            "operation_type": item.operation_type,
-            "payload_json": item.payload_json,
-            "created_at": item.created_at.isoformat()
-        })
 
-    payload = {"school_id": school_id, "operations": ops}
-    enc_data = encrypt_data(json.dumps(payload))
-    token = generate_client_token(school_id)
+# ══════════════════════════════════════════════════════════════
+# ⚡ IMMEDIATE SYNC TRIGGER (non-blocking)
+# ══════════════════════════════════════════════════════════════
+_immediate_sync_timer = None
+_immediate_sync_lock  = Lock()
 
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json"
-    }
+def _schedule_immediate_sync(school_id, _module=None):
+    """Debounced: trigger sync 2 seconds after last change."""
+    global _immediate_sync_timer
+    with _immediate_sync_lock:
+        if _immediate_sync_timer:
+            _immediate_sync_timer.cancel()
+        try:
+            app = current_app._get_current_object()
+            _immediate_sync_timer = threading.Timer(
+                2.0, _run_sync_in_thread, args=(school_id, app, 'change')
+            )
+            _immediate_sync_timer.daemon = True
+            _immediate_sync_timer.start()
+        except Exception:
+            pass  # Outside app context — scheduler will pick it up
 
-    try:
-        res = requests.post(f"{cloud_url}/api/sync/push", json={"payload": enc_data}, headers=headers, timeout=15)
-        if res.status_code == 200:
-            res_decrypted = decrypt_data(res.json()["payload"])
-            res_data = json.loads(res_decrypted)
-            
-            synced_ids = res_data.get("synced_ids", [])
-            failed_ops = res_data.get("failed_ops", []) # list of dict with queue_id and error
+def _run_sync_in_thread(school_id, app, trigger='auto'):
+    def _run():
+        try:
+            with app.app_context():
+                _do_sync(school_id, trigger)
+        except Exception as e:
+            logger.error(f"[Thread Sync] {e}")
+    t = Thread(target=_run, name=f"SyncThread-{trigger}-{school_id}", daemon=True)
+    t.start()
 
-            # Mark synced items
-            for item in pending:
-                if item.id in synced_ids:
-                    item.status = 'SYNCED'
-                    item.synced_at = datetime.utcnow()
-                elif item.id in [f["queue_id"] for f in failed_ops]:
-                    err_msg = next((f["error"] for f in failed_ops if f["queue_id"] == item.id), "Unknown server error")
-                    item.status = 'FAILED'
-                    item.error_message = err_msg
 
+# ══════════════════════════════════════════════════════════════
+# 🔄 CORE SYNC FUNCTION
+# ══════════════════════════════════════════════════════════════
+_sync_lock = Lock()
+
+def _do_sync(school_id, trigger='auto'):
+    global _sync_running
+
+    if _sync_lock.locked():
+        return  # Already running
+
+    with _sync_lock:
+        _sync_running = True
+
+        # Update status
+        sync_status[school_id] = {
+            **sync_status.get(school_id, {}),
+            "status": "syncing",
+            "message": f"Syncing... ({trigger})"
+        }
+
+        # Create session record
+        session_obj = SyncSession(school_id=school_id, trigger=trigger, status='running')
+        try:
+            db.session.add(session_obj)
             db.session.commit()
-            return len(synced_ids), failed_ops
-    except Exception as e:
-        print(f"[Sync Push Error] {e}")
-        return 0, [{"queue_id": None, "error": str(e)}]
-    return 0, []
+        except Exception:
+            try: db.session.rollback()
+            except Exception: pass
 
-def perform_pull(school_id):
-    """
-    Pulls cloud database updates/deletes and applies them locally.
-    """
-    cloud_url = os.environ.get("CLOUD_SERVER_URL", "http://localhost:5000")
-    
-    # Find last successful sync timestamp
-    last_sync = db.session.query(db.func.max(SyncQueue.synced_at)).filter_by(status='SYNCED', school_id=school_id).scalar()
-    last_sync_str = last_sync.isoformat() if last_sync else "1970-01-01T00:00:00"
+        try:
+            from utils.dual_db import run_full_sync
+            pushed, pulled, conflicts, errors = run_full_sync(
+                db.engine, school_id=school_id, trigger=trigger
+            )
 
-    token = generate_client_token(school_id)
-    headers = {
-        "Authorization": f"Bearer {token}"
-    }
+            now = datetime.utcnow()
+            sync_status[school_id] = {
+                "status": "success",
+                "last_sync": now.isoformat(),
+                "pushed": pushed,
+                "pulled": pulled,
+                "conflicts": conflicts,
+                "message": f"Synced {now.strftime('%H:%M:%S')} — ↑{pushed} ↓{pulled}"
+            }
+            try:
+                session_obj.completed_at = now
+                session_obj.pushed_count  = pushed
+                session_obj.pulled_count  = pulled
+                session_obj.conflict_count = conflicts
+                session_obj.failed_count  = len(errors)
+                session_obj.status = 'success' if not errors else 'partial'
+                db.session.commit()
+            except Exception: pass
 
-    try:
-        res = requests.get(f"{cloud_url}/api/sync/pull?last_sync_time={last_sync_str}&school_id={school_id}", headers=headers, timeout=15)
-        if res.status_code == 200:
-            res_decrypted = decrypt_data(res.json()["payload"])
-            res_data = json.loads(res_decrypted)
+            logger.info(f"[Sync] ✅ {trigger}: ↑{pushed} ↓{pulled} conflicts={conflicts}")
 
-            updates = res_data.get("updates", {})
-            deletions = res_data.get("deletions", [])
-            server_time = res_data.get("server_time")
+        except Exception as e:
+            logger.error(f"[Sync] ❌ {trigger}: {e}")
+            sync_status[school_id] = {
+                **sync_status.get(school_id, {}),
+                "status": "failed",
+                "message": f"Sync failed: {str(e)[:80]}"
+            }
+            try:
+                session_obj.status    = 'failed'
+                session_obj.error_log = str(e)
+                session_obj.completed_at = datetime.utcnow()
+                db.session.commit()
+            except Exception: pass
+        finally:
+            _sync_running = False
 
-            # Temporarily disable sync triggers so pulled writes don't end up back in sync_queue
-            db.session.no_sync_logging = True
 
-            # Get subclass maps by tablename
-            subclasses = db.Model.__subclasses__()
-            subclass_map = {cls.__tablename__: cls for cls in subclasses if hasattr(cls, '__tablename__')}
+# ══════════════════════════════════════════════════════════════
+# 🚀 LOGIN SYNC
+# ══════════════════════════════════════════════════════════════
+def sync_on_login(school_id, app):
+    _run_sync_in_thread(school_id, app, 'login')
 
-            applied_count = 0
-            conflict_count = 0
 
-            # 1. Apply deletions
-            for d in deletions:
-                tbl_name = d["table_name"]
-                rec_uuid = d["record_uuid"]
-                cls = subclass_map.get(tbl_name)
-                if cls:
-                    rec = cls.query.filter_by(uuid=rec_uuid).first()
-                    if rec:
-                        db.session.delete(rec)
-                        applied_count += 1
+# ══════════════════════════════════════════════════════════════
+# 🌐 INTERNET MONITOR — detects reconnection, triggers sync
+# ══════════════════════════════════════════════════════════════
+def internet_monitor_thread(app):
+    global _was_online
 
-            # 2. Apply updates
-            for tbl_name, records in updates.items():
-                cls = subclass_map.get(tbl_name)
-                if not cls:
-                    continue
-
-                for r in records:
-                    rec_uuid = r["uuid"]
-                    rec = cls.query.filter_by(uuid=rec_uuid).first()
-                    server_updated_at = datetime.fromisoformat(r["updated_at"])
-
-                    if rec:
-                        # Conflict Check (Newest Wins)
-                        local_updated_at = rec.updated_at
-                        if server_updated_at > local_updated_at:
-                            # Server wins
-                            rec.update_from_dict(r)
-                            rec.last_synced_at = datetime.fromisoformat(server_time)
-                            applied_count += 1
-                            
-                            # Log conflict if local changes were overwritten
-                            if rec.sync_version > r.get("sync_version", 0):
-                                conflict = ConflictLog(
-                                    school_id=school_id,
-                                    table_name=tbl_name,
-                                    record_uuid=rec_uuid,
-                                    local_updated_at=local_updated_at,
-                                    cloud_updated_at=server_updated_at,
-                                    resolution='Cloud Won (Newer)'
-                                )
-                                db.session.add(conflict)
-                                conflict_count += 1
-                        else:
-                            # Local is newer! Keep local, conflict resolved as local won
-                            # It is already in SyncQueue and will be pushed to the server next push
-                            if local_updated_at > server_updated_at:
-                                conflict = ConflictLog(
-                                    school_id=school_id,
-                                    table_name=tbl_name,
-                                    record_uuid=rec_uuid,
-                                    local_updated_at=local_updated_at,
-                                    cloud_updated_at=server_updated_at,
-                                    resolution='Local Won (Newer)'
-                                )
-                                db.session.add(conflict)
-                                conflict_count += 1
-                    else:
-                        # New record locally
-                        new_obj = cls()
-                        new_obj.update_from_dict(r)
-                        new_obj.last_synced_at = datetime.fromisoformat(server_time)
-                        db.session.add(new_obj)
-                        applied_count += 1
-
-            db.session.commit()
-            
-            # Send Acknowledge back to server
-            requests.post(f"{cloud_url}/api/sync/ack", json={"payload": encrypt_data(json.dumps({"school_id": school_id, "server_time": server_time}))}, headers=headers, timeout=5)
-
-            return applied_count, conflict_count
-    except Exception as e:
-        print(f"[Sync Pull Error] {e}")
-        return 0, 0
-    finally:
-        db.session.no_sync_logging = False
-    return 0, 0
-
-# =========================================================
-# ⏰ BACKGROUND SYNC SCHEDULER
-# =========================================================
-_sync_running = False
-
-def start_sync_scheduler(app):
-    """
-    Starts a background thread that executes synchronization every 2 minutes.
-    """
-    if os.environ.get("IS_ONLINE", "false").lower() == "true":
-        return
-
-    def run_loop():
-        global _sync_running
-        time.sleep(10)  # Wait for startup to settle
+    def _run():
+        global _was_online
+        time.sleep(5)  # App settle
         while True:
             try:
                 with app.app_context():
-                    # Find current school (in single school local setup)
-                    school = School.query.first()
-                    if school and check_internet():
-                        print(f"[Sync Scheduler] internet detected. Starting sync for school {school.id}")
-                        _sync_running = True
-                        
-                        push_count, failed_ops = perform_push(school.id)
-                        pull_count, conflict_count = perform_pull(school.id)
-                        
-                        print(f"[Sync Scheduler] Synced: pushed {push_count} ops, pulled {pull_count} updates. Conflicts: {conflict_count}")
-                        _sync_running = False
+                    _internet_cache['checked_at'] = None  # Force fresh check
+                    online = check_internet()
+
+                    if online and not _was_online:
+                        logger.info("🟢 Internet CONNECTED — syncing all schools")
+                        schools = School.query.all()
+                        for s in schools:
+                            sync_status[s.id] = {**sync_status.get(s.id, {}), "status": "syncing"}
+                        for s in schools:
+                            _do_sync(s.id, 'internet_detect')
+
+                    elif not online and _was_online:
+                        logger.info("🔴 Internet DISCONNECTED — offline mode")
+                        try:
+                            schools = School.query.all()
+                        except Exception:
+                            schools = []
+                        for s in schools:
+                            sync_status[s.id] = {
+                                **sync_status.get(s.id, {}),
+                                "status": "offline",
+                                "message": "Working offline"
+                            }
+
+                    _was_online = online
+
             except Exception as e:
-                print(f"[Sync Scheduler Error] {e}")
-                _sync_running = False
-            
-            # Sleep for 2 minutes (120s)
-            time.sleep(120)
+                logger.error(f"[Monitor] {e}")
 
-    t = Thread(target=run_loop, daemon=True)
+            time.sleep(15)
+
+    t = Thread(target=_run, name="InternetMonitor", daemon=True)
     t.start()
-    print("⏰ Background sync scheduler thread started (2-minute intervals).")
 
-def generate_receipt_number(school_id, school_code=None):
-    from models.school import School
-    from models.fee import StudentFeeLedger
-    from datetime import datetime
-    
-    if not school_code:
-        school = School.query.get(school_id)
-        school_code = school.school_code if school else "SCH"
-        
-    year = datetime.utcnow().year
-    prefix = f"{school_code}-{year}-"
-    
-    # Find max receipt number with this prefix
-    max_ledger = db.session.query(StudentFeeLedger.receipt_no).filter(
-        StudentFeeLedger.school_id == school_id,
-        StudentFeeLedger.receipt_no.like(f"{prefix}%")
-    ).order_by(StudentFeeLedger.receipt_no.desc()).first()
-    
-    seq = 1
-    if max_ledger and max_ledger[0]:
-        try:
-            parts = max_ledger[0].split('-')
-            if len(parts) >= 3:
-                seq = int(parts[-1]) + 1
-        except Exception:
-            pass
-            
-    return f"{prefix}{seq:06d}"
+
+# ══════════════════════════════════════════════════════════════
+# ⏰ BACKGROUND SCHEDULER — runs sync every N seconds
+# ══════════════════════════════════════════════════════════════
+def start_sync_scheduler(app):
+    interval = int(os.environ.get("SYNC_INTERVAL_SECONDS", "60"))
+
+    def _run():
+        time.sleep(15)  # Initial delay
+        while True:
+            try:
+                with app.app_context():
+                    if check_internet():
+                        schools = School.query.all()
+                        for s in schools:
+                            _do_sync(s.id, 'scheduler')
+            except Exception as e:
+                logger.error(f"[Scheduler] {e}")
+            time.sleep(interval)
+
+    t = Thread(target=_run, name="SyncScheduler", daemon=True)
+    t.daemon = True
+    t.start()
+    logger.info(f"⏰ Sync scheduler started (every {interval}s)")
+
+
+# ══════════════════════════════════════════════════════════════
+# 🔁 RETRY FAILED ITEMS
+# ══════════════════════════════════════════════════════════════
+def retry_failed_sync_items(school_id):
+    try:
+        failed = SyncQueue.query.filter(
+            SyncQueue.status == 'FAILED',
+            SyncQueue.school_id == school_id,
+            SyncQueue.retry_count < 3
+        ).all()
+        for item in failed:
+            item.status = 'PENDING'
+        perm = SyncQueue.query.filter(
+            SyncQueue.status == 'FAILED',
+            SyncQueue.school_id == school_id,
+            SyncQueue.retry_count >= 3
+        ).all()
+        for item in perm:
+            item.status = 'PERMANENTLY_FAILED'
+        db.session.commit()
+    except Exception as e:
+        logger.error(f"[Retry] {e}")
+
+
+# ══════════════════════════════════════════════════════════════
+# 📋 SEED LOCAL DATA TO SYNC QUEUE
+# ══════════════════════════════════════════════════════════════
+def seed_sync_queue_from_existing_data():
+    if os.environ.get("IS_ONLINE", "false").lower() == "true":
+        return
+    from utils.auto_migrate import import_all_models, get_all_subclasses
+    import_all_models()
+    subclasses = get_all_subclasses(db.Model)
+    count = 0
+    try:
+        for cls in subclasses:
+            tbl = getattr(cls, '__tablename__', None)
+            if not tbl or tbl in EXCLUDE_TABLES:
+                continue
+            try:
+                recs = cls.query.filter(cls.last_synced_at.is_(None)).all()
+            except Exception:
+                continue
+            for r in recs:
+                if not getattr(r, 'uuid', None):
+                    r.uuid = str(uuid.uuid4())
+                    db.session.add(r)
+                exists = SyncQueue.query.filter_by(
+                    table_name=tbl, record_id=r.uuid, status='PENDING'
+                ).first()
+                if not exists:
+                    payload = r.to_dict() if hasattr(r, 'to_dict') else {}
+                    db.session.add(SyncQueue(
+                        school_id=getattr(r, 'school_id', None),
+                        table_name=tbl, record_id=r.uuid,
+                        operation_type='CREATE',
+                        payload_json=json.dumps(payload, default=str),
+                        status='PENDING',
+                        priority=_PRIORITY.get(tbl, 5),
+                    ))
+                    count += 1
+        if count:
+            db.session.commit()
+            logger.info(f"[Seed] {count} records queued for initial sync")
+    except Exception as e:
+        logger.error(f"[Seed] {e}")
+        try: db.session.rollback()
+        except Exception: pass
+
+
+# ══════════════════════════════════════════════════════════════
+# Backward-compat stubs (used by sync/routes.py)
+# ══════════════════════════════════════════════════════════════
+def perform_push(school_id):
+    return 0, []
+
+def perform_pull(school_id):
+    return 0, 0
+
+def perform_direct_db_sync(school_id):
+    with current_app.app_context():
+        return _do_sync(school_id, 'manual')
+
+def perform_full_initial_sync(school_id):
+    from utils.dual_db import run_full_sync
+    p, pu, c, e = run_full_sync(db.engine, school_id=school_id, trigger='initial')
+    return {"total_pulled": pu, "tables_synced": [], "errors": e}

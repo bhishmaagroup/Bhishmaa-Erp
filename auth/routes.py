@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from extensions import db, login_manager
 from models import user
@@ -70,6 +70,20 @@ def login():
                 return redirect(url_for('auth.login'))
 
             login_user(user)
+
+            # 🔄 SYNC ON LOGIN — background thread (never blocks login)
+            try:
+                from utils.sync_engine import sync_on_login
+                import threading
+                _st = threading.Thread(
+                    target=sync_on_login,
+                    args=(school.id, current_app._get_current_object()),
+                    name=f"LoginSync-{school.id}",
+                    daemon=True
+                )
+                _st.start()
+            except Exception as _se:
+                pass  # Sync failure must never block login
 
             allowed_roles = [
                 "teacher",

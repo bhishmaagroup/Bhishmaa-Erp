@@ -90,7 +90,9 @@ def auto_migrate(app):
                 ("uuid", "VARCHAR(36)", "NULL"),
                 ("updated_at", "TIMESTAMP" if dialect == "postgresql" else "DATETIME", "NULL"),
                 ("last_synced_at", "TIMESTAMP" if dialect == "postgresql" else "DATETIME", "NULL"),
-                ("sync_version", "INTEGER", "0")
+                ("sync_version", "INTEGER", "0"),
+                ("retry_count", "INTEGER", "0"),
+                ("priority", "INTEGER", "5"),
             ]
             
             for model in all_models:

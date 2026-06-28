@@ -1,366 +1,200 @@
 {% extends "base.html" %}
-{% block title %}Synchronization Dashboard{% endblock %}
+{% block title %}Sync Dashboard — Bhishmaa ERP{% endblock %}
 
 {% block content %}
 <style>
-    .sync-header {
-        background: linear-gradient(135deg, #11998e, #38ef7d);
-        color: white;
-        border-radius: 16px;
-        padding: 24px;
-    }
-
-    .neo-card {
-        background: #ffffff;
-        border-radius: 16px;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
-        border: none;
-        transition: 0.3s;
-    }
-
-    .neo-card:hover {
-        transform: translateY(-3px);
-    }
-
-    .stat-number {
-        font-size: 2.25rem;
-        font-weight: 700;
-    }
-
-    .table-responsive {
-        border-radius: 12px;
-        overflow: hidden;
-    }
-
-    .badge-status {
-        font-size: 0.85rem;
-        padding: 6px 12px;
-        border-radius: 20px;
-    }
-
-    .pulse-online {
-        display: inline-block;
-        width: 10px;
-        height: 10px;
-        background-color: #2ecb71;
-        border-radius: 50%;
-        margin-right: 6px;
-        box-shadow: 0 0 0 0 rgba(46, 203, 113, 0.7);
-        animation: pulse 1.6s infinite;
-    }
-
-    .pulse-offline {
-        display: inline-block;
-        width: 10px;
-        height: 10px;
-        background-color: #e74c3c;
-        border-radius: 50%;
-        margin-right: 6px;
-    }
-
-    @keyframes pulse {
-        0% {
-            transform: scale(0.95);
-            box-shadow: 0 0 0 0 rgba(46, 203, 113, 0.7);
-        }
-        70% {
-            transform: scale(1);
-            box-shadow: 0 0 0 6px rgba(46, 203, 113, 0);
-        }
-        100% {
-            transform: scale(0.95);
-            box-shadow: 0 0 0 0 rgba(46, 203, 113, 0);
-        }
-    }
+  .sync-header { background: linear-gradient(135deg,#0f2027,#203a43,#2c5364); color:#fff; border-radius:16px; padding:24px; }
+  .neo-card { background:#fff; border-radius:14px; box-shadow:0 6px 24px rgba(0,0,0,.07); border:none; }
+  .stat-val { font-size:2rem; font-weight:700; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .spinning { display:inline-block; animation:spin 1s linear infinite; }
+  .dot { display:inline-block; width:11px; height:11px; border-radius:50%; margin-right:6px; }
+  .dot-green  { background:#27ae60; box-shadow:0 0 0 3px rgba(39,174,96,.25); }
+  .dot-red    { background:#e74c3c; box-shadow:0 0 0 3px rgba(231,76,60,.25); }
+  .dot-yellow { background:#f39c12; box-shadow:0 0 0 3px rgba(243,156,18,.25); }
+  .dot-grey   { background:#95a5a6; }
+  .cloud-arrow { font-size:1.4rem; font-weight:700; }
 </style>
 
 <div class="container-fluid py-4">
 
-    <!-- ===== HEADER ===== -->
-    <div class="sync-header mb-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
-        <div>
-            <h3 class="fw-bold mb-1">🔄 Database Synchronization</h3>
-            <p class="mb-0 text-white-50">Local SQLite & Cloud PostgreSQL Hybrid Sync Engine</p>
+  <!-- LIVE STATUS CARD -->
+  <div class="sync-header mb-4">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <span id="status-dot" class="dot dot-grey"></span>
+          <h4 class="mb-0 fw-bold" id="status-label">Checking...</h4>
         </div>
-        <div class="d-flex align-items-center gap-3">
-            <span class="badge bg-light text-dark py-2 px-3 d-flex align-items-center">
-                {% if internet_status == "Online" %}
-                    <span class="pulse-online"></span> Internet Connection: Online
-                {% else %}
-                    <span class="pulse-offline"></span> Internet Connection: Offline
-                {% endif %}
-            </span>
-            <form action="{{ url_for('sync.manual_sync') }}" method="POST">
-                <button type="submit" class="btn btn-light fw-bold py-2 px-4 shadow-sm" {% if internet_status == "Offline" or sync_running %}disabled{% endif %}>
-                    {% if sync_running %}
-                        <span class="spinner-border spinner-border-sm me-1"></span> Syncing...
-                    {% else %}
-                        ⚡ Manual Sync Now
-                    {% endif %}
-                </button>
-            </form>
+        <p class="mb-1 opacity-75" id="status-msg">Sync status load ho raha hai...</p>
+        <small class="opacity-50">
+          <span class="cloud-arrow">↑</span> <span id="pushed-count">—</span> pushed &nbsp;
+          <span class="cloud-arrow">↓</span> <span id="pulled-count">—</span> pulled &nbsp;
+          ⚠ <span id="conflict-count">—</span> conflicts
+        </small>
+      </div>
+      <div class="d-flex gap-2 flex-wrap">
+        <a href="{{ url_for('sync.conflict_list') }}" class="btn btn-warning btn-sm">
+          ⚠ Conflicts {% if conflict_count > 0 %}<span class="badge bg-dark ms-1">{{ conflict_count }}</span>{% endif %}
+        </a>
+        <form method="POST" action="{{ url_for('sync.manual_sync') }}"
+              onsubmit="return confirm('Sync shuru hoga. Continue?')">
+          <button class="btn btn-success btn-sm fw-bold">🔄 Sync Now</button>
+        </form>
+        <form method="POST" action="{{ url_for('sync.full_initial_sync') }}"
+              onsubmit="return confirm('Cloud se saara data download hoga. Sure?')">
+          <button class="btn btn-outline-light btn-sm">⬇ Full Cloud Download</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="alert alert-{{ 'info' if cat == 'info' else ('success' if cat == 'success' else 'danger') }} alert-dismissible fade show">
+        {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endwith %}
+
+  <!-- STATS -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="neo-card p-3 text-center">
+        <div class="stat-val text-warning">{{ pending_count }}</div>
+        <div class="text-muted small">⏳ Pending Upload</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="neo-card p-3 text-center">
+        <div class="stat-val text-danger">{{ failed_count }}</div>
+        <div class="text-muted small">❌ Failed</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="neo-card p-3 text-center">
+        <div class="stat-val text-success">{{ synced_count }}</div>
+        <div class="text-muted small">✅ Synced (24h)</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="neo-card p-3 text-center">
+        <div class="stat-val text-info">{{ conflict_count }}</div>
+        <div class="text-muted small">⚠ Conflicts (7d)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+
+    <!-- RECENT SESSIONS -->
+    <div class="col-lg-8">
+      <div class="neo-card overflow-hidden">
+        <div class="p-3 border-bottom fw-semibold">📋 Recent Sync Sessions</div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0 small">
+            <thead class="table-light">
+              <tr>
+                <th>Trigger</th>
+                <th>Time</th>
+                <th class="text-success">↑ Pushed</th>
+                <th class="text-primary">↓ Pulled</th>
+                <th>Conflicts</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for s in recent_sessions %}
+              <tr>
+                <td><span class="badge bg-secondary">{{ s.trigger or '—' }}</span></td>
+                <td>{{ s.started_at.strftime('%d %b %H:%M') if s.started_at else '—' }}</td>
+                <td class="fw-semibold text-success">{{ s.pushed_count }}</td>
+                <td class="fw-semibold text-primary">{{ s.pulled_count }}</td>
+                <td class="fw-semibold text-warning">{{ s.conflict_count }}</td>
+                <td>
+                  {% if s.status == 'success' %}<span class="badge bg-success">✅ Success</span>
+                  {% elif s.status == 'partial' %}<span class="badge bg-warning text-dark">⚠ Partial</span>
+                  {% elif s.status == 'running' %}<span class="badge bg-info">🔄 Running</span>
+                  {% elif s.status == 'failed' %}<span class="badge bg-danger">❌ Failed</span>
+                  {% else %}<span class="badge bg-secondary">{{ s.status }}</span>{% endif %}
+                </td>
+              </tr>
+              {% else %}
+              <tr><td colspan="6" class="text-center text-muted py-4">Koi sync session nahi mili abhi tak</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
+      </div>
     </div>
 
-    <!-- ===== STATS CARDS ===== -->
-    <div class="row g-4 mb-4">
-        <!-- Pending Queue -->
-        <div class="col-md-3">
-            <div class="card neo-card p-3">
-                <div class="card-body">
-                    <h6 class="text-muted text-uppercase fw-semibold mb-2">Pending Sync Queue</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="stat-number text-warning">{{ pending_count }}</span>
-                        <i class="fa fa-clock fa-2x text-warning-50 opacity-50"></i>
-                    </div>
-                    <div class="mt-2">
-                        <small class="text-muted">Changes waiting to be pushed</small>
-                    </div>
-                </div>
-            </div>
+    <!-- PENDING QUEUE -->
+    <div class="col-lg-4">
+      <div class="neo-card overflow-hidden">
+        <div class="p-3 border-bottom fw-semibold">⏳ Pending Queue</div>
+        <div class="table-responsive" style="max-height:350px;overflow-y:auto;">
+          <table class="table table-hover align-middle mb-0 small">
+            <thead class="table-light">
+              <tr><th>Table</th><th>Op</th><th>Pri</th></tr>
+            </thead>
+            <tbody>
+              {% for item in pending_items %}
+              <tr>
+                <td><code class="small">{{ item.table_name }}</code></td>
+                <td>
+                  {% if item.operation_type == 'CREATE' %}<span class="badge bg-success">C</span>
+                  {% elif item.operation_type == 'UPDATE' %}<span class="badge bg-warning text-dark">U</span>
+                  {% else %}<span class="badge bg-danger">D</span>{% endif %}
+                </td>
+                <td>{{ item.priority }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="3" class="text-center text-muted py-3">🎉 Queue khali!</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
-
-        <!-- Failed Sync -->
-        <div class="col-md-3">
-            <div class="card neo-card p-3">
-                <div class="card-body">
-                    <h6 class="text-muted text-uppercase fw-semibold mb-2">Failed Operations</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="stat-number text-danger">{{ failed_count }}</span>
-                        <i class="fa fa-exclamation-circle fa-2x text-danger-50 opacity-50"></i>
-                    </div>
-                    <div class="mt-2">
-                        <small class="text-muted">Errors requiring attention</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Last Sync Time -->
-        <div class="col-md-3">
-            <div class="card neo-card p-3">
-                <div class="card-body">
-                    <h6 class="text-muted text-uppercase fw-semibold mb-2">Last Sync Completed</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="fs-5 fw-bold text-success pt-2">
-                            {% if last_sync %}
-                                {{ last_sync.strftime('%Y-%m-%d %H:%M:%S') }}
-                            {% else %}
-                                Never Synced
-                            {% endif %}
-                        </span>
-                        <i class="fa fa-sync fa-2x text-success-50 opacity-50"></i>
-                    </div>
-                    <div class="mt-3">
-                        <small class="text-muted">Auto-scheduler runs every 2m</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Sync Engine Mode -->
-        <div class="col-md-3">
-            <div class="card neo-card p-3">
-                <div class="card-body">
-                    <h6 class="text-muted text-uppercase fw-semibold mb-2">Operation Mode</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="stat-number text-primary">Hybrid</span>
-                        <i class="fa fa-server fa-2x text-primary-50 opacity-50"></i>
-                    </div>
-                    <div class="mt-2">
-                        <small class="text-muted">Active Node: SQLite Offline-First</small>
-                    </div>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
 
-    <!-- ===== EXPORT & BACKUPS SECTION ===== -->
-    <div class="row g-4 mb-4">
-        <!-- Database Backup & Restore -->
-        <div class="col-md-6">
-            <div class="card neo-card p-4">
-                <h5 class="fw-bold mb-3"><i class="fa fa-hdd text-secondary me-2"></i>Database Backup & Recovery</h5>
-                
-                <div class="d-flex gap-3 mb-4 flex-wrap">
-                    <form action="{{ url_for('sync.run_backup') }}" method="POST">
-                        <button type="submit" class="btn btn-outline-primary fw-semibold"><i class="fa fa-download me-1"></i> Generate SQLite Backup</button>
-                    </form>
-                </div>
-
-                <h6 class="fw-semibold text-muted mb-2">Recent Local Backups</h6>
-                {% if backups %}
-                    <ul class="list-group mb-4">
-                        {% for b in backups %}
-                            <li class="list-group-item d-flex justify-content-between align-items-center border-0 border-bottom px-0">
-                                <span class="small font-monospace">{{ b }}</span>
-                                <a href="{{ url_for('sync.download_backup', filename=b) }}" class="btn btn-link btn-sm text-decoration-none py-0"><i class="fa fa-download"></i> Download</a>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <div class="alert alert-light text-center py-3 mb-4">No backups found. Generate one now!</div>
-                {% endif %}
-
-                <h6 class="fw-semibold text-muted mb-2">Restore Database</h6>
-                <form action="{{ url_for('sync.restore_backup') }}" method="POST" enctype="multipart/form-data" onsubmit="return confirm('WARNING: This will overwrite your current offline database. Proceed?')">
-                    <div class="input-group">
-                        <input type="file" name="backup_file" class="form-control" accept=".db" required>
-                        <button class="btn btn-danger" type="submit"><i class="fa fa-upload me-1"></i> Restore DB</button>
-                    </div>
-                    <small class="form-text text-danger mt-1 d-block"><i class="fa fa-exclamation-triangle"></i> This action cannot be undone.</small>
-                </form>
-            </div>
-        </div>
-
-        <!-- Sync Reports & History Exporter -->
-        <div class="col-md-6">
-            <div class="card neo-card p-4">
-                <h5 class="fw-bold mb-3"><i class="fa fa-file-invoice text-secondary me-2"></i>Sync Log Reports & Exporters</h5>
-                <p class="text-muted">Export synchronization queue history and operations logs for audits and diagnostics.</p>
-                
-                <div class="row g-3 mt-2">
-                    <div class="col-md-4">
-                        <a href="{{ url_for('sync.export_sync_logs', format='csv') }}" class="btn btn-outline-success w-100 py-3 fw-bold">
-                            <i class="fa fa-file-csv fa-2x mb-2 d-block"></i> CSV format
-                        </a>
-                    </div>
-                    <div class="col-md-4">
-                        <a href="{{ url_for('sync.export_sync_logs', format='excel') }}" class="btn btn-outline-success w-100 py-3 fw-bold">
-                            <i class="fa fa-file-excel fa-2x mb-2 d-block"></i> Excel format
-                        </a>
-                    </div>
-                    <div class="col-md-4">
-                        <a href="{{ url_for('sync.export_sync_logs', format='pdf') }}" class="btn btn-outline-danger w-100 py-3 fw-bold">
-                            <i class="fa fa-file-pdf fa-2x mb-2 d-block"></i> PDF Report
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ===== TRANSACTIONS & CONFLICTS TABS ===== -->
-    <div class="card neo-card p-4">
-        <ul class="nav nav-tabs border-bottom mb-3" id="syncTabs" role="tablist">
-            <li class="nav-item">
-                <button class="nav-link active fw-bold" id="queue-tab" data-bs-toggle="tab" data-bs-target="#queue-pane" type="button" role="tab">
-                    📋 Recent Sync Queue
-                </button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link fw-bold" id="conflict-tab" data-bs-toggle="tab" data-bs-target="#conflict-pane" type="button" role="tab">
-                    ⚖ Conflict Logs
-                </button>
-            </li>
-        </ul>
-        
-        <div class="tab-content" id="syncTabsContent">
-            <!-- Queue Pane -->
-            <div class="tab-pane fade show active" id="queue-pane" role="tabpanel">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Queue ID</th>
-                                <th>Table Name</th>
-                                <th>Operation</th>
-                                <th>Record UUID</th>
-                                <th>Status</th>
-                                <th>Created At</th>
-                                <th>Synced At</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% if recent_queue %}
-                                {% for item in recent_queue %}
-                                    <tr>
-                                        <td>{{ item.id }}</td>
-                                        <td><span class="font-monospace text-dark">{{ item.table_name }}</span></td>
-                                        <td>
-                                            {% if item.operation_type == 'CREATE' %}
-                                                <span class="badge bg-success-subtle text-success border border-success-subtle px-2">CREATE</span>
-                                            {% elif item.operation_type == 'UPDATE' %}
-                                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2">UPDATE</span>
-                                            {% else %}
-                                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2">DELETE</span>
-                                            {% endif %}
-                                        </td>
-                                        <td><span class="small font-monospace text-muted">{{ item.record_id }}</span></td>
-                                        <td>
-                                            {% if item.status == 'SYNCED' %}
-                                                <span class="badge bg-success">SYNCED</span>
-                                            {% elif item.status == 'PENDING' %}
-                                                <span class="badge bg-warning text-dark">PENDING</span>
-                                            {% else %}
-                                                <span class="badge bg-danger" data-bs-toggle="tooltip" title="{{ item.error_message }}">FAILED</span>
-                                            {% endif %}
-                                        </td>
-                                        <td class="small">{{ item.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                                        <td class="small">
-                                            {% if item.synced_at %}
-                                                {{ item.synced_at.strftime('%Y-%m-%d %H:%M:%S') }}
-                                            {% else %}
-                                                -
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            {% else %}
-                                <tr>
-                                    <td colspan="7" class="text-center py-4 text-muted">No sync queue records found.</td>
-                                </tr>
-                            {% endif %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <!-- Conflict Pane -->
-            <div class="tab-pane fade" id="conflict-pane" role="tabpanel">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Conflict ID</th>
-                                <th>Table Name</th>
-                                <th>Record UUID</th>
-                                <th>Local Updated At</th>
-                                <th>Cloud Updated At</th>
-                                <th>Resolution Result</th>
-                                <th>Log Timestamp</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% if recent_conflicts %}
-                                {% for log in recent_conflicts %}
-                                    <tr>
-                                        <td>{{ log.id }}</td>
-                                        <td><span class="font-monospace text-dark">{{ log.table_name }}</span></td>
-                                        <td><span class="small font-monospace text-muted">{{ log.record_uuid }}</span></td>
-                                        <td class="small">{{ log.local_updated_at.strftime('%Y-%m-%d %H:%M:%S') if log.local_updated_at else '-' }}</td>
-                                        <td class="small">{{ log.cloud_updated_at.strftime('%Y-%m-%d %H:%M:%S') if log.cloud_updated_at else '-' }}</td>
-                                        <td>
-                                            {% if 'Cloud Won' in log.resolution %}
-                                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2"><i class="fa fa-cloud me-1"></i> {{ log.resolution }}</span>
-                                            {% else %}
-                                                <span class="badge bg-success-subtle text-success border border-success-subtle px-2"><i class="fa fa-laptop me-1"></i> {{ log.resolution }}</span>
-                                            {% endif %}
-                                        </td>
-                                        <td class="small">{{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                                    </tr>
-                                {% endfor %}
-                            {% else %}
-                                <tr>
-                                    <td colspan="7" class="text-center py-4 text-muted">No conflicts recorded. All systems reconciled.</td>
-                                </tr>
-                            {% endif %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
+  </div>
 </div>
+
+<script>
+function updateStatus() {
+  fetch('/sync/api/live-status')
+    .then(r => r.json())
+    .then(d => {
+      var dot   = document.getElementById('status-dot');
+      var label = document.getElementById('status-label');
+      var msg   = document.getElementById('status-msg');
+      document.getElementById('pushed-count').textContent   = d.pushed    || 0;
+      document.getElementById('pulled-count').textContent   = d.pulled    || 0;
+      document.getElementById('conflict-count').textContent = d.conflicts || 0;
+
+      dot.className = 'dot ';
+      if (d.status === 'success') {
+        dot.className += 'dot-green';
+        label.textContent = '🟢 Online & Synced';
+      } else if (d.status === 'offline') {
+        dot.className += 'dot-red';
+        label.textContent = '🔴 Working Offline';
+      } else if (d.status === 'syncing') {
+        dot.className += 'dot-yellow';
+        label.textContent = '🔄 Syncing...';
+      } else if (d.status === 'failed') {
+        dot.className += 'dot-red';
+        label.textContent = '❌ Sync Failed';
+      } else {
+        dot.className += 'dot-grey';
+        label.textContent = '⏳ Pehla Sync Pending';
+      }
+
+      msg.textContent = d.message || (d.is_internet ? '☁ Internet connected' : '📵 No internet');
+    })
+    .catch(function(){});
+}
+updateStatus();
+setInterval(updateStatus, 8000);
+</script>
 {% endblock %}
