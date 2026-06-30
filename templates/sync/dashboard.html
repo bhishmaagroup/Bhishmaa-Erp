@@ -37,7 +37,7 @@
         <a href="{{ url_for('sync.conflict_list') }}" class="btn btn-warning btn-sm">
           ⚠ Conflicts {% if conflict_count > 0 %}<span class="badge bg-dark ms-1">{{ conflict_count }}</span>{% endif %}
         </a>
-        <form method="POST" action="{{ url_for('sync.manual_sync') }}"
+        <form method="POST" action="{{ url_for('sync.trigger_manual_sync') }}"
               onsubmit="return confirm('Sync shuru hoga. Continue?')">
           <button class="btn btn-success btn-sm fw-bold">🔄 Sync Now</button>
         </form>

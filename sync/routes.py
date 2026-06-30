@@ -462,23 +462,25 @@ def export_sync_logs(format):
 # 🆕 OFFLINE-FIRST SYNC SYSTEM — NEW ENDPOINTS
 # =========================================================
 
+
+
+# =========================================================
+# NEW OFFLINE-FIRST ENDPOINTS
+# =========================================================
+
 @sync_bp.route('/status')
 @login_required
 def status_page():
-    """Sync Status Dashboard Page"""
-    pass  # sync_status imported at top
-    from models.sync import SyncSession
     from datetime import timedelta
-
     school_id = current_user.school_id
     now = datetime.utcnow()
 
     pending_count = SyncQueue.query.filter_by(status='PENDING', school_id=school_id).count()
-    failed_count = SyncQueue.query.filter(
+    failed_count  = SyncQueue.query.filter(
         SyncQueue.status.in_(['FAILED', 'PERMANENTLY_FAILED']),
         SyncQueue.school_id == school_id
     ).count()
-    synced_count = SyncQueue.query.filter(
+    synced_count  = SyncQueue.query.filter(
         SyncQueue.status == 'SYNCED',
         SyncQueue.school_id == school_id,
         SyncQueue.synced_at >= now - timedelta(hours=24)
@@ -489,10 +491,7 @@ def status_page():
         ConflictLog.resolved == False
     ).count()
 
-    last_sync_session = SyncSession.query.filter_by(school_id=school_id).order_by(
-        SyncSession.started_at.desc()
-    ).first()
-
+    from models.sync import SyncSession
     recent_sessions = SyncSession.query.filter_by(school_id=school_id).order_by(
         SyncSession.started_at.desc()
     ).limit(10).all()
@@ -501,7 +500,7 @@ def status_page():
         status='PENDING', school_id=school_id
     ).order_by(SyncQueue.priority, SyncQueue.created_at.desc()).limit(20).all()
 
-    school_sync_status = sync_status.get(school_id, {"status": "never", "message": "Never synced"})
+    school_sync = sync_status.get(school_id, {"status": "never", "message": "Never synced"})
     is_internet = check_internet()
 
     return render_template('sync/dashboard.html',
@@ -509,40 +508,15 @@ def status_page():
         failed_count=failed_count,
         synced_count=synced_count,
         conflict_count=conflict_count,
-        last_sync_session=last_sync_session,
         recent_sessions=recent_sessions,
         pending_items=pending_items,
-        sync_status_dict=school_sync_status,
+        sync_status_dict=school_sync,
         is_internet=is_internet
     )
 
 
-@sync_bp.route('/manual', methods=['POST'])
-@login_required
-def manual_sync():
-    """Trigger manual sync in background thread."""
-    pass  # _do_sync imported at top
-    school_id = current_user.school_id
-    app = current_app._get_current_object()
-
-    import threading
-
-    def _run():
-        with app.app_context():
-            _do_sync(school_id, trigger='manual')
-
-    t = threading.Thread(target=_run, name=f"ManualSync-{school_id}", daemon=True)
-    t.start()
-
-    flash("🔄 Sync shuru ho gaya background mein. 30 seconds mein refresh karein.", "info")
-    return redirect(url_for('sync.status_page'))
-
-
 @sync_bp.route('/api/live-status', methods=['GET'])
 def live_status_api():
-    """AJAX polling endpoint for sync badge."""
-    pass  # sync_status imported at top
-
     try:
         school_id = current_user.school_id if current_user.is_authenticated else None
     except Exception:
@@ -553,45 +527,57 @@ def live_status_api():
                         "last_sync": None, "is_internet": False, "message": "Not logged in"})
 
     school_sync = sync_status.get(school_id, {})
-    pending = SyncQueue.query.filter_by(status='PENDING', school_id=school_id).count()
-    failed = SyncQueue.query.filter(
+    pending  = SyncQueue.query.filter_by(status='PENDING', school_id=school_id).count()
+    failed   = SyncQueue.query.filter(
         SyncQueue.status.in_(['FAILED', 'PERMANENTLY_FAILED']),
         SyncQueue.school_id == school_id
     ).count()
-    is_internet = check_internet()
-
+    is_net   = check_internet()
     last_sync = school_sync.get("last_sync")
+
     msg = school_sync.get("message", "")
     if last_sync and not msg:
         try:
-            ls_dt = datetime.fromisoformat(last_sync)
-            diff = (datetime.utcnow() - ls_dt).total_seconds()
-            if diff < 60:
-                msg = f"Abhi synced"
-            elif diff < 3600:
-                msg = f"{int(diff//60)} minutes pehle synced"
-            else:
-                msg = f"{int(diff//3600)} ghante pehle synced"
+            diff = (datetime.utcnow() - datetime.fromisoformat(last_sync)).total_seconds()
+            msg = "Abhi synced" if diff < 60 else (
+                f"{int(diff//60)} min pehle" if diff < 3600 else f"{int(diff//3600)} ghante pehle"
+            )
         except Exception:
-            msg = ""
+            pass
 
     return jsonify({
-        "status": school_sync.get("status", "never"),
-        "pending": pending,
-        "failed": failed,
+        "status":    school_sync.get("status", "never"),
+        "pending":   pending,
+        "failed":    failed,
         "last_sync": last_sync,
-        "is_internet": is_internet,
-        "message": msg,
-        "pushed": school_sync.get("pushed", 0),
-        "pulled": school_sync.get("pulled", 0),
+        "is_internet": is_net,
+        "message":   msg,
+        "pushed":    school_sync.get("pushed", 0),
+        "pulled":    school_sync.get("pulled", 0),
         "conflicts": school_sync.get("conflicts", 0),
     })
+
+
+@sync_bp.route('/trigger-manual', methods=['POST'])
+@login_required
+def trigger_manual_sync():
+    """Manual sync trigger (different URL to avoid conflict with existing /manual)."""
+    school_id = current_user.school_id
+    app = current_app._get_current_object()
+
+    import threading
+    def _run():
+        with app.app_context():
+            _do_sync(school_id, trigger='manual')
+
+    threading.Thread(target=_run, name=f"ManualSync-{school_id}", daemon=True).start()
+    flash("🔄 Sync shuru ho gaya background mein. 30 seconds mein refresh karein.", "info")
+    return redirect(url_for('sync.status_page'))
 
 
 @sync_bp.route('/conflicts')
 @login_required
 def conflict_list():
-    """Conflict Log Page"""
     school_id = current_user.school_id
     page = request.args.get('page', 1, type=int)
     conflicts = ConflictLog.query.filter_by(
@@ -603,46 +589,35 @@ def conflict_list():
 @sync_bp.route('/resolve-conflict/<int:conflict_id>', methods=['POST'])
 @login_required
 def resolve_conflict(conflict_id):
-    """Resolve a conflict — keep_local or keep_cloud."""
-    action = request.args.get('action', 'keep_cloud')
+    action    = request.args.get('action', 'keep_cloud')
     school_id = current_user.school_id
-
-    conflict = ConflictLog.query.filter_by(id=conflict_id, school_id=school_id).first_or_404()
+    conflict  = ConflictLog.query.filter_by(id=conflict_id, school_id=school_id).first_or_404()
 
     from utils.auto_migrate import import_all_models, get_all_subclasses
     import_all_models()
-    subclasses = get_all_subclasses(db.Model)
-    subclass_map = {cls.__tablename__: cls for cls in subclasses if hasattr(cls, '__tablename__')}
+    subclass_map = {c.__tablename__: c for c in get_all_subclasses(db.Model) if hasattr(c, '__tablename__')}
     cls = subclass_map.get(conflict.table_name)
 
     try:
         if action == 'keep_cloud' and conflict.cloud_payload and cls:
             cloud_data = json.loads(conflict.cloud_payload)
             rec = cls.query.filter_by(uuid=conflict.record_uuid).first()
-            if rec:
+            if rec and hasattr(rec, 'update_from_dict'):
                 db.session.no_sync_logging = True
                 rec.update_from_dict(cloud_data)
-                rec.last_synced_at = datetime.utcnow()
                 db.session.no_sync_logging = False
-
-        elif action == 'keep_local' and conflict.local_payload and cls:
-            # Force re-push to cloud
-            local_data = json.loads(conflict.local_payload)
-            sq = SyncQueue(
+        elif action == 'keep_local' and conflict.local_payload:
+            db.session.add(SyncQueue(
                 school_id=school_id,
                 table_name=conflict.table_name,
                 record_id=conflict.record_uuid,
                 operation_type='UPDATE',
                 payload_json=conflict.local_payload,
-                status='PENDING',
-                priority=3
-            )
-            db.session.add(sq)
-
+                status='PENDING', priority=3
+            ))
         conflict.resolved = True
         db.session.commit()
         flash(f"✅ Conflict resolve ho gaya ({action.replace('_', ' ')})", "success")
-
     except Exception as e:
         db.session.rollback()
         flash(f"❌ Resolve failed: {e}", "danger")
@@ -653,9 +628,7 @@ def resolve_conflict(conflict_id):
 @sync_bp.route('/full-initial-sync', methods=['POST'])
 @login_required
 def full_initial_sync():
-    """Trigger full initial sync from cloud."""
     from utils.sync_engine import perform_full_initial_sync
-    school_id = current_user.school_id
-    result = perform_full_initial_sync(school_id)
+    result = perform_full_initial_sync(current_user.school_id)
     flash(f"✅ Initial sync complete: {result['total_pulled']} records pulled.", "success")
     return redirect(url_for('sync.status_page'))
