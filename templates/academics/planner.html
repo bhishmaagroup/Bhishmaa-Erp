@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+
+{% block title %}Academic Planning Engine - Bhishmaa ERP{% endblock %}
+
+{% block content %}
+<style>
+    .planner-header {
+        background: linear-gradient(135deg, #0f172a, #2563eb);
+        color: white;
+        border-radius: 16px;
+        padding: 30px 25px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 25px rgba(37, 99, 235, 0.15);
+    }
+    .planner-card {
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        background: white;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .planner-card:hover {
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+    }
+    .badge-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 6px;
+    }
+    .neo-tab-btn {
+        border-radius: 8px;
+        margin-right: 8px;
+        font-weight: 500;
+    }
+    .accordion-button:not(.collapsed) {
+        background-color: #eff6ff;
+        color: #1d4ed8;
+    }
+</style>
+
+<div class="container-fluid py-2">
+    <!-- Header -->
+    <div class="planner-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h2 class="fw-bold mb-1">⚡ Academic Planning Cockpit</h2>
+            <p class="mb-0 opacity-90">One-click automation for weekly timetables, exam structures, seating plans, and results seeding</p>
+        </div>
+        <div>
+            <a href="/academics/" class="btn btn-outline-light">
+                <i class="fa fa-arrow-left me-1"></i> Academics Portal
+            </a>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="border-radius: 12px;">
+                    <i class="fa {% if category == 'success' %}fa-check-circle{% else %}fa-exclamation-triangle{% endif %} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="row g-4">
+        <!-- Column 1: Settings & Generator Configuration -->
+        <div class="col-lg-5">
+            <!-- Unified Generation Card -->
+            <div class="card planner-card border-0 mb-4">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold text-dark mb-0"><i class="fa fa-bolt text-warning me-2"></i>Unified One-Click Generator</h5>
+                    <p class="text-muted small mb-0">Runs the complete system scheduling in one atomic transaction</p>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning border-0 p-3 mb-4 small" style="background-color: #fffbeb; border-radius: 10px;">
+                        <i class="fa fa-info-circle text-warning me-2"></i>
+                        <strong>Important:</strong> Executing this will automatically clean up any old timetables, exam session timetables, seating charts, and results sheets before generating a fresh optimized set of schedules.
+                    </div>
+                    
+                    <form action="/academics/planner/generate" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Exam Name Title</label>
+                            <input type="text" name="exam_name" class="form-control form-control-sm" placeholder="e.g. First Term Final Examination" required value="First Term Exam">
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-6">
+                                <label class="form-label fw-bold small text-muted">Session</label>
+                                <select name="session_id" class="form-select form-select-sm" required>
+                                    {% for s in sessions %}
+                                        <option value="{{ s.id }}">{{ s.name }}</option>
+                                    {% else %}
+                                        <option disabled>No Session Created. Please create in Exams first</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label fw-bold small text-muted">Exam Type</label>
+                                <select name="exam_type_id" class="form-select form-select-sm" required>
+                                    {% for et in exam_types %}
+                                        <option value="{{ et.id }}">{{ et.name }}</option>
+                                    {% else %}
+                                        <option disabled>No Exam Type Created. Please create in Exams first</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-6">
+                                <label class="form-label fw-bold small text-muted">Start Date</label>
+                                <input type="date" name="start_date" class="form-control form-control-sm" required value="2026-06-08">
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label fw-bold small text-muted">End Date</label>
+                                <input type="date" name="end_date" class="form-control form-control-sm" required value="2026-06-15">
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-sm-6">
+                                <label class="form-label fw-bold small text-muted">Exam Start Time</label>
+                                <input type="time" name="start_time" class="form-control form-control-sm" required value="09:00">
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label fw-bold small text-muted">Exam End Time</label>
+                                <input type="time" name="end_time" class="form-control form-control-sm" required value="12:00">
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-sm py-2 fw-bold" {% if not sessions or not exam_types %}disabled{% endif %}>
+                                <i class="fa fa-magic me-2"></i>⚡ Generate Academic Plan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Planner Configuration Settings Card -->
+            <div class="card planner-card border-0 mb-4">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold text-dark mb-0"><i class="fa fa-sliders-h text-primary me-2"></i>Planning Configurations</h5>
+                    <p class="text-muted small mb-0">Define school timings, working days, and teacher daily limits</p>
+                </div>
+                <div class="card-body">
+                    <form action="/academics/planner" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Academic Year Reference</label>
+                            <input type="text" name="academic_year" class="form-control form-control-sm" required value="{{ settings.academic_year }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted d-block">Active Working Days</label>
+                            {% set current_days = settings.working_days.split(',') %}
+                            {% for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] %}
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="working_days" value="{{ day }}" id="day_{{ day }}" {% if day in current_days %}checked{% endif %}>
+                                    <label class="form-check-label small" for="day_{{ day }}">{{ day[:3] }}</label>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-6">
+                                <label class="form-label fw-bold small text-muted">School Start Time</label>
+                                <input type="time" name="start_time" class="form-control form-control-sm" required value="{{ settings.start_time.strftime('%H:%M') if settings.start_time else '08:00' }}">
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label fw-bold small text-muted">Period Duration (min)</label>
+                                <input type="number" name="period_duration" class="form-control form-control-sm" min="15" max="180" required value="{{ settings.period_duration }}">
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-6">
+                                <label class="form-label fw-bold small text-muted">Break Duration (min)</label>
+                                <input type="number" name="break_duration" class="form-control form-control-sm" min="5" max="120" required value="{{ settings.break_duration }}">
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label fw-bold small text-muted">Lunch Break After Period</label>
+                                <input type="number" name="lunch_break_after_period" class="form-control form-control-sm" min="1" max="10" required value="{{ settings.lunch_break_after_period }}">
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-muted">Max Teacher Daily Workload (periods)</label>
+                            <input type="number" name="max_teacher_workload" class="form-control form-control-sm" min="1" max="12" required value="{{ settings.max_teacher_workload }}">
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-outline-primary btn-sm fw-bold">
+                                <i class="fa fa-save me-2"></i>Save Configurations
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Column 2: Subject Workload Configurations -->
+        <div class="col-lg-7">
+            <div class="card planner-card border-0 mb-4">
+                <div class="card-header bg-white border-0 pt-4 pb-0 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="fw-bold text-dark mb-0"><i class="fa fa-book-reader text-success me-2"></i>Weekly Subject Workloads</h5>
+                        <p class="text-muted small mb-0">Configure required teaching periods per week for each class and subject</p>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if not classes %}
+                        <div class="text-center py-5">
+                            <div class="text-muted mb-3"><i class="fa fa-school fa-3x"></i></div>
+                            <h6 class="fw-bold text-secondary">No Classes Configured</h6>
+                            <p class="text-muted small">Please add classes and sections first in the Academics setup menu.</p>
+                        </div>
+                    {% else %}
+                        <div class="accordion" id="workloadAccordion">
+                            {% for cls in classes %}
+                                <div class="accordion-item border-0 mb-3 planner-card">
+                                    <h2 class="accordion-header" id="heading_{{ cls.class_name }}">
+                                        <button class="accordion-button collapsed fw-bold border-0" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_{{ cls.class_name }}" aria-expanded="false" aria-controls="collapse_{{ cls.class_name }}" style="border-radius: 12px;">
+                                            <i class="fa fa-graduation-cap text-muted me-2"></i> Class {{ cls.class_name }}
+                                        </button>
+                                    </h2>
+                                    <div id="collapse_{{ cls.class_name }}" class="accordion-collapse collapse" aria-labelledby="heading_{{ cls.class_name }}" data-bs-parent="#workloadAccordion">
+                                        <div class="accordion-body p-3">
+                                            <form action="/academics/planner/workload" method="POST">
+                                                <input type="hidden" name="class_name" value="{{ cls.class_name }}">
+                                                <table class="table table-borderless table-sm mb-3">
+                                                    <thead>
+                                                        <tr class="text-muted small border-bottom">
+                                                            <th>Subject Name</th>
+                                                            <th>Subject Code</th>
+                                                            <th style="width: 150px;">Periods Per Week</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for sub in class_subjects[cls.class_name]['subjects'] %}
+                                                            <tr class="align-middle">
+                                                                <td class="fw-semibold small text-dark">{{ sub.subject_name }}</td>
+                                                                <td><span class="badge bg-light text-secondary">{{ sub.subject_code }}</span></td>
+                                                                <td>
+                                                                    <input type="number" name="workload_{{ sub.id }}" class="form-control form-control-sm text-center" min="0" max="15" value="{{ class_subjects[cls.class_name]['workloads'][sub.id] }}" required>
+                                                                </td>
+                                                            </tr>
+                                                        {% else %}
+                                                            <tr>
+                                                                <td colspan="3" class="text-center text-muted small py-3">No subjects configured in the subject master for Class {{ cls.class_name }}.</td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                                {% if class_subjects[cls.class_name]['subjects'] %}
+                                                    <div class="text-end">
+                                                        <button type="submit" class="btn btn-success btn-xs px-3 py-1 fw-bold" style="font-size: 11px;">
+                                                            <i class="fa fa-save me-1"></i> Update Workloads
+                                                        </button>
+                                                    </div>
+                                                {% endif %}
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Publish Exam Results - Bhishmaa ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h3 class="fw-bold mb-1">📢 Results Publishing Center</h3>
+            <p class="text-muted mb-0">Publish results to student and parent dashboards</p>
+        </div>
+        <div>
+            <a href="/result/process" class="btn btn-outline-dark btn-sm">
+                <i class="fa fa-arrow-left me-1"></i> Back to Processing
+            </a>
+        </div>
+    </div>
+
+    <!-- Exams Listing with publishing toggles -->
+    <div class="card border-0 shadow-sm neo-card">
+        <div class="card-body p-2">
+            <h5 class="fw-bold mb-3"><i class="fa fa-list text-dark me-2"></i>Examinations Publishing Control</h5>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>Exam Name</th>
+                            <th>Class/Sec</th>
+                            <th>Dates</th>
+                            <th>Publish Status</th>
+                            <th width="220" class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for e in exams %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td class="fw-bold text-dark">{{ e.name }}</td>
+                            <td>
+                                <span class="badge bg-primary">Class {{ e.class_name }}</span>
+                                {% if e.section %}
+                                <span class="badge bg-dark">Sec {{ e.section }}</span>
+                                {% else %}
+                                <span class="badge bg-light text-dark">All Sections</span>
+                                {% endif %}
+                            </td>
+                            <td class="small">
+                                {{ e.start_date.strftime('%d %b %Y') if e.start_date else '-' }} to 
+                                {{ e.end_date.strftime('%d %b %Y') if e.end_date else '-' }}
+                            </td>
+                            <td>
+                                {% if e.is_published %}
+                                <span class="badge bg-success"><i class="fa fa-check-circle me-1"></i>Published</span>
+                                {% else %}
+                                <span class="badge bg-warning text-dark"><i class="fa fa-pencil-alt me-1"></i>Private</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="d-flex justify-content-center">
+                                    <form method="post" class="d-inline">
+                                        <input type="hidden" name="exam_id" value="{{ e.id }}">
+                                        {% if e.is_published %}
+                                        <button type="submit" name="action" value="unpublish" class="btn btn-sm btn-outline-warning">
+                                            <i class="fa fa-eye-slash me-1"></i> Unpublish (Private)
+                                        </button>
+                                        {% else %}
+                                        <button type="submit" name="action" value="publish" class="btn btn-sm btn-success">
+                                            <i class="fa fa-eye me-1"></i> Publish to Portal
+                                        </button>
+                                        {% endif %}
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">No exams available. Create exams in the Exam Master first.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

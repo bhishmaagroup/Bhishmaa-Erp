@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Academic Analysis - Bhishmaa ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1">📊 Academic Analysis Reports</h3>
+            <p class="text-muted mb-0">Review toppers, pass/fail metrics, and distribution charts</p>
+        </div>
+        <a href="/academics/" class="btn btn-outline-dark btn-sm">← Academics Menu</a>
+    </div>
+
+    <!-- Select Exam -->
+    <div class="card border-0 shadow-sm mb-4 neo-card">
+        <div class="card-body p-2">
+            <h5 class="fw-bold mb-3"><i class="fa fa-filter text-primary me-2"></i>Select Exam</h5>
+            <form method="get" class="row g-3">
+                <div class="col-md-8">
+                    <select name="exam_id" class="form-select" onchange="this.form.submit()" required>
+                        <option value="">Select Exam</option>
+                        {% for e in exams %}
+                        <option value="{{ e.id }}" {% if selected_exam_id == e.id %}selected{% endif %}>{{ e.name }} (Class {{ e.class_name }} {{ e.section or '' }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if selected_exam_id %}
+    <div class="row">
+        <!-- Analytics & Charts -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm neo-card h-100">
+                <div class="card-body p-2 text-center">
+                    <h5 class="fw-bold mb-3 text-start"><i class="fa fa-chart-pie text-success me-2"></i>Visual Distribution</h5>
+                    <img src="/academics/reports/chart/{{ selected_exam_id }}" class="img-fluid rounded border shadow-xs" style="max-height: 250px;">
+                    <div class="d-flex justify-content-around mt-4">
+                        <div>
+                            <span class="fs-4 fw-bold text-success">{{ pass_count }}</span><br>
+                            <span class="text-muted small">Passed</span>
+                        </div>
+                        <div>
+                            <span class="fs-4 fw-bold text-danger">{{ fail_count }}</span><br>
+                            <span class="text-muted small">Failed</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toppers List -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm neo-card h-100">
+                <div class="card-body p-2">
+                    <h5 class="fw-bold mb-3"><i class="fa fa-trophy text-warning me-2"></i>Exam Toppers List</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Student Name</th>
+                                    <th>Percentage</th>
+                                    <th>GPA</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for t in toppers %}
+                                <tr>
+                                    <td class="fw-bold text-primary">#{{ t.rank }}</td>
+                                    <td class="fw-semibold">{{ t.student.first_name }} {{ t.student.last_name or '' }}</td>
+                                    <td class="fw-bold text-dark">{{ t.percentage }}%</td>
+                                    <td><span class="badge bg-info">{{ t.gpa }}</span></td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-4">No toppers calculated yet.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-light border text-center py-4">Choose an Exam above to view performance metrics.</div>
+    {% endif %}
+</div>
+{% endblock %}

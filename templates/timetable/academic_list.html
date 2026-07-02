@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Class Timetable - Bhishmaa ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h3 class="fw-bold mb-1">📅 Academic Timetable</h3>
+            <p class="text-muted mb-0">View and manage class weekly schedules</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/timetable/rooms" class="btn btn-outline-dark">
+                <i class="fa fa-door-open me-1"></i> Rooms
+            </a>
+            <a href="/timetable/conflicts" class="btn btn-outline-danger">
+                <i class="fa fa-exclamation-triangle me-1"></i> Conflicts
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Class/Section -->
+    <div class="card border-0 shadow-sm mb-4 neo-card">
+        <div class="card-body p-2">
+            <h5 class="fw-bold mb-3"><i class="fa fa-filter text-primary me-2"></i>Choose Class & Section</h5>
+            <form method="get">
+                <div class="row g-3">
+                    <div class="col-md-3 col-sm-6">
+                        <label class="form-label fw-semibold">Class</label>
+                        <select name="class_name" class="form-select" required>
+                            <option value="">Select Class</option>
+                            {% for c in ["LKG","UKG","1","2","3","4","5","6","7","8","9","10","11","12"] %}
+                            <option value="{{ c }}" {% if class_name == c %}selected{% endif %}>Class {{ c }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <label class="form-label fw-semibold">Section</label>
+                        <select name="section" class="form-select" required>
+                            <option value="">Select Section</option>
+                            {% for s in ["A","B","C","D"] %}
+                            <option value="{{ s }}" {% if section == s %}selected{% endif %}>Section {{ s }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fa fa-search me-1"></i> Load Timetable
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Weekly Grid View -->
+    {% if class_name and section %}
+    <div class="card border-0 shadow-sm neo-card">
+        <div class="card-body p-2">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0"><i class="fa fa-calendar-alt text-dark me-2"></i>Weekly Grid (Class {{ class_name }}-{{ section }})</h5>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle text-center" style="min-width: 900px;">
+                    <thead class="table-dark">
+                        <tr>
+                            <th width="150" class="align-middle">Day</th>
+                            {% for p in periods %}
+                            <th>
+                                Period {{ p }}
+                            </th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for day in days %}
+                        <tr>
+                            <td class="fw-bold table-light text-start ps-3 align-middle">{{ day }}</td>
+                            {% for p in periods %}
+                            {% set slot = timetable_data.get(day, {}).get(p) %}
+                            <td class="p-2" style="height: 100px; vertical-align: middle;">
+                                {% if slot %}
+                                <div class="bg-light p-2 rounded shadow-xs border border-primary position-relative" style="font-size: 0.85rem;">
+                                    <div class="fw-bold text-dark mb-1">{{ slot.subject.subject_name }}</div>
+                                    <div class="text-muted text-truncate mb-1"><i class="fa fa-chalkboard-teacher me-1"></i>{{ slot.teacher.first_name }}</div>
+                                    <div class="text-secondary small mb-2">
+                                        <i class="fa fa-clock me-1"></i>{{ slot.start_time.strftime('%I:%M %p') }}
+                                        <br>
+                                        <i class="fa fa-door-open me-1"></i>{{ slot.room_ref.room_no if slot.room_id else 'N/A' }}
+                                    </div>
+                                    {% if current_user.role == 'admin' %}
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a href="{{ url_for('timetable.academic_create', class_name=class_name, section=section, day=day, period=p) }}" class="btn btn-xs btn-outline-warning py-0 px-1" title="Edit slot">
+                                            <i class="fa fa-pencil-alt small"></i>
+                                        </a>
+                                        <a href="{{ url_for('timetable.delete_timetable_slot', id=slot.id) }}" class="btn btn-xs btn-outline-danger py-0 px-1" title="Remove slot" onclick="return confirm('Remove this timetable slot?')">
+                                            <i class="fa fa-trash-alt small"></i>
+                                        </a>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% else %}
+                                    {% if current_user.role == 'admin' %}
+                                    <a href="{{ url_for('timetable.academic_create', class_name=class_name, section=section, day=day, period=p) }}" class="btn btn-sm btn-outline-light text-muted w-100 py-3">
+                                        <i class="fa fa-plus-circle text-primary"></i><br><span class="small">Add Class</span>
+                                    </a>
+                                    {% else %}
+                                    <span class="text-muted small">Free Period</span>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-light border text-center py-4">
+        <i class="fa fa-search fa-2x mb-2 text-muted"></i>
+        <p class="mb-0">Please choose a Class and Section above to view the academic timetable.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

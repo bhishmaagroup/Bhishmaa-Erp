@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block title %}Academics Management - Bhishmaa ERP{% endblock %}
+
+{% block content %}
+<style>
+    .acad-header {
+        background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+        color: white;
+        border-radius: 16px;
+        padding: 30px 25px;
+        margin-bottom: 30px;
+    }
+    .acad-card {
+        border-radius: 16px;
+        padding: 24px;
+        text-align: center;
+        background: white;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: 1px solid #f3f4f6;
+        cursor: pointer;
+        display: block;
+        text-decoration: none !important;
+    }
+    .acad-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 25px rgba(59, 130, 246, 0.15);
+        border-color: #3b82f6;
+    }
+    .acad-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+        font-size: 24px;
+    }
+</style>
+
+<div class="container-fluid py-2">
+    <!-- Header -->
+    <div class="acad-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h2 class="fw-bold mb-1">🎓 Academics Management Portal</h2>
+            <p class="mb-0 opacity-90">Configure school courses, daily timetables, exams, seating arrangements, and marks entry</p>
+        </div>
+        <div>
+            <a href="/dashboard" class="btn btn-outline-light">
+                <i class="fa fa-arrow-left me-1"></i> Dashboard Home
+            </a>
+        </div>
+    </div>
+
+    <!-- Grid Menu -->
+    <div class="row g-4">
+        <!-- Subjects -->
+        <div class="col-md-3 col-sm-6">
+            <a href="/subject/" class="acad-card">
+                <div class="acad-icon text-primary" style="background: #eff6ff;"><i class="fa fa-book-open"></i></div>
+                <h5 class="fw-bold text-dark mb-1">Subjects Master</h5>
+                <p class="text-muted small mb-0">Theory, Practical & Viva allocation</p>
+            </a>
+        </div>
+
+        <!-- Class & Sections -->
+        <div class="col-md-3 col-sm-6">
+            <a href="/academics/classes" class="acad-card">
+                <div class="acad-icon text-success" style="background: #f0fdf4;"><i class="fa fa-school"></i></div>
+                <h5 class="fw-bold text-dark mb-1">Classes & Sections</h5>
+                <p class="text-muted small mb-0">Class teachers, sections & capacity</p>
+            </a>
+        </div>
+
+        <!-- Timetable -->
+        <div class="col-md-3 col-sm-6">
+            <a href="/academics/timetable" class="acad-card">
+                <div class="acad-icon text-warning" style="background: #fffbef;"><i class="fa fa-calendar-alt"></i></div>
+                <h5 class="fw-bold text-dark mb-1">Weekly Timetables</h5>
+                <p class="text-muted small mb-0">Periods, working days & conflict audit</p>
+            </a>
+        </div>
+
+        <!-- Academic Planner -->
+        <div class="col-md-3 col-sm-6">
+            <a href="/academics/planner" class="acad-card">
+                <div class="acad-icon text-warning" style="background: #fff8e6;"><i class="fa fa-magic"></i></div>
+                <h5 class="fw-bold text-dark mb-1">Academic Planner</h5>
+                <p class="text-muted small mb-0">⚡ One-click automated scheduler</p>
+            </a>
+        </div>
+
+        <!-- Examinations -->
+        <div class="col-md-3 col-sm-6">
+            <a href="/academics/exams" class="acad-card">
+                <div class="acad-icon text-danger" style="background: #fef2f2;"><i class="fa fa-file-signature"></i></div>
+                <h5 class="fw-bold text-dark mb-1">Exam Master</h5>
+                <p class="text-muted small mb-0">Sessions, Exam groups & scheduling</p>
+            </a>
+        </div>
+
+        <!-- Admit Cards -->
+        <div class="col-md-3 col-sm-6">
+            <a href="/academics/admit-cards" class="acad-card">
+                <div class="acad-icon text-info" style="background: #ecfeff;"><i class="fa fa-id-card"></i></div>
+                <h5 class="fw-bold text-dark mb-1">Admit Cards</h5>
+                <p class="text-muted small mb-0">QR validation, bulk PDFs & photos</p>
+            </a>
+        </div>
+
+        <!-- Seating Plans -->
+        <div class="col-md-3 col-sm-6">
+            <a href="/academics/seating" class="acad-card">
+                <div class="acad-icon text-secondary" style="background: #f9fafb;"><i class="fa fa-th"></i></div>
+                <h5 class="fw-bold text-dark mb-1">Seating Planner</h5>
+                <p class="text-muted small mb-0">Auto seat allocations & room layout charts</p>
+            </a>
+        </div>
+
+        <!-- Attendance -->
+        <div class="col-md-3 col-sm-6">
+            <a href="/academics/attendance" class="acad-card">
+                <div class="acad-icon text-indigo" style="background: #e0e7ff;"><i class="fa fa-user-check"></i></div>
+                <h5 class="fw-bold text-dark mb-1">Exam Attendance</h5>
+                <p class="text-muted small mb-0">Medical, Absentee logs & UFM cases</p>
+            </a>
+        </div>
+
+        <!-- Marks Entry -->
+        <div class="col-md-3 col-sm-6">
+            <a href="/academics/marks" class="acad-card">
+                <div class="acad-icon text-success" style="background: #ecfdf5;"><i class="fa fa-edit"></i></div>
+                <h5 class="fw-bold text-dark mb-1">Marks Registry</h5>
+                <p class="text-muted small mb-0">Theory, Practical split & Excel sheets</p>
+            </a>
+        </div>
+
+        <!-- Result Generation -->
+        <div class="col-md-3 col-sm-6">
+            <a href="/academics/results" class="acad-card">
+                <div class="acad-icon text-warning" style="background: #fffbeb;"><i class="fa fa-calculator"></i></div>
+                <h5 class="fw-bold text-dark mb-1">Rank & GPA Processor</h5>
+                <p class="text-muted small mb-0">Class, Section, School ranks & CGPA</p>
+            </a>
+        </div>
+
+        <!-- Report Cards -->
+        <div class="col-md-3 col-sm-6">
+            <a href="/academics/report-cards" class="acad-card">
+                <div class="acad-icon text-danger" style="background: #fff1f2;"><i class="fa fa-medal"></i></div>
+                <h5 class="fw-bold text-dark mb-1">Report Cards</h5>
+                <p class="text-muted small mb-0">Print-ready PDF student aggregates</p>
+            </a>
+        </div>
+
+        <!-- Academic Reports -->
+        <div class="col-md-3 col-sm-6">
+            <a href="/academics/reports" class="acad-card">
+                <div class="acad-icon text-info" style="background: #f0f9ff;"><i class="fa fa-chart-bar"></i></div>
+                <h5 class="fw-bold text-dark mb-1">Academic Reports</h5>
+                <p class="text-muted small mb-0">Topper lists, Pass/Fail analytics & charts</p>
+            </a>
+        </div>
+
+        <!-- Settings -->
+        <div class="col-md-3 col-sm-6">
+            <a href="/academics/settings" class="acad-card">
+                <div class="acad-icon text-secondary" style="background: #f3f4f6;"><i class="fa fa-cogs"></i></div>
+                <h5 class="fw-bold text-dark mb-1">Academics Settings</h5>
+                <p class="text-muted small mb-0">Configure grading ranges & parameters</p>
+            </a>
+        </div>
+
+        <!-- Campus Management -->
+        <div class="col-md-3 col-sm-6">
+            <a href="/academics/campus" class="acad-card">
+                <div class="acad-icon text-primary" style="background: #e0f2fe;"><i class="fa fa-university"></i></div>
+                <h5 class="fw-bold text-dark mb-1">Campus Setup</h5>
+                <p class="text-muted small mb-0">Manage branches, blocks & laboratories</p>
+            </a>
+        </div>
+
+        <!-- Scheduler Constraints -->
+        <div class="col-md-3 col-sm-6">
+            <a href="/academics/timetable/constraints" class="acad-card">
+                <div class="acad-icon text-warning" style="background: #fef3c7;"><i class="fa fa-sliders-h"></i></div>
+                <h5 class="fw-bold text-dark mb-1">Solver Constraints</h5>
+                <p class="text-muted small mb-0">Set teacher daily limits & lab demands</p>
+            </a>
+        </div>
+
+        <!-- Substitute Cockpit -->
+        <div class="col-md-3 col-sm-6">
+            <a href="/academics/substitute" class="acad-card">
+                <div class="acad-icon text-danger" style="background: #fee2e2;"><i class="fa fa-user-friends"></i></div>
+                <h5 class="fw-bold text-dark mb-1">Substitute Schedulers</h5>
+                <p class="text-muted small mb-0">Auto-assign qualified free teachers</p>
+            </a>
+        </div>
+
+        <!-- Question Bank -->
+        <div class="col-md-3 col-sm-6">
+            <a href="/academics/questions" class="acad-card">
+                <div class="acad-icon text-success" style="background: #dcfce7;"><i class="fa fa-clipboard-list"></i></div>
+                <h5 class="fw-bold text-dark mb-1">Question Papers</h5>
+                <p class="text-muted small mb-0">Chapter questions & auto PDF generator</p>
+            </a>
+        </div>
+
+        <!-- OMR Scanner -->
+        <div class="col-md-3 col-sm-6">
+            <a href="/academics/omr/upload" class="acad-card">
+                <div class="acad-icon text-indigo" style="background: #e0e7ff;"><i class="fa fa-qrcode"></i></div>
+                <h5 class="fw-bold text-dark mb-1">OMR Evaluator</h5>
+                <p class="text-muted small mb-0">Scanned batch uploads & auto grading</p>
+            </a>
+        </div>
+
+        <!-- AI Analytics -->
+        <div class="col-md-3 col-sm-6">
+            <a href="/academics/analytics" class="acad-card">
+                <div class="acad-icon text-info" style="background: #e0f2fe;"><i class="fa fa-brain"></i></div>
+                <h5 class="fw-bold text-dark mb-1">Academic Analytics</h5>
+                <p class="text-muted small mb-0">AI student risk predictor & teacher rates</p>
+            </a>
+        </div>
+
+        <!-- Portals Check (Simulations) -->
+        <div class="col-md-3 col-sm-6">
+            <div class="acad-card d-flex flex-column align-items-center justify-content-center p-3 border-0 bg-light" style="cursor: default;">
+                <h6 class="fw-bold text-muted mb-2">Simulate Portals</h6>
+                <div class="d-flex gap-2 flex-wrap justify-content-center">
+                    <a href="/academics/portal/teacher" class="btn btn-xs btn-outline-primary py-1 px-2 small">Teacher</a>
+                    <a href="/academics/portal/student" class="btn btn-xs btn-outline-success py-1 px-2 small">Student</a>
+                    <a href="/academics/portal/parent" class="btn btn-xs btn-outline-warning py-1 px-2 text-dark small">Parent</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

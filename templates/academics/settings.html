@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Academics Settings - Bhishmaa ERP{% endblock %}
+
+{% block content %}
+<div class="container py-2">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1">⚙️ Academics Settings</h3>
+            <p class="text-muted mb-0">Configure grading parameters and review system configurations</p>
+        </div>
+        <a href="/academics/" class="btn btn-outline-dark btn-sm">← Academics Menu</a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm neo-card mb-4">
+                <div class="card-body p-3">
+                    <h5 class="fw-bold mb-3"><i class="fa fa-cogs text-primary me-2"></i>System Controls</h5>
+                    <ul class="list-group list-group-flush mb-4">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Grading Ranges Config
+                            <a href="/result/grades" class="btn btn-sm btn-outline-primary">Configure Ranges</a>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Conflict Overlap Engine
+                            <span class="badge bg-success">Active & Realtime</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Result Locking Status
+                            <span class="badge bg-secondary">Draft/Lock Support</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

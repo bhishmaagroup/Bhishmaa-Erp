@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}Marks Entry - Bhishmaa ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h3 class="fw-bold mb-1">✍️ Marks Entry Portal</h3>
+            <p class="text-muted mb-0">Record and submit student marks for examinations</p>
+        </div>
+        <div>
+            <a href="/exam/" class="btn btn-outline-dark btn-sm">
+                <i class="fa fa-arrow-left me-1"></i> Back to Exams
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters Panel -->
+    <div class="card border-0 shadow-sm mb-4 neo-card">
+        <div class="card-body p-2">
+            <h5 class="fw-bold mb-3"><i class="fa fa-filter text-primary me-2"></i>Select Exam & Subject</h5>
+            <form method="get">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Select Exam</label>
+                        <select name="exam_id" class="form-select" onchange="this.form.submit()" required>
+                            <option value="">Select Exam</option>
+                            {% for e in exams %}
+                            <option value="{{ e.id }}" {% if selected_exam_id == e.id %}selected{% endif %}>{{ e.name }} (Class {{ e.class_name }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Select Scheduled Subject</label>
+                        <select name="schedule_id" class="form-select" onchange="this.form.submit()" {% if not schedules %}disabled{% endif %} required>
+                            <option value="">Select Subject Schedule</option>
+                            {% for sc in schedules %}
+                            <option value="{{ sc.id }}" {% if selected_schedule_id == sc.id %}selected{% endif %}>
+                                {{ sc.subject.subject_name }} - {{ sc.date.strftime('%d %b %Y') }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if selected_schedule_id and students %}
+    <!-- Import / Export Bar -->
+    <div class="row mb-4">
+        <!-- Excel Export -->
+        <div class="col-md-6 mb-3 mb-md-0">
+            <div class="card border-0 shadow-sm neo-card h-100">
+                <div class="card-body p-2 d-flex flex-column justify-content-between">
+                    <div>
+                        <h6 class="fw-bold mb-1"><i class="fa fa-file-excel text-success me-2"></i>Excel Offline Entry</h6>
+                        <p class="text-muted small">Download student list spreadsheet, fill marks offline, and upload it back.</p>
+                    </div>
+                    <a href="{{ url_for('exam.export_marks_template', schedule_id=selected_schedule_id) }}" class="btn btn-success mt-2 align-self-start">
+                        <i class="fa fa-download me-1"></i> Download Excel Template
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Excel Import -->
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm neo-card h-100">
+                <div class="card-body p-2">
+                    <h6 class="fw-bold mb-1"><i class="fa fa-upload text-primary me-2"></i>Import Finished Excel Sheet</h6>
+                    <form method="post" action="{{ url_for('exam.import_marks', schedule_id=selected_schedule_id) }}" enctype="multipart/form-data">
+                        <div class="mb-3 mt-2">
+                            <input type="file" name="excel_file" class="form-control" accept=".xls,.xlsx" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa fa-check-circle me-1"></i> Upload & Save Marks
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Marks Entry Grid -->
+    <div class="card border-0 shadow-sm neo-card">
+        <div class="card-body p-2">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <div>
+                    <h5 class="fw-bold mb-1"><i class="fa fa-edit text-dark me-2"></i>Marks Sheet Table</h5>
+                    <p class="text-muted small mb-0">Exam Subject: <strong>{{ sched.subject.subject_name }}</strong> | Maximum Marks: <span class="badge bg-primary fs-7">{{ sched.max_marks }}</span></p>
+                </div>
+            </div>
+            
+            <form method="post">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th width="80">#</th>
+                                <th>Admission No</th>
+                                <th>Student Name</th>
+                                <th width="150" class="text-center">Is Absent</th>
+                                <th width="180">Marks Obtained</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for st in students %}
+                            {% set m = marks_map.get(st.id) %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td class="fw-bold">{{ st.admission_no }}</td>
+                                <td>{{ st.first_name }} {{ st.last_name or '' }}</td>
+                                <td class="text-center">
+                                    <div class="form-check d-inline-block">
+                                        <input class="form-check-input" type="checkbox" name="absent_{{ st.id }}" id="absent_{{ st.id }}" value="1" {% if m and m.is_absent %}checked{% endif %} onchange="toggleMarksInput('{{ st.id }}', this.checked)">
+                                    </div>
+                                </td>
+                                <td>
+                                    <input type="number" name="marks_{{ st.id }}" id="marks_field_{{ st.id }}" class="form-control form-control-sm" min="0" max="{{ sched.max_marks }}" step="0.5" placeholder="0 - {{ sched.max_marks }}" value="{{ m.marks_obtained if m and not m.is_absent else '0' }}" {% if m and m.is_absent %}disabled{% endif %} required>
+                                </td>
+                                <td>
+                                    <input type="text" name="remarks_{{ st.id }}" class="form-control form-control-sm" placeholder="Remarks" value="{{ m.remarks if m else '' }}">
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-3 text-end">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fa fa-save me-1"></i> Submit Marks Sheet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% elif selected_schedule_id %}
+    <div class="alert alert-info text-center py-4">
+        <i class="fa fa-info-circle fa-2x mb-2 text-primary"></i>
+        <p class="mb-0">No students registered in this class.</p>
+    </div>
+    {% else %}
+    <div class="alert alert-light border text-center py-4">
+        <i class="fa fa-search fa-2x mb-2 text-muted"></i>
+        <p class="mb-0">Please select an Exam and Subject Schedule above to load the marksheet grid.</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function toggleMarksInput(studentId, isAbsent) {
+    const field = document.getElementById('marks_field_' + studentId);
+    if (isAbsent) {
+        field.disabled = true;
+        field.value = '0';
+    } else {
+        field.disabled = false;
+    }
+}
+</script>
+{% endblock %}

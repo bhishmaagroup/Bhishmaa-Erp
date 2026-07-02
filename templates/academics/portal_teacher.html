@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Teacher Portal - Bhishmaa ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1">👨‍🏫 Teacher Console</h3>
+            <p class="text-muted mb-0">Teacher: <strong>{{ teacher.first_name }} {{ teacher.last_name or '' }}</strong> | Code: {{ teacher.teacher_code }}</p>
+        </div>
+        <a href="/academics/" class="btn btn-outline-dark btn-sm">← Academics Menu</a>
+    </div>
+
+    <div class="row">
+        <!-- Duties List -->
+        <div class="col-md-5 mb-4">
+            <div class="card border-0 shadow-sm neo-card h-100">
+                <div class="card-body p-2">
+                    <h5 class="fw-bold mb-3"><i class="fa fa-file-signature text-danger me-2"></i>My Exam Duties</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Exam</th>
+                                    <th>Subject</th>
+                                    <th>Time</th>
+                                    <th>Room No</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for d in exam_duties %}
+                                <tr>
+                                    <td>{{ d.date.strftime('%d %b %Y') }}</td>
+                                    <td class="fw-bold">{{ d.exam_ref.name }}</td>
+                                    <td>{{ d.subject.subject_name }}</td>
+                                    <td class="small">{{ d.start_time.strftime('%I:%M %p') }} - {{ d.end_time.strftime('%I:%M %p') }}</td>
+                                    <td><span class="badge bg-secondary">{{ d.room_no or 'N/A' }}</span></td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">No exam invigilations scheduled for you.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Weekly Timetable -->
+        <div class="col-md-7 mb-4">
+            <div class="card border-0 shadow-sm neo-card h-100">
+                <div class="card-body p-2">
+                    <h5 class="fw-bold mb-3"><i class="fa fa-calendar-alt text-primary me-2"></i>My Timetable Schedule</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Day</th>
+                                    <th>Period</th>
+                                    <th>Time</th>
+                                    <th>Class / Sec</th>
+                                    <th>Subject</th>
+                                    <th>Room</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for slot in timetable %}
+                                <tr>
+                                    <td class="fw-bold text-dark">{{ slot.day_of_week }}</td>
+                                    <td>Period {{ slot.period_no }}</td>
+                                    <td class="small">{{ slot.start_time.strftime('%I:%M %p') }} - {{ slot.end_time.strftime('%I:%M %p') }}</td>
+                                    <td><span class="badge bg-primary">Class {{ slot.class_name }}-{{ slot.section }}</span></td>
+                                    <td>{{ slot.subject.subject_name }}</td>
+                                    <td><span class="badge bg-light text-dark">{{ slot.room_ref.room_no if slot.room_id else 'N/A' }}</span></td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">No academic teaching periods assigned to you.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

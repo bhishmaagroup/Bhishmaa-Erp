@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Campus Management - Bhishmaa ERP{% endblock %}
+
+{% block content %}
+<style>
+    .glass-header {
+        background: linear-gradient(135deg, #1e293b, #3b82f6);
+        color: white;
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+    .neo-card {
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01);
+    }
+</style>
+
+<div class="container-fluid py-2">
+    <!-- Header -->
+    <div class="glass-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h3 class="fw-bold mb-1">🏛️ Campuses & Branches</h3>
+            <p class="mb-0 opacity-90">Manage physical branches and campuses for multi-location institutions</p>
+        </div>
+        <a href="/academics/" class="btn btn-outline-light"><i class="fa fa-arrow-left me-1"></i> Dashboard</a>
+    </div>
+
+    <!-- Alert Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="border-radius: 12px;">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="row g-4">
+        <!-- Add Campus Form -->
+        <div class="col-md-4">
+            <div class="card neo-card border-0">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold text-dark mb-0"><i class="fa fa-plus-circle text-primary me-2"></i>Add Campus Branch</h5>
+                </div>
+                <div class="card-body">
+                    <form action="/academics/campus" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small text-muted">Campus Name</label>
+                            <input type="text" name="name" class="form-control form-control-sm" placeholder="e.g. North Delhi Campus" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold small text-muted">Branch Code</label>
+                            <input type="text" name="code" class="form-control form-control-sm" placeholder="e.g. NDC01" required>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-sm fw-bold">Create Campus</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Campus List -->
+        <div class="col-md-8">
+            <div class="card neo-card border-0">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold text-dark mb-0"><i class="fa fa-list text-primary me-2"></i>Active Campus Branches</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-borderless align-middle">
+                            <thead>
+                                <tr class="text-muted small border-bottom">
+                                    <th>ID</th>
+                                    <th>Branch Name</th>
+                                    <th>Branch Code</th>
+                                    <th>Created At</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for campus in campuses %}
+                                    <tr class="border-bottom">
+                                        <td class="fw-bold text-muted small">#{{ campus.id }}</td>
+                                        <td class="fw-semibold text-dark">{{ campus.name }}</td>
+                                        <td><span class="badge bg-light text-primary fw-bold">{{ campus.code }}</span></td>
+                                        <td class="text-muted small">{{ campus.created_at.strftime('%d %b %Y') if campus.created_at else '-' }}</td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted small py-4">No campus branches created yet.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

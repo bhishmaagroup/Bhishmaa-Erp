@@ -379,8 +379,7 @@ def collect_fee(student_id):
     # ================= POST =================
     if request.method == "POST":
 
-        from utils.sync_engine import generate_receipt_number
-        receipt_no = generate_receipt_number(student.school_id)
+        receipt_no = f"RCP-{student.id}-{datetime.now().strftime('%Y%m%d%H%M%S')}"
         now = datetime.now()
 
         months       = request.form.getlist("months[]")

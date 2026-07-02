@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Substitute Teacher Cockpit - Bhishmaa ERP{% endblock %}
+
+{% block content %}
+<style>
+    .glass-header {
+        background: linear-gradient(135deg, #4f46e5, #0f172a);
+        color: white;
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+    .neo-card {
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01);
+    }
+    .candidate-row {
+        transition: background-color 0.2s;
+    }
+    .candidate-row:hover {
+        background-color: #f8fafc;
+    }
+</style>
+
+<div class="container-fluid py-2">
+    <!-- Header -->
+    <div class="glass-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h3 class="fw-bold mb-1">🔄 Substitute Scheduler & Cockpit</h3>
+            <p class="mb-0 opacity-90">Log teacher absences and automatically assign available, subject-qualified substitute teachers</p>
+        </div>
+        <a href="/academics/" class="btn btn-outline-light"><i class="fa fa-arrow-left me-1"></i> Dashboard</a>
+    </div>
+
+    <!-- Alert Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="border-radius: 12px;">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="row g-4">
+        <!-- Absent Teacher Search -->
+        <div class="col-md-4">
+            <div class="card neo-card border-0">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold text-dark mb-0"><i class="fa fa-user-slash text-danger me-2"></i>Log Teacher Absence</h5>
+                </div>
+                <div class="card-body">
+                    <form action="/academics/substitute" method="GET">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small text-muted">Date of Absence</label>
+                            <input type="date" name="date" class="form-control form-control-sm" value="{{ selected_date_str }}" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold small text-muted">Select Absent Teacher</label>
+                            <select name="absent_teacher_id" class="form-select form-select-sm" required>
+                                <option value="" disabled selected>Choose Teacher...</option>
+                                {% for t in teachers %}
+                                    <option value="{{ t.id }}" {% if selected_teacher_id == t.id %}selected{% endif %}>{{ t.first_name }} {{ t.last_name or '' }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-sm fw-bold">Search Free Substitutes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Suggestions Cockpit -->
+        <div class="col-md-8">
+            <div class="card neo-card border-0">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold text-dark mb-0"><i class="fa fa-hands-helping text-success me-2"></i>Automated Suggestion Engine</h5>
+                    <p class="text-muted small mb-0">Lists periods scheduled for the absent teacher and highlights free, qualified substitutes</p>
+                </div>
+                <div class="card-body">
+                    {% if recommendations %}
+                        {% for period_no, data in recommendations.items() %}
+                            <div class="border rounded-3 p-3 mb-4 bg-light">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="fw-bold mb-0 text-primary">
+                                        Period {{ period_no }} ({{ data.slot.start_time.strftime('%I:%M %p') }} - {{ data.slot.end_time.strftime('%I:%M %p') }})
+                                    </h6>
+                                    <span class="badge bg-secondary">Class {{ data.slot.class_name }}-{{ data.slot.section }}</span>
+                                </div>
+                                <p class="text-muted small mb-3">Scheduled Subject: <strong>{{ data.slot.subject.subject_name }}</strong></p>
+                                
+                                <h6 class="fw-semibold small text-muted text-uppercase mb-2">Top Substitution Candidates:</h6>
+                                <div class="list-group">
+                                    {% for item in data.candidates %}
+                                        <div class="list-group-item d-flex justify-content-between align-items-center candidate-row border-0 border-bottom p-2 bg-white rounded-2 mb-1 shadow-xs">
+                                            <div>
+                                                <span class="fw-semibold text-dark">{{ item.teacher.first_name }} {{ item.teacher.last_name or '' }}</span>
+                                                {% if item.is_qualified %}
+                                                    <span class="badge bg-success-light text-success ms-2" style="font-size: 10px;">Subject Match</span>
+                                                {% endif %}
+                                                <div class="text-muted small" style="font-size: 11px;">Current Workload: {{ item.workload }} periods today</div>
+                                            </div>
+                                            <form action="/academics/substitute" method="POST" class="d-inline">
+                                                <input type="hidden" name="absent_teacher_id" value="{{ selected_teacher_id }}">
+                                                <input type="hidden" name="substitute_teacher_id" value="{{ item.teacher.id }}">
+                                                <input type="hidden" name="period_no" value="{{ period_no }}">
+                                                <input type="hidden" name="reason" value="Leave">
+                                                <button type="submit" class="btn btn-success btn-xs py-1 px-3 fw-bold" style="font-size: 10px;">⚡ Assign</button>
+                                            </form>
+                                        </div>
+                                    {% else %}
+                                        <div class="text-center py-2 text-muted small">No free teachers available for this period slot.</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <div class="text-muted mb-3"><i class="fa fa-search fa-3x"></i></div>
+                            <h6 class="fw-bold text-secondary">No Search Selected</h6>
+                            <p class="text-muted small">Select an absent teacher and a date in the left panel to list substitution slots.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

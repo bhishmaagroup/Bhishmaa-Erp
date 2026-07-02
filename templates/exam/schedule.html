@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Schedule Exam - {{ exam.name }} - Bhishmaa ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h3 class="fw-bold mb-1">📅 Exam Scheduling</h3>
+            <p class="text-muted mb-0">Exam: <strong class="text-dark">{{ exam.name }}</strong> (Class {{ exam.class_name }} {{ exam.section or '' }})</p>
+        </div>
+        <div>
+            <a href="/exam/" class="btn btn-outline-dark btn-sm">
+                <i class="fa fa-arrow-left me-1"></i> Back to Exams
+            </a>
+        </div>
+    </div>
+
+    <!-- Scheduling form (Admin only) -->
+    {% if current_user.role == 'admin' %}
+    <div class="card border-0 shadow-sm mb-4 neo-card">
+        <div class="card-body p-2">
+            <h5 class="fw-bold mb-3"><i class="fa fa-calendar-plus text-primary me-2"></i>Schedule a Subject</h5>
+            <form method="post">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Subject</label>
+                        <select name="subject_id" class="form-select" required>
+                            <option value="">Choose Subject</option>
+                            {% for sub in subjects %}
+                            <option value="{{ sub.id }}">{{ sub.subject_name }} ({{ sub.subject_code or 'No Code' }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold">Exam Date</label>
+                        <input type="date" name="date" class="form-control" required>
+                    </div>
+                    <div class="col-md-2 col-6">
+                        <label class="form-label fw-semibold">Start Time</label>
+                        <input type="time" name="start_time" class="form-control" required>
+                    </div>
+                    <div class="col-md-2 col-6">
+                        <label class="form-label fw-semibold">End Time</label>
+                        <input type="time" name="end_time" class="form-control" required>
+                    </div>
+                    <div class="col-md-1.5 col-6">
+                        <label class="form-label fw-semibold">Max Marks</label>
+                        <input type="number" name="max_marks" class="form-control" value="100" min="1" step="0.5" required>
+                    </div>
+                    <div class="col-md-1.5 col-6">
+                        <label class="form-label fw-semibold">Pass Marks</label>
+                        <input type="number" name="passing_marks" class="form-control" value="33" min="1" step="0.5" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold">Room No / Hall</label>
+                        <input type="text" name="room_no" class="form-control" placeholder="e.g. Room 101" required>
+                    </div>
+                    <div class="col-md-2.5">
+                        <label class="form-label fw-semibold">Invigilator (Teacher)</label>
+                        <select name="teacher_id" class="form-select">
+                            <option value="">Choose Teacher</option>
+                            {% for t in teachers %}
+                            <option value="{{ t.id }}">{{ t.first_name }} {{ t.last_name or '' }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-1.5 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fa fa-save me-1"></i> Add Slot
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Schedules Grid -->
+    <div class="card border-0 shadow-sm neo-card">
+        <div class="card-body p-2">
+            <h5 class="fw-bold mb-3"><i class="fa fa-calendar-alt text-dark me-2"></i>Exam Schedule Sheet</h5>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>Subject</th>
+                            <th>Date</th>
+                            <th>Time Slot</th>
+                            <th>Room No</th>
+                            <th>Max Marks</th>
+                            <th>Min Pass Marks</th>
+                            <th>Invigilator</th>
+                            {% if current_user.role == 'admin' %}
+                            <th width="100">Action</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in schedules %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td class="fw-bold text-dark">{{ s.subject.subject_name }} ({{ s.subject.subject_code or 'N/A' }})</td>
+                            <td>{{ s.date.strftime('%d %B %Y') }}</td>
+                            <td>{{ s.start_time.strftime('%I:%M %p') }} - {{ s.end_time.strftime('%I:%M %p') }}</td>
+                            <td><span class="badge bg-secondary">{{ s.room_no or 'N/A' }}</span></td>
+                            <td class="fw-semibold">{{ s.max_marks }}</td>
+                            <td class="text-danger fw-semibold">{{ s.passing_marks }}</td>
+                            <td>
+                                {% if s.teacher_id %}
+                                {{ s.teacher.first_name }} {{ s.teacher.last_name or '' }}
+                                {% else %}
+                                <span class="text-muted small">Not Assigned</span>
+                                {% endif %}
+                            </td>
+                            {% if current_user.role == 'admin' %}
+                            <td>
+                                <a href="{{ url_for('exam.delete_schedule', schedule_id=s.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Remove this subject from schedule?')">
+                                    <i class="fa fa-trash-alt"></i> Delete
+                                </a>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="9" class="text-center text-muted py-4">No subjects scheduled for this exam yet. Add schedule slots above.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

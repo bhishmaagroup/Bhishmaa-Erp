@@ -37,6 +37,16 @@ class Subject(db.Model):
         default=False
     )
 
+    subject_type = db.Column(
+        db.String(50),
+        default="Theory"
+    )
+
+    status = db.Column(
+        db.Boolean,
+        default=True
+    )
+
     teacher_assignments = db.relationship(
         "TeacherSubject",
         backref="subject",

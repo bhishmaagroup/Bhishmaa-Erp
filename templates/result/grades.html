@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Grade Rules - Bhishmaa ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h3 class="fw-bold mb-1">🏷️ Grade Configuration</h3>
+            <p class="text-muted mb-0">Establish grade boundaries for automatic result cards</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/result/process" class="btn btn-outline-dark btn-sm">
+                <i class="fa fa-cogs me-1"></i> Process Marks
+            </a>
+            <a href="/result/publish" class="btn btn-outline-dark btn-sm">
+                <i class="fa fa-globe me-1"></i> Publish Panel
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Add Grade Rule Form -->
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm neo-card">
+                <div class="card-body p-2">
+                    <h5 class="fw-bold mb-3"><i class="fa fa-plus-circle text-primary me-2"></i>Add Grading Scale</h5>
+                    <form method="post">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Grade Name</label>
+                            <input type="text" name="grade_name" class="form-control" placeholder="e.g. A+" required>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">Min Percentage</label>
+                                <input type="number" name="min_percentage" class="form-control" value="90" min="0" max="100" step="0.1" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">Max Percentage</label>
+                                <input type="number" name="max_percentage" class="form-control" value="100" min="0" max="100" step="0.1" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Grade Point (GPA)</label>
+                            <input type="number" name="grade_point" class="form-control" value="10.0" min="0" max="10" step="0.1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Description / Remarks</label>
+                            <input type="text" name="remarks" class="form-control" placeholder="e.g. Excellent">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 mt-2">
+                            <i class="fa fa-save me-1"></i> Save Grade Scale
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grade list -->
+        <div class="col-md-8 mb-4">
+            <div class="card border-0 shadow-sm neo-card">
+                <div class="card-body p-2">
+                    <h5 class="fw-bold mb-3"><i class="fa fa-list text-dark me-2"></i>Grading System Rules</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Grade</th>
+                                    <th>Min Percentage</th>
+                                    <th>Max Percentage</th>
+                                    <th>GPA Point</th>
+                                    <th>Remarks</th>
+                                    <th width="120">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r in rules %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td class="fw-bold text-dark">{{ r.grade_name }}</td>
+                                    <td>{{ r.min_percentage }}%</td>
+                                    <td>{{ r.max_percentage }}%</td>
+                                    <td><span class="badge bg-info">{{ r.grade_point }}</span></td>
+                                    <td class="text-muted">{{ r.remarks or 'N/A' }}</td>
+                                    <td>
+                                        <a href="{{ url_for('result.delete_grade_rule', id=r.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this grade rule?')">
+                                            <i class="fa fa-trash"></i> Delete
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-4">No grade boundaries configured. Seeding should occur automatically or add manually.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -306,24 +306,24 @@ def generate_default_subjects():
 
     section = request.form.get("section")
 
-    if class_name in ["Nursery", "LKG", "UKG"]:
+    if class_name in ["LKG", "UKG"]:
 
         subjects = DEFAULT_SUBJECTS["PREPRIMARY"]
 
     elif class_name in [
-        "I", "II", "III", "IV", "V"
+        "1","2","3","4","5"
     ]:
 
         subjects = DEFAULT_SUBJECTS["PRIMARY"]
 
     elif class_name in [
-        "VI", "VII", "VIII"
+        "6","7","8"
     ]:
 
         subjects = DEFAULT_SUBJECTS["MIDDLE"]
 
     elif class_name in [
-        "IX", "X"
+        "9","10"
     ]:
 
         subjects = DEFAULT_SUBJECTS["SECONDARY"]

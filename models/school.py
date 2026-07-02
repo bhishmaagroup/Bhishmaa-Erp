@@ -19,8 +19,6 @@ class School(db.Model):
     email = db.Column(db.String(120))
 
     logo = db.Column(db.String(300))
-    affiliation_no = db.Column(db.String(100))
-    website = db.Column(db.String(200))
 
     # 🔥 ADD THIS (Subscription + Analytics)
     plan = db.Column(db.String(50), default="free")

@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Exam Sessions - Bhishmaa ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h3 class="fw-bold mb-1">📅 Exam Sessions</h3>
+            <p class="text-muted mb-0">Define academic sessions for scheduling exams</p>
+        </div>
+        <div>
+            <a href="/exam/" class="btn btn-outline-dark btn-sm">
+                <i class="fa fa-arrow-left me-1"></i> Back to Exams
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Add Session Form -->
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm neo-card">
+                <div class="card-body p-2">
+                    <h5 class="fw-bold mb-3"><i class="fa fa-plus-circle text-primary me-2"></i>Create New Session</h5>
+                    <form method="post">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Session Name</label>
+                            <input type="text" name="name" class="form-control" placeholder="e.g. 2026-2027" required>
+                            <div class="form-text">Format: YYYY-YYYY is recommended.</div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check form-switch mt-2">
+                                <input class="form-check-input" type="checkbox" name="is_active" id="isActiveSwitch" checked>
+                                <label class="form-check-label fw-semibold" for="isActiveSwitch">Set as Active Session</label>
+                            </div>
+                            <div class="form-text text-muted">Setting active will automatically deactivate other sessions.</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 mt-2">
+                            <i class="fa fa-save me-1"></i> Save Session
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Session List Table -->
+        <div class="col-md-8 mb-4">
+            <div class="card border-0 shadow-sm neo-card">
+                <div class="card-body p-2">
+                    <h5 class="fw-bold mb-3"><i class="fa fa-list text-dark me-2"></i>All Exam Sessions</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Session Name</th>
+                                    <th>Status</th>
+                                    <th width="180">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for s in sessions %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td class="fw-bold text-dark">{{ s.name }}</td>
+                                    <td>
+                                        {% if s.is_active %}
+                                        <span class="badge bg-success"><i class="fa fa-check-circle me-1"></i>Active</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-2">
+                                            {% if not s.is_active %}
+                                            <a href="{{ url_for('exam.toggle_session', id=s.id) }}" class="btn btn-sm btn-outline-success">
+                                                <i class="fa fa-toggle-on"></i> Activate
+                                            </a>
+                                            <a href="{{ url_for('exam.delete_session', id=s.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this session? It will delete all linked exams.')">
+                                                <i class="fa fa-trash"></i> Delete
+                                            </a>
+                                            {% else %}
+                                            <span class="text-muted small">Active (System Lock)</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-4">No sessions created yet. Create one on the left panel.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

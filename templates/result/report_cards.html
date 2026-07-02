@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Report Cards - Bhishmaa ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h3 class="fw-bold mb-1">📄 Student Report Cards</h3>
+            <p class="text-muted mb-0">View student rankings, percentages, and print final report sheets</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/result/process" class="btn btn-outline-dark btn-sm">
+                <i class="fa fa-cogs me-1"></i> Process Engine
+            </a>
+            <a href="/exam/" class="btn btn-outline-dark btn-sm">
+                <i class="fa fa-arrow-left me-1"></i> Back to Exams
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="card border-0 shadow-sm mb-4 neo-card">
+        <div class="card-body p-2">
+            <h5 class="fw-bold mb-3"><i class="fa fa-filter text-primary me-2"></i>Select Exam</h5>
+            <form method="get">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Choose Exam</label>
+                        <select name="exam_id" class="form-select" onchange="this.form.submit()" required>
+                            <option value="">Select Exam</option>
+                            {% for e in exams %}
+                            <option value="{{ e.id }}" {% if selected_exam_id == e.id %}selected{% endif %}>{{ e.name }} (Class {{ e.class_name }} {{ e.section or '' }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Student results table -->
+    {% if selected_exam_id and results %}
+    <div class="card border-0 shadow-sm neo-card">
+        <div class="card-body p-2">
+            <h5 class="fw-bold mb-3"><i class="fa fa-users text-dark me-2"></i>Class Rankings & Results</h5>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle text-center">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Rank</th>
+                            <th>Admission No</th>
+                            <th class="text-start">Student Name</th>
+                            <th>Marks Obtained</th>
+                            <th>Max Marks</th>
+                            <th>Percentage</th>
+                            <th>Grade</th>
+                            <th>Status</th>
+                            <th width="150">Report Card</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in results %}
+                        <tr>
+                            <td class="fw-bold text-primary">#{{ r.rank or '-' }}</td>
+                            <td>{{ r.student.admission_no }}</td>
+                            <td class="text-start fw-semibold">{{ r.student.first_name }} {{ r.student.last_name or '' }}</td>
+                            <td>{{ r.total_marks_obtained }}</td>
+                            <td>{{ r.total_max_marks }}</td>
+                            <td class="fw-semibold text-dark">{{ r.percentage }}%</td>
+                            <td><span class="badge bg-secondary">{{ r.grade or 'N/A' }}</span></td>
+                            <td>
+                                {% if r.status == 'Pass' %}
+                                <span class="badge bg-success"><i class="fa fa-check me-1"></i>Pass</span>
+                                {% elif r.status == 'Fail' %}
+                                <span class="badge bg-danger"><i class="fa fa-times me-1"></i>Fail</span>
+                                {% else %}
+                                <span class="badge bg-light text-dark">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="/result/report-card/pdf/{{ r.id }}" class="btn btn-sm btn-primary">
+                                    <i class="fa fa-download me-1"></i> Print PDF
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% elif selected_exam_id %}
+    <div class="alert alert-warning text-center py-4">
+        <i class="fa fa-exclamation-triangle fa-2x mb-2 text-warning"></i>
+        <p class="mb-0">No processed results found for this exam. Please run the calculation engine under the <a href="/result/process" class="alert-link">Process Engine</a> first.</p>
+    </div>
+    {% else %}
+    <div class="alert alert-light border text-center py-4">
+        <i class="fa fa-search fa-2x mb-2 text-muted"></i>
+        <p class="mb-0">Please choose an Exam above to display student marks and ranks.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

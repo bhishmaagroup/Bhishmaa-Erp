@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}Examinations - Bhishmaa ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1">✍️ Examinations Master</h3>
+            <p class="text-muted mb-0">Define academic sessions, create exam groups & schedule dates</p>
+        </div>
+        <a href="/academics/" class="btn btn-outline-dark btn-sm">← Academics Menu</a>
+    </div>
+
+    <!-- Exam Configuration Panels -->
+    {% if current_user.role in ['admin', 'principal'] %}
+    <div class="row mb-4">
+        <!-- Exam Group Card -->
+        <div class="col-md-4 mb-3 mb-md-0">
+            <div class="card border-0 shadow-sm neo-card h-100">
+                <div class="card-body p-2">
+                    <h5 class="fw-bold mb-3"><i class="fa fa-tags text-primary me-2"></i>Create Exam Group</h5>
+                    <form method="post">
+                        <input type="hidden" name="action" value="group">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Group Name</label>
+                            <input type="text" name="name" class="form-control" placeholder="e.g. Unit Tests" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Description</label>
+                            <textarea name="description" class="form-control" rows="3" placeholder="Description..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fa fa-save me-1"></i> Save Exam Group
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </        <!-- Register & Auto-Generate Exams & Timetables Card -->
+        <div class="col-md-8 mb-3 mb-md-0">
+            <div class="card border-0 shadow-sm neo-card h-100">
+                <div class="card-body p-2">
+                    <h5 class="fw-bold mb-3"><i class="fa fa-magic text-warning me-2"></i>Register & Auto-Generate Everything</h5>
+                    <p class="text-muted small">The system will automatically create class-wise exams, schedule all subjects, allocate rooms & invigilators, and generate the weekly regular timetable with zero conflicts.</p>
+                    <form method="post" action="/academics/exams/auto-schedule">
+                        <div class="mb-2">
+                            <label class="form-label fw-semibold small mb-1">Exam Name Base</label>
+                            <input type="text" name="name" class="form-control form-control-sm" placeholder="e.g. Final Exam 2026" required>
+                        </div>
+                        <div class="row g-2 mb-2">
+                            <div class="col-6">
+                                <label class="form-label fw-semibold small mb-1">Session</label>
+                                <select name="session_id" class="form-select form-select-sm" required>
+                                    {% for s in sessions %}
+                                    <option value="{{ s.id }}" {% if s.is_active %}selected{% endif %}>{{ s.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-semibold small mb-1">Type</label>
+                                <select name="exam_type_id" class="form-select form-select-sm" required>
+                                    {% for t in types %}
+                                    <option value="{{ t.id }}">{{ t.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row g-2 mb-2">
+                            <div class="col-6">
+                                <label class="form-label fw-semibold small mb-1">Start Date</label>
+                                <input type="date" name="start_date" class="form-control form-control-sm" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-semibold small mb-1">End Date</label>
+                                <input type="date" name="end_date" class="form-control form-control-sm" required>
+                            </div>
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="form-label fw-semibold small mb-1">Daily Start Time</label>
+                                <input type="time" name="start_time" value="09:00" class="form-control form-control-sm" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-semibold small mb-1">Daily End Time</label>
+                                <input type="time" name="end_time" value="12:00" class="form-control form-control-sm" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-warning btn-sm w-100 fw-bold text-dark">
+                            <i class="fa fa-cog fa-spin me-1"></i> Register & Auto-Generate Everything
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Active Exams Table -->
+    <div class="card border-0 shadow-sm neo-card">
+        <div class="card-body p-2">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <h5 class="fw-bold mb-0"><i class="fa fa-list text-dark me-2"></i>Examinations Timeline</h5>
+                {% if exams and unique_exam_groups %}
+                <div class="d-flex gap-2">
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-danger dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa fa-file-pdf me-1"></i> Export All (PDF)
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            {% for g in unique_exam_groups %}
+                            <li><a class="dropdown-item" href="/academics/exams/pdf/all/{{ g.session_id }}/{{ g.exam_type_id }}">
+                                {{ g.session_name }} - {{ g.exam_type_name }}
+                            </a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa fa-file-excel me-1"></i> Export All (Excel)
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            {% for g in unique_exam_groups %}
+                            <li><a class="dropdown-item" href="/academics/exams/excel/all/{{ g.session_id }}/{{ g.exam_type_id }}">
+                                {{ g.session_name }} - {{ g.exam_type_name }}
+                            </a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>Exam Name</th>
+                            <th>Group</th>
+                            <th>Class/Sec</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Publish Status</th>
+                            <th>Control Status</th>
+                            <th width="200" class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for e in exams %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td class="fw-bold text-dark">{{ e.name }}</td>
+                            <td>
+                                {% if e.exam_group_id %}
+                                <span class="badge bg-secondary">{{ e.group_ref.name }}</span>
+                                {% else %}
+                                <span class="text-muted small">None</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-primary">Class {{ e.class_name }}</span>
+                                {% if e.section %}
+                                <span class="badge bg-dark">Sec {{ e.section }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ e.start_date.strftime('%d %b %Y') if e.start_date else '-' }}</td>
+                            <td>{{ e.end_date.strftime('%d %b %Y') if e.end_date else '-' }}</td>
+                            <td>
+                                {% if e.is_published %}
+                                <span class="badge bg-success">Published</span>
+                                {% else %}
+                                <span class="badge bg-warning text-dark">Draft</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if e.status == 'Locked' %}
+                                <span class="badge bg-danger"><i class="fa fa-lock"></i> Locked</span>
+                                {% else %}
+                                <span class="badge bg-info"><i class="fa fa-pencil-alt"></i> Active</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex gap-2 justify-content-center flex-wrap">
+                                    <a href="/exam/schedule/{{ e.id }}" class="btn btn-xs btn-outline-primary">
+                                        <i class="fa fa-calendar-check"></i> Schedule
+                                    </a>
+                                    <a href="/academics/exams/pdf/{{ e.id }}" class="btn btn-xs btn-outline-danger">
+                                        <i class="fa fa-file-pdf"></i> PDF
+                                    </a>
+                                    <a href="/academics/exams/excel/{{ e.id }}" class="btn btn-xs btn-outline-success">
+                                        <i class="fa fa-file-excel"></i> Excel
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="9" class="text-center text-muted py-4">No examinations registered. Register exams above.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

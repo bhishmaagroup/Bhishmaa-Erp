@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}Question Bank - Bhishmaa ERP{% endblock %}
+
+{% block content %}
+<style>
+    .glass-header {
+        background: linear-gradient(135deg, #10b981, #065f46);
+        color: white;
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+    .neo-card {
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01);
+    }
+</style>
+
+<div class="container-fluid py-2">
+    <!-- Header -->
+    <div class="glass-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h3 class="fw-bold mb-1">📝 Question Bank & Paper Generator</h3>
+            <p class="mb-0 opacity-90">Auto-generate exam question papers based on chapters, difficulty levels, and Bloom's Taxonomy</p>
+        </div>
+        <a href="/academics/" class="btn btn-outline-light"><i class="fa fa-arrow-left me-1"></i> Dashboard</a>
+    </div>
+
+    <!-- Alert Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="border-radius: 12px;">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="row g-4">
+        <!-- Add Question Card -->
+        <div class="col-md-5">
+            <div class="card neo-card border-0 mb-4">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold text-dark mb-0"><i class="fa fa-plus-circle text-primary me-2"></i>Add Question to Bank</h5>
+                </div>
+                <div class="card-body">
+                    <form action="/academics/questions" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small text-muted">Select Subject</label>
+                            <select name="subject_id" class="form-select form-select-sm" required>
+                                {% for s in subjects %}
+                                    <option value="{{ s.id }}">{{ s.subject_name }} (Class {{ s.class_name }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-6">
+                                <label class="form-label fw-semibold small text-muted">Chapter Name</label>
+                                <input type="text" name="chapter" class="form-control form-control-sm" placeholder="e.g. Chapter 1" required>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label fw-semibold small text-muted">Topic</label>
+                                <input type="text" name="topic" class="form-control form-control-sm" placeholder="e.g. Calculus">
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-6">
+                                <label class="form-label fw-semibold small text-muted">Difficulty Level</label>
+                                <select name="difficulty" class="form-select form-select-sm">
+                                    <option value="Easy">Easy</option>
+                                    <option value="Medium" selected>Medium</option>
+                                    <option value="Hard">Hard</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label fw-semibold small text-muted">Bloom Cognitive Level</label>
+                                <select name="cognitive_level" class="form-select form-select-sm">
+                                    <option value="Remember">Remember</option>
+                                    <option value="Understand">Understand</option>
+                                    <option value="Apply">Apply</option>
+                                    <option value="Analyze">Analyze</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small text-muted">Question Text</label>
+                            <textarea name="question_text" class="form-control form-control-sm" rows="3" required placeholder="Enter the complete question..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small text-muted">Options (For MCQs - leave blank for subjective)</label>
+                            <input type="text" name="options" class="form-control form-control-sm mb-1" placeholder="Option A">
+                            <input type="text" name="options" class="form-control form-control-sm mb-1" placeholder="Option B">
+                            <input type="text" name="options" class="form-control form-control-sm mb-1" placeholder="Option C">
+                            <input type="text" name="options" class="form-control form-control-sm" placeholder="Option D">
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold small text-muted">Correct Answer</label>
+                            <input type="text" name="correct_answer" class="form-control form-control-sm" placeholder="e.g. Option A or value">
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-sm fw-bold">Save Question</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Auto Paper Generator Card -->
+            <div class="card neo-card border-0 mb-4">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold text-dark mb-0"><i class="fa fa-magic text-warning me-2"></i>Auto Paper Generator</h5>
+                    <p class="text-muted small mb-0">Define difficulty ratios to compile printable question sheets</p>
+                </div>
+                <div class="card-body">
+                    <form action="/academics/questions/generate-paper" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small text-muted">Select Subject</label>
+                            <select name="subject_id" class="form-select form-select-sm" required>
+                                {% for s in subjects %}
+                                    <option value="{{ s.id }}">{{ s.subject_name }} (Class {{ s.class_name }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="row g-3 mb-4">
+                            <div class="col-sm-4">
+                                <label class="form-label fw-semibold small text-muted">Easy Qs</label>
+                                <input type="number" name="easy_count" class="form-control form-control-sm" min="0" max="50" value="3">
+                            </div>
+                            <div class="col-sm-4">
+                                <label class="form-label fw-semibold small text-muted">Medium Qs</label>
+                                <input type="number" name="medium_count" class="form-control form-control-sm" min="0" max="50" value="5">
+                            </div>
+                            <div class="col-sm-4">
+                                <label class="form-label fw-semibold small text-muted">Hard Qs</label>
+                                <input type="number" name="hard_count" class="form-control form-control-sm" min="0" max="50" value="2">
+                            </div>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-warning btn-sm text-dark fw-bold">⚡ Generate & Download PDF Paper</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question List -->
+        <div class="col-md-7">
+            <div class="card neo-card border-0">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold text-dark mb-0"><i class="fa fa-database text-primary me-2"></i>Question Repository</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-borderless align-middle">
+                            <thead>
+                                <tr class="text-muted small border-bottom">
+                                    <th>Subject</th>
+                                    <th>Chapter</th>
+                                    <th>Question Details</th>
+                                    <th>Difficulty</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for q in questions %}
+                                    <tr class="border-bottom">
+                                        <td class="fw-semibold text-dark small">{{ q.subject.subject_name }}</td>
+                                        <td class="small text-muted">{{ q.chapter }}</td>
+                                        <td>
+                                            <div class="fw-bold text-dark small" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ q.question_text }}</div>
+                                            <div class="text-muted small" style="font-size: 10px;">Cognitive: {{ q.cognitive_level }}</div>
+                                        </td>
+                                        <td>
+                                            <span class="badge {% if q.difficulty == 'Easy' %}bg-success{% elif q.difficulty == 'Medium' %}bg-warning text-dark{% else %}bg-danger{% endif %} small">
+                                                {{ q.difficulty }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted small py-4">No questions created in the question bank yet.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

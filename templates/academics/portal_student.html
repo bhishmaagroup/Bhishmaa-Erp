@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Student Portal - Bhishmaa ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1">🎓 Student Dashboard</h3>
+            <p class="text-muted mb-0">Student: <strong>{{ student.first_name }} {{ student.last_name or '' }}</strong> | Class: {{ student.student_class }}-{{ student.section }}</p>
+        </div>
+        <a href="/academics/" class="btn btn-outline-dark btn-sm">← Academics Menu</a>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="row">
+        <!-- Timetable & Seating -->
+        <div class="col-md-6 mb-4">
+            <!-- Timetable -->
+            <div class="card border-0 shadow-sm neo-card mb-4">
+                <div class="card-body p-2">
+                    <h5 class="fw-bold mb-3"><i class="fa fa-calendar-alt text-primary me-2"></i>My Class Timetable</h5>
+                    <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Day</th>
+                                    <th>Period</th>
+                                    <th>Subject</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for slot in timetable %}
+                                <tr>
+                                    <td class="fw-bold">{{ slot.day_of_week }}</td>
+                                    <td>{{ slot.period_no }}</td>
+                                    <td class="fw-semibold text-dark">{{ slot.subject.subject_name }}</td>
+                                    <td class="small">{{ slot.start_time.strftime('%I:%M %p') }} - {{ slot.end_time.strftime('%I:%M %p') }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-3">No classes scheduled.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seating Arrangements -->
+            <div class="card border-0 shadow-sm neo-card">
+                <div class="card-body p-2">
+                    <h5 class="fw-bold mb-3"><i class="fa fa-th text-success me-2"></i>My Seating Plan</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Room</th>
+                                    <th>Seat Code</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for s in seating %}
+                                <tr>
+                                    <td class="fw-semibold">{{ s.schedule.subject.subject_name }}</td>
+                                    <td><span class="badge bg-secondary">{{ s.room.room_no }}</span></td>
+                                    <td><span class="badge bg-success">{{ s.seat_no }}</span></td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted py-3">No exam seating planned.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Exams & Results -->
+        <div class="col-md-6 mb-4">
+            <!-- Exam Schedules -->
+            <div class="card border-0 shadow-sm neo-card mb-4">
+                <div class="card-body p-2">
+                    <h5 class="fw-bold mb-3"><i class="fa fa-file-signature text-danger me-2"></i>Upcoming Exams</h5>
+                    <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Exam Name</th>
+                                    <th>Dates</th>
+                                    <th width="150" class="text-center">Admit Card</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for e in exams %}
+                                <tr>
+                                    <td class="fw-bold text-dark">{{ e.name }}</td>
+                                    <td class="small">{{ e.start_date.strftime('%d %b %Y') if e.start_date else '-' }} to {{ e.end_date.strftime('%d %b %Y') if e.end_date else '-' }}</td>
+                                    <td class="text-center">
+                                        <a href="/exam/admit-cards/student/{{ e.id }}/{{ student.id }}" class="btn btn-sm btn-primary py-0">
+                                            Download
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted py-3">No active exams scheduled.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Published Results -->
+            <div class="card border-0 shadow-sm neo-card">
+                <div class="card-body p-2">
+                    <h5 class="fw-bold mb-3"><i class="fa fa-award text-warning me-2"></i>My Results & Grades</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Exam</th>
+                                    <th>Total Marks</th>
+                                    <th>Percentage</th>
+                                    <th>Grade</th>
+                                    <th>Rank</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r in results %}
+                                <tr>
+                                    <td class="fw-bold">{{ r.exam_ref.name }}</td>
+                                    <td>{{ r.total_marks_obtained }} / {{ r.total_max_marks }}</td>
+                                    <td><strong>{{ r.percentage }}%</strong></td>
+                                    <td><span class="badge bg-secondary">{{ r.grade or 'N/A' }}</span></td>
+                                    <td class="fw-bold text-primary">#{{ r.rank or '-' }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-3">No published exam results.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

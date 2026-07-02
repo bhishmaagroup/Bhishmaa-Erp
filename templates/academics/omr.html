@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}OMR Management - Bhishmaa ERP{% endblock %}
+
+{% block content %}
+<style>
+    .glass-header {
+        background: linear-gradient(135deg, #6366f1, #0f172a);
+        color: white;
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+    .neo-card {
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01);
+    }
+</style>
+
+<div class="container-fluid py-2">
+    <!-- Header -->
+    <div class="glass-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h3 class="fw-bold mb-1">📑 OMR Sheet Management</h3>
+            <p class="mb-0 opacity-90">Configure multiple-choice answer keys and evaluate scanned OMR response sheets in bulk</p>
+        </div>
+        <a href="/academics/" class="btn btn-outline-light"><i class="fa fa-arrow-left me-1"></i> Dashboard</a>
+    </div>
+
+    <!-- Alert Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="border-radius: 12px;">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="row g-4">
+        <!-- OMR Layout Configuration -->
+        <div class="col-md-5">
+            <div class="card neo-card border-0 mb-4">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold text-dark mb-0"><i class="fa fa-key text-primary me-2"></i>Configure OMR Key</h5>
+                </div>
+                <div class="card-body">
+                    <form action="/academics/omr/upload" method="POST">
+                        <input type="hidden" name="action" value="layout">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small text-muted">Layout/Exam Name</label>
+                            <input type="text" name="name" class="form-control form-control-sm" placeholder="e.g. CBSE 10th Math Mock" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small text-muted">Total Questions</label>
+                            <input type="number" name="total_questions" class="form-control form-control-sm" min="5" max="200" value="50" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold small text-muted">Answer Key map (comma separated, e.g. 1:A, 2:B, 3:C)</label>
+                            <textarea name="answer_key" class="form-control form-control-sm" rows="5" required placeholder="1:A, 2:B, 3:C, 4:D, 5:A..."></textarea>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-sm fw-bold">Save Answer Key</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- OMR Bulk Evaluation -->
+        <div class="col-md-7">
+            <div class="card neo-card border-0 mb-4">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold text-dark mb-0"><i class="fa fa-upload text-success me-2"></i>Bulk Scanned OMR Evaluation</h5>
+                    <p class="text-muted small mb-0">Upload scanned OMR response sheets compiled as a CSV list</p>
+                </div>
+                <div class="card-body">
+                    <form action="/academics/omr/upload" method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="action" value="evaluate">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small text-muted">Select Answer Key Layout</label>
+                            <select name="layout_id" class="form-select form-select-sm" required>
+                                {% for layout in layouts %}
+                                    <option value="{{ layout.id }}">{{ layout.name }} ({{ layout.total_questions }} Qs)</option>
+                                {% else %}
+                                    <option disabled>Please configure an OMR answer key first.</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small text-muted">Select Exam Schedule Target</label>
+                            <select name="schedule_id" class="form-select form-select-sm" required>
+                                {% for sc in schedules %}
+                                    <option value="{{ sc.id }}">{{ sc.exam_ref.name }} - {{ sc.subject.subject_name }} (Class {{ sc.exam_ref.class_name }})</option>
+                                {% else %}
+                                    <option disabled>No active exam schedules found.</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold small text-muted">Scanned OMR CSV File (admission_no, q1, q2...)</label>
+                            <input type="file" name="omr_csv" class="form-control form-control-sm" accept=".csv" required>
+                            <div class="text-muted small mt-1" style="font-size: 10px;">Format: CSV must contain <code>admission_no</code>, and columns <code>q1</code>, <code>q2</code>, <code>q3</code> matching layout.</div>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success btn-sm fw-bold" {% if not layouts or not schedules %}disabled{% endif %}>⚡ Run Scanned OMR Batch Evaluator</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

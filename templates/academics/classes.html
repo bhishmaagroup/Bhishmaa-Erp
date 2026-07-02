@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Class & Sections - Bhishmaa ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1">🏫 Class & Section Master</h3>
+            <p class="text-muted mb-0">Register school classes, configure sections, and allocate Class Teachers</p>
+        </div>
+        <a href="/academics/" class="btn btn-outline-dark btn-sm">← Academics Menu</a>
+    </div>
+
+    <div class="row">
+        <!-- Forms Panel -->
+        <div class="col-md-4 mb-4">
+            <!-- Add Class Card -->
+            <div class="card border-0 shadow-sm neo-card mb-4">
+                <div class="card-body p-2">
+                    <h5 class="fw-bold mb-3"><i class="fa fa-plus-circle text-primary me-2"></i>Create New Class</h5>
+                    <form method="post">
+                        <input type="hidden" name="action" value="class">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Class Name</label>
+                            <input type="text" name="class_name" class="form-control" placeholder="e.g. 10 or 12" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Stream / Branch (Optional)</label>
+                            <select name="stream" class="form-select">
+                                <option value="">General</option>
+                                <option value="Science">Science</option>
+                                <option value="Commerce">Commerce</option>
+                                <option value="Arts">Arts</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fa fa-save me-1"></i> Save Class
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Add Section Card -->
+            <div class="card border-0 shadow-sm neo-card">
+                <div class="card-body p-2">
+                    <h5 class="fw-bold mb-3"><i class="fa fa-plus-circle text-success me-2"></i>Create Section under Class</h5>
+                    <form method="post">
+                        <input type="hidden" name="action" value="section">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Select Class</label>
+                            <select name="class_id" class="form-select" required>
+                                <option value="">Choose Class</option>
+                                {% for c in classes %}
+                                <option value="{{ c.id }}">Class {{ c.class_name }} {{ '(' + c.stream + ')' if c.stream else '' }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Section Name</label>
+                            <input type="text" name="section_name" class="form-control" placeholder="e.g. A" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Class Teacher</label>
+                            <select name="class_teacher_id" class="form-select">
+                                <option value="">Choose Teacher</option>
+                                {% for t in teachers %}
+                                <option value="{{ t.id }}">{{ t.first_name }} {{ t.last_name or '' }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Section Capacity (Desks)</label>
+                            <input type="number" name="capacity" class="form-control" value="40" min="1" required>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="fa fa-save me-1"></i> Save Section
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Class/Section List Grid -->
+        <div class="col-md-8 mb-4">
+            <div class="card border-0 shadow-sm neo-card">
+                <div class="card-body p-2">
+                    <h5 class="fw-bold mb-3"><i class="fa fa-list text-dark me-2"></i>School Class Hierarchy</h5>
+                    <div class="accordion" id="classHierarchy">
+                        {% for c in classes %}
+                        <div class="accordion-item border-0 mb-3 shadow-xs">
+                            <h2 class="accordion-header" id="headingClass{{ c.id }}">
+                                <button class="accordion-button bg-light fw-bold text-dark rounded" type="button" data-bs-toggle="collapse" data-bs-target="#collapseClass{{ c.id }}">
+                                    Class {{ c.class_name }} {{ '(' + c.stream + ')' if c.stream else '' }}
+                                    <span class="badge bg-primary ms-3">{{ c.sections|length }} sections</span>
+                                </button>
+                            </h2>
+                            <div id="collapseClass{{ c.id }}" class="accordion-collapse collapse show" data-bs-parent="#classHierarchy">
+                                <div class="accordion-body p-3">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-hover align-middle">
+                                            <thead>
+                                                <tr>
+                                                    <th>Section</th>
+                                                    <th>Class Teacher</th>
+                                                    <th>Capacity</th>
+                                                    <th>Academic Session</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for sec in c.sections %}
+                                                <tr>
+                                                    <td class="fw-bold text-primary">Section {{ sec.section_name }}</td>
+                                                    <td>
+                                                        {% if sec.class_teacher_id %}
+                                                        {{ sec.class_teacher.first_name }} {{ sec.class_teacher.last_name or '' }}
+                                                        {% else %}
+                                                        <span class="text-muted small">Not Assigned</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>{{ sec.capacity }} students</td>
+                                                    <td><span class="badge bg-dark">{{ sec.academic_year or '2026-2027' }}</span></td>
+                                                </tr>
+                                                {% else %}
+                                                <tr>
+                                                    <td colspan="4" class="text-center text-muted small py-3">No sections registered for this class. Add one on the left.</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="text-center text-muted py-4">No classes created. Create classes on the left panel.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

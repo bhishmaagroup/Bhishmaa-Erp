@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Exam Types - Bhishmaa ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h3 class="fw-bold mb-1">🏷️ Exam Types</h3>
+            <p class="text-muted mb-0">Create types of exams (e.g. Unit Test, Mid Term, Final Exam)</p>
+        </div>
+        <div>
+            <a href="/exam/" class="btn btn-outline-dark btn-sm">
+                <i class="fa fa-arrow-left me-1"></i> Back to Exams
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Add Type Form -->
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm neo-card">
+                <div class="card-body p-2">
+                    <h5 class="fw-bold mb-3"><i class="fa fa-plus-circle text-primary me-2"></i>Create Exam Type</h5>
+                    <form method="post">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Exam Type Name</label>
+                            <input type="text" name="name" class="form-control" placeholder="e.g. Half-Yearly Examination" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Description</label>
+                            <textarea name="description" class="form-control" rows="3" placeholder="Optional comments..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 mt-2">
+                            <i class="fa fa-save me-1"></i> Save Type
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Type List Table -->
+        <div class="col-md-8 mb-4">
+            <div class="card border-0 shadow-sm neo-card">
+                <div class="card-body p-2">
+                    <h5 class="fw-bold mb-3"><i class="fa fa-list text-dark me-2"></i>Registered Exam Types</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Exam Type</th>
+                                    <th>Description</th>
+                                    <th width="120">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for t in types %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td class="fw-bold text-dark">{{ t.name }}</td>
+                                    <td class="text-muted">{{ t.description or 'No description provided' }}</td>
+                                    <td>
+                                        <a href="{{ url_for('exam.delete_type', id=t.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this exam type? It will delete all linked exams.')">
+                                            <i class="fa fa-trash"></i> Delete
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-4">No exam types defined. Add one on the left panel.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

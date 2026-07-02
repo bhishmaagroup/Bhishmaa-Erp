@@ -23,7 +23,7 @@
         <div class="col-md-3">
             <select name="class" class="form-select" required>
                 <option value="">-- Select Class --</option>
-                {% for c in ["Nursery","LKG","UKG","I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII"] %}
+                {% for c in ["LKG","UKG","1","2","3","4","5","6","7","8","9","10","11","12"] %}
                 <option value="{{ c }}" {% if request.args.get('class')==c %}selected{% endif %}>
                     {{ c }}
                 </option>

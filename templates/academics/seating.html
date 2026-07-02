@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Seating Planner - Bhishmaa ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1">📇 Exam Seating Planner</h3>
+            <p class="text-muted mb-0">Manage exam hall arrangements and run auto seat assignment engine</p>
+        </div>
+        <a href="/academics/" class="btn btn-outline-dark btn-sm">← Academics Menu</a>
+    </div>
+
+    <div class="row">
+        <!-- Allocation Engine Form -->
+        {% if current_user.role in ['admin', 'principal'] %}
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm neo-card">
+                <div class="card-body p-2">
+                    <h5 class="fw-bold mb-3"><i class="fa fa-cogs text-primary me-2"></i>Auto Allocation Engine</h5>
+                    <form method="post">
+                        <input type="hidden" name="action" value="allocate">
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Choose Exam</label>
+                            <select name="exam_id" id="examSelect" class="form-select" required>
+                                <option value="">Select Exam</option>
+                                {% for e in exams %}
+                                <option value="{{ e.id }}">{{ e.name }} (Class {{ e.class_name }} {{ e.section or '' }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Select Scheduled Subject</label>
+                            <select name="schedule_id" id="scheduleSelect" class="form-select" required>
+                                <option value="">Choose Subject</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Available Exam Rooms</label>
+                            <div class="p-2 border rounded" style="max-height: 150px; overflow-y: auto;">
+                                {% for r in rooms %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="room_ids" value="{{ r.id }}" id="roomCheck{{ r.id }}" checked>
+                                    <label class="form-check-label small" for="roomCheck{{ r.id }}">
+                                        {{ r.room_no }} (Cap: {{ r.capacity }} desks)
+                                    </label>
+                                </div>
+                                {% else %}
+                                <span class="text-muted small">No rooms registered. Create rooms in Timetable module.</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fa fa-magic me-1"></i> Run Auto Seat Allocator
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Seating Chart Display -->
+        <div class="col-md-8 mb-4">
+            <div class="card border-0 shadow-sm neo-card">
+                <div class="card-body p-2">
+                    <h5 class="fw-bold mb-3"><i class="fa fa-th-list text-dark me-2"></i>Assigned Seating Charts</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Student Name</th>
+                                    <th>Class/Sec</th>
+                                    <th>Exam</th>
+                                    <th>Subject</th>
+                                    <th>Room No</th>
+                                    <th>Seat Code</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for p in plans %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td class="fw-bold text-dark">{{ p.student.first_name }} {{ p.student.last_name or '' }}</td>
+                                    <td>{{ p.student.student_class }}-{{ p.student.section or 'N/A' }}</td>
+                                    <td>{{ p.exam.name }}</td>
+                                    <td>{{ p.schedule.subject.subject_name }}</td>
+                                    <td><span class="badge bg-secondary">{{ p.room.room_no }}</span></td>
+                                    <td><span class="badge bg-success">{{ p.seat_no }}</span></td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-4">No seating allocations active. Select exam parameters on the left to allocate.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('examSelect').addEventListener('change', function() {
+    const examId = this.value;
+    const scheduleSelect = document.getElementById('scheduleSelect');
+    
+    // Clear current options
+    scheduleSelect.innerHTML = '<option value="">Choose Subject</option>';
+    
+    if (examId) {
+        fetch('/academics/api/exams/schedules/' + examId)
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    data.schedules.forEach(s => {
+                        const opt = document.createElement('option');
+                        opt.value = s.id;
+                        opt.textContent = s.subject_name + ' (' + s.date + ' | ' + s.time + ')';
+                        scheduleSelect.appendChild(opt);
+                    });
+                }
+            });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Results Engine - Bhishmaa ERP{% endblock %}
+
+{% block content %}
+<div class="container py-2">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1">⚙️ Results Calculation Dashboard</h3>
+            <p class="text-muted mb-0">Process rankings (Class, Section, School-wide) and publish aggregates</p>
+        </div>
+        <a href="/academics/" class="btn btn-outline-dark btn-sm">← Academics Menu</a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="card border-0 shadow-sm neo-card">
+                <div class="card-body p-3">
+                    <h5 class="fw-bold mb-4"><i class="fa fa-calculator text-primary me-2"></i>Select Exam to Run Calculations</h5>
+                    
+                    <form method="post">
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Choose Exam</label>
+                            <select name="exam_id" class="form-select" required>
+                                <option value="">Select Exam</option>
+                                {% for e in exams %}
+                                <option value="{{ e.id }}">{{ e.name }} (Class {{ e.class_name }} {{ e.section or '' }}) - [{{ e.status }}]</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text mt-2">
+                                <i class="fa fa-info-circle me-1"></i> Running the calculator aggregates Theory, Practical, Viva, and Internal splits, maps percentages to customized Grade rules, determines subject-wise pass thresholds, and allocates Class, Section, and School Ranks.
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button type="submit" name="action" value="process" class="btn btn-primary flex-grow-1">
+                                <i class="fa fa-cogs me-1"></i> Process & Rank Results
+                            </button>
+                            <button type="submit" name="action" value="lock" class="btn btn-danger flex-grow-1" onclick="return confirm('Lock results? Marks can no longer be updated after locking.')">
+                                <i class="fa fa-lock me-1"></i> Lock Result Sheets
+                            </button>
+                            <button type="submit" name="action" value="publish" class="btn btn-success flex-grow-1">
+                                <i class="fa fa-eye me-1"></i> Publish to Portal
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}Timetable Constraints - Bhishmaa ERP{% endblock %}
+
+{% block content %}
+<style>
+    .glass-header {
+        background: linear-gradient(135deg, #475569, #0f172a);
+        color: white;
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+    .neo-card {
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01);
+    }
+</style>
+
+<div class="container-fluid py-2">
+    <!-- Header -->
+    <div class="glass-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h3 class="fw-bold mb-1">⚙️ Schedulers Optimization Constraints</h3>
+            <p class="mb-0 opacity-90">Set teacher daily capacities, subject priorities, and laboratory requirements</p>
+        </div>
+        <a href="/academics/" class="btn btn-outline-light"><i class="fa fa-arrow-left me-1"></i> Dashboard</a>
+    </div>
+
+    <!-- Alert Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="border-radius: 12px;">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="row g-4">
+        <!-- Column 1: Teacher Timetable Constraints -->
+        <div class="col-lg-6">
+            <div class="card neo-card border-0 mb-4">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold text-dark mb-0"><i class="fa fa-user-tie text-primary me-2"></i>Teacher Constraint Profiles</h5>
+                    <p class="text-muted small mb-0">Set maximum teaching slot limits and unavailable times</p>
+                </div>
+                <div class="card-body">
+                    <form action="/academics/timetable/constraints" method="POST">
+                        <input type="hidden" name="constraint_type" value="teacher">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small text-muted">Select Teacher</label>
+                            <select name="teacher_id" class="form-select form-select-sm" required>
+                                {% for t in teachers %}
+                                    <option value="{{ t.id }}">{{ t.first_name }} {{ t.last_name or '' }} ({{ t.teacher_code }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-6">
+                                <label class="form-label fw-semibold small text-muted">Max Periods / Day</label>
+                                <input type="number" name="max_periods_day" class="form-control form-control-sm" min="1" max="10" value="5" required>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label fw-semibold small text-muted">Max Periods / Week</label>
+                                <input type="number" name="max_periods_week" class="form-control form-control-sm" min="1" max="50" value="25" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small text-muted">Preferred Slots (comma-separated, e.g., Monday:1, Wednesday:3)</label>
+                            <input type="text" name="preferred_slots" class="form-control form-control-sm" placeholder="Monday:1,Tuesday:2">
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold small text-muted">Unavailable Slots (comma-separated, e.g., Friday:5, Friday:6)</label>
+                            <input type="text" name="unavailable_slots" class="form-control form-control-sm" placeholder="Saturday:5,Saturday:6">
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-sm fw-bold">Save Teacher Constraints</button>
+                        </div>
+                    </form>
+
+                    <h6 class="fw-bold mt-4 mb-2 small text-muted text-uppercase">Existing Profiles</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm border-0 small">
+                            <thead>
+                                <tr class="text-muted">
+                                    <th>Teacher</th>
+                                    <th>Max (Day/Week)</th>
+                                    <th>Unavailable</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for t in teachers %}
+                                    {% if t.id in t_constraints %}
+                                        <tr>
+                                            <td>{{ t.first_name }}</td>
+                                            <td>{{ t_constraints[t.id].max_periods_day }}/{{ t_constraints[t.id].max_periods_week }}</td>
+                                            <td><span class="text-danger">{{ t_constraints[t.id].unavailable_slots or 'None' }}</span></td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Column 2: Subject Constraints -->
+        <div class="col-lg-6">
+            <div class="card neo-card border-0 mb-4">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold text-dark mb-0"><i class="fa fa-book text-success me-2"></i>Subject Parameter Profiles</h5>
+                    <p class="text-muted small mb-0">Flag heavy subjects and require specialized laboratory spaces</p>
+                </div>
+                <div class="card-body">
+                    <form action="/academics/timetable/constraints" method="POST">
+                        <input type="hidden" name="constraint_type" value="subject">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small text-muted">Select Subject</label>
+                            <select name="subject_id" class="form-select form-select-sm" required>
+                                {% for s in subjects %}
+                                    <option value="{{ s.id }}">{{ s.subject_name }} (Class {{ s.class_name }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" name="is_heavy" id="is_heavy" value="1">
+                            <label class="form-check-label small fw-semibold text-muted" for="is_heavy">Mark as Heavy Subject (Mathematics, Physics, Chemistry)</label>
+                        </div>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" name="requires_lab" id="requires_lab" value="1">
+                            <label class="form-check-label small fw-semibold text-muted" for="requires_lab">Requires Laboratory Space (Practicals)</label>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold small text-muted">Laboratory Specialty Type Required</label>
+                            <select name="lab_type_required" class="form-select form-select-sm">
+                                <option value="Physics">Physics</option>
+                                <option value="Chemistry">Chemistry</option>
+                                <option value="Biology">Biology</option>
+                                <option value="Computer">Computer</option>
+                                <option value="General">General</option>
+                            </select>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success btn-sm fw-bold">Save Subject Constraints</button>
+                        </div>
+                    </form>
+
+                    <h6 class="fw-bold mt-4 mb-2 small text-muted text-uppercase">Existing Parameter Profiles</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm border-0 small">
+                            <thead>
+                                <tr class="text-muted">
+                                    <th>Subject</th>
+                                    <th>Heavy?</th>
+                                    <th>Requires Lab?</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for s in subjects %}
+                                    {% if s.id in s_constraints %}
+                                        <tr>
+                                            <td>{{ s.subject_name }} ({{ s.class_name }})</td>
+                                            <td><span class="badge {% if s_constraints[s.id].is_heavy %}bg-danger{% else %}bg-light text-muted{% endif %}">{% if s_constraints[s.id].is_heavy %}Yes{% else %}No{% endif %}</span></td>
+                                            <td><span class="badge {% if s_constraints[s.id].requires_lab %}bg-info text-white{% else %}bg-light text-muted{% endif %}">{% if s_constraints[s.id].requires_lab %}{{ s_constraints[s.id].lab_type_required }}{% else %}No{% endif %}</span></td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

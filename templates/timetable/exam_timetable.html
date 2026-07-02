@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Exam Timetable - {{ exam.name }} - Bhishmaa ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h3 class="fw-bold mb-1">📅 Exam Timetable Sheets</h3>
+            <p class="text-muted mb-0">Exam: <strong class="text-dark">{{ exam.name }}</strong> (Class {{ exam.class_name }} {{ exam.section or '' }})</p>
+        </div>
+        <div>
+            <a href="/exam/" class="btn btn-outline-dark btn-sm">
+                <i class="fa fa-arrow-left me-1"></i> Back to Exams
+            </a>
+        </div>
+    </div>
+
+    <!-- Timetable Sheet Table -->
+    <div class="card border-0 shadow-sm neo-card">
+        <div class="card-body p-2">
+            <h5 class="fw-bold mb-3"><i class="fa fa-calendar-alt text-dark me-2"></i>Timetable Details</h5>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>Subject</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Room No</th>
+                            <th>Max Marks</th>
+                            <th>Min Pass Marks</th>
+                            <th>Invigilator</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in schedules %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td class="fw-bold text-dark">{{ s.subject.subject_name }} ({{ s.subject.subject_code or 'N/A' }})</td>
+                            <td>{{ s.date.strftime('%d %B %Y') }}</td>
+                            <td>{{ s.start_time.strftime('%I:%M %p') }} - {{ s.end_time.strftime('%I:%M %p') }}</td>
+                            <td><span class="badge bg-secondary">{{ s.room_no or 'N/A' }}</span></td>
+                            <td class="fw-semibold">{{ s.max_marks }}</td>
+                            <td class="text-danger fw-semibold">{{ s.passing_marks }}</td>
+                            <td>
+                                {% if s.teacher_id %}
+                                {{ s.teacher.first_name }} {{ s.teacher.last_name or '' }}
+                                {% else %}
+                                <span class="text-muted small">Not Assigned</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-4">No exam schedule records mapped for this exam yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

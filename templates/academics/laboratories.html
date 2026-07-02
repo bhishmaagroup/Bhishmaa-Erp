@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Laboratories - Bhishmaa ERP{% endblock %}
+
+{% block content %}
+<style>
+    .glass-header {
+        background: linear-gradient(135deg, #0284c7, #0f172a);
+        color: white;
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+    .neo-card {
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01);
+    }
+</style>
+
+<div class="container-fluid py-2">
+    <!-- Header -->
+    <div class="glass-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h3 class="fw-bold mb-1">🔬 Laboratories & Practical Centers</h3>
+            <p class="mb-0 opacity-90">Manage practical examination labs and equipment setups for CBSE/University curricula</p>
+        </div>
+        <a href="/academics/" class="btn btn-outline-light"><i class="fa fa-arrow-left me-1"></i> Dashboard</a>
+    </div>
+
+    <div class="row g-4">
+        <!-- Add Lab Form -->
+        <div class="col-md-4">
+            <div class="card neo-card border-0">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold text-dark mb-0"><i class="fa fa-plus-circle text-primary me-2"></i>Add Laboratory</h5>
+                </div>
+                <div class="card-body">
+                    <form action="/academics/laboratories" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small text-muted">Select Building Block</label>
+                            <select name="building_id" class="form-select form-select-sm" required>
+                                {% for b in buildings %}
+                                    <option value="{{ b.id }}">{{ b.name }} ({{ b.campus.name }})</option>
+                                {% else %}
+                                    <option disabled>Please configure building blocks first.</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small text-muted">Laboratory Name</label>
+                            <input type="text" name="name" class="form-control form-control-sm" placeholder="e.g. Physics Lab A" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small text-muted">Lab Specialty Type</label>
+                            <select name="lab_type" class="form-select form-select-sm">
+                                <option value="Physics">Physics</option>
+                                <option value="Chemistry">Chemistry</option>
+                                <option value="Biology">Biology</option>
+                                <option value="Computer">Computer</option>
+                                <option value="General">General</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small text-muted">Seat Capacity</label>
+                            <input type="number" name="capacity" class="form-control form-control-sm" min="5" max="200" value="30" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold small text-muted">Equipment List (comma separated)</label>
+                            <textarea name="equipment_list" class="form-control form-control-sm" rows="3" placeholder="e.g. Microscopes, Oscilloscopes, Beakers, PC Core i7"></textarea>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-sm fw-bold" {% if not buildings %}disabled{% endif %}>Add Laboratory</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Labs List -->
+        <div class="col-md-8">
+            <div class="card neo-card border-0">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold text-dark mb-0"><i class="fa fa-list text-primary me-2"></i>Laboratory Registry</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-borderless align-middle">
+                            <thead>
+                                <tr class="text-muted small border-bottom">
+                                    <th>ID</th>
+                                    <th>Lab Name</th>
+                                    <th>Specialty Type</th>
+                                    <th>Building Block</th>
+                                    <th>Capacity</th>
+                                    <th>Equipments Seeding</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lab in laboratories %}
+                                    <tr class="border-bottom">
+                                        <td class="fw-bold text-muted small">#{{ lab.id }}</td>
+                                        <td class="fw-semibold text-dark">{{ lab.name }}</td>
+                                        <td><span class="badge bg-info text-white fw-semibold">{{ lab.lab_type }}</span></td>
+                                        <td>{{ lab.building.name }} ({{ lab.building.campus.name }})</td>
+                                        <td class="fw-bold text-dark">{{ lab.capacity }}</td>
+                                        <td>
+                                            {% if lab.equipment_json %}
+                                                {% for eq in lab.equipment_json %}
+                                                    <span class="badge bg-light text-secondary border small">{{ eq }}</span>
+                                                {% endfor %}
+                                            {% else %}
+                                                <span class="text-muted small">None Listed</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted small py-4">No laboratories configured yet.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Academic Intelligence Analytics - Bhishmaa ERP{% endblock %}
+
+{% block content %}
+<style>
+    .glass-header {
+        background: linear-gradient(135deg, #1e1b4b, #3b82f6);
+        color: white;
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+    .neo-card {
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01);
+    }
+    .at-risk-card {
+        border-left: 5px solid #ef4444 !important;
+    }
+</style>
+
+<div class="container-fluid py-2">
+    <!-- Header -->
+    <div class="glass-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h3 class="fw-bold mb-1">📊 Academic Intelligence Analytics</h3>
+            <p class="mb-0 opacity-90">AI-driven predictive risk scoring, weakness detection, and teacher outcome analytics</p>
+        </div>
+        <a href="/academics/" class="btn btn-outline-light"><i class="fa fa-arrow-left me-1"></i> Dashboard</a>
+    </div>
+
+    <div class="row g-4">
+        <!-- AI Student Risk Predictor -->
+        <div class="col-lg-7">
+            <div class="card neo-card border-0 mb-4">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold text-dark mb-0"><i class="fa fa-exclamation-triangle text-danger me-2"></i>AI-Based At-Risk Students Predictor</h5>
+                    <p class="text-muted small mb-0">Detects students at risk of failure or high attendance drops</p>
+                </div>
+                <div class="card-body">
+                    {% if at_risk_students %}
+                        <div class="row g-3">
+                            {% for item in at_risk_students %}
+                                <div class="col-12">
+                                    <div class="card neo-card at-risk-card border-0 bg-light p-3 shadow-xs">
+                                        <div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
+                                            <h6 class="fw-bold mb-0 text-dark">
+                                                {{ item.student.first_name }} {{ item.student.last_name or '' }} (Class {{ item.student.student_class }}-{{ item.student.section }})
+                                            </h6>
+                                            <span class="badge bg-danger fw-bold">Risk Score: {{ item.risk_score }}%</span>
+                                        </div>
+                                        <p class="small text-muted mb-2">
+                                            Attendance: <strong class="text-dark">{{ item.attendance_rate|round(1) }}%</strong> | 
+                                            Performance Average: <strong class="text-dark">{{ item.performance_avg|round(1) }}%</strong>
+                                        </p>
+                                        <div class="d-flex gap-1 flex-wrap">
+                                            {% for reason in item.reasons %}
+                                                <span class="badge bg-danger-light text-danger border border-danger-subtle small" style="font-size: 10px;">{{ reason }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <div class="text-success mb-3"><i class="fa fa-check-circle fa-3x"></i></div>
+                            <h6 class="fw-bold text-secondary">All Students are On Track</h6>
+                            <p class="text-muted small">No students flag the risk limits (Attendance > 75%, Pass margins maintained).</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Teacher Outcomes and analytics -->
+        <div class="col-lg-5">
+            <div class="card neo-card border-0 mb-4">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold text-dark mb-0"><i class="fa fa-chart-line text-primary me-2"></i>Teacher Class Outcomes</h5>
+                    <p class="text-muted small mb-0">Grade pass rates and result outcomes per teacher evaluations</p>
+                </div>
+                <div class="card-body">
+                    {% if teacher_performance %}
+                        <div class="table-responsive">
+                            <table class="table table-borderless align-middle small">
+                                <thead>
+                                    <tr class="text-muted border-bottom">
+                                        <th>Teacher</th>
+                                        <th>Total Graded</th>
+                                        <th>Outcomes Pass %</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for tp in teacher_performance %}
+                                        <tr class="border-bottom">
+                                            <td class="fw-bold text-dark">{{ tp.teacher.first_name }} {{ tp.teacher.last_name or '' }}</td>
+                                            <td>{{ tp.total_graded }} students</td>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div class="progress flex-grow-1" style="height: 6px;">
+                                                        <div class="progress-bar {% if tp.pass_rate >= 80 %}bg-success{% elif tp.pass_rate >= 50 %}bg-warning{% else %}bg-danger{% endif %}" role="progressbar" style="width: {{ tp.pass_rate }}%;"></div>
+                                                    </div>
+                                                    <span class="fw-semibold">{{ tp.pass_rate|round(1) }}%</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5 text-muted small">No exam evaluation metrics available to compute teacher outcomes yet.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

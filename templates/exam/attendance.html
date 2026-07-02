@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Exam Attendance - Bhishmaa ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h3 class="fw-bold mb-1">📝 Exam Attendance Sheet</h3>
+            <p class="text-muted mb-0">Record present/absent sheets for examination sessions</p>
+        </div>
+        <div>
+            <a href="/exam/" class="btn btn-outline-dark btn-sm">
+                <i class="fa fa-arrow-left me-1"></i> Back to Exams
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters Card -->
+    <div class="card border-0 shadow-sm mb-4 neo-card">
+        <div class="card-body p-2">
+            <h5 class="fw-bold mb-3"><i class="fa fa-filter text-primary me-2"></i>Select Exam & Subject</h5>
+            <form method="get">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Choose Exam</label>
+                        <select name="exam_id" class="form-select" onchange="this.form.submit()" required>
+                            <option value="">Select Exam</option>
+                            {% for e in exams %}
+                            <option value="{{ e.id }}" {% if selected_exam_id == e.id %}selected{% endif %}>{{ e.name }} (Class {{ e.class_name }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Choose Scheduled Subject</label>
+                        <select name="schedule_id" class="form-select" onchange="this.form.submit()" {% if not schedules %}disabled{% endif %} required>
+                            <option value="">Select Subject Schedule</option>
+                            {% for sc in schedules %}
+                            <option value="{{ sc.id }}" {% if selected_schedule_id == sc.id %}selected{% endif %}>
+                                {{ sc.subject.subject_name }} - {{ sc.date.strftime('%d %b %Y') }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Attendance Grid -->
+    {% if selected_schedule_id and students %}
+    <div class="card border-0 shadow-sm neo-card">
+        <div class="card-body p-2">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <h5 class="fw-bold mb-0"><i class="fa fa-users text-dark me-2"></i>Student Sheet</h5>
+                <span class="badge bg-dark fs-6">Total Students: {{ students|length }}</span>
+            </div>
+            
+            <form method="post">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th width="80">#</th>
+                                <th>Admission No</th>
+                                <th>Student Name</th>
+                                <th>Gender</th>
+                                <th width="220" class="text-center">Status</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for st in students %}
+                            {% set att = attendance_map.get(st.id) %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td class="fw-bold">{{ st.admission_no }}</td>
+                                <td>{{ st.first_name }} {{ st.last_name or '' }}</td>
+                                <td>{{ st.gender or 'N/A' }}</td>
+                                <td>
+                                    <div class="d-flex justify-content-center gap-3">
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="status_{{ st.id }}" id="status_P_{{ st.id }}" value="P" {% if not att or att.status == 'P' %}checked{% endif %}>
+                                            <label class="form-check-label text-success fw-bold" for="status_P_{{ st.id }}">Present</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="status_{{ st.id }}" id="status_A_{{ st.id }}" value="A" {% if att and att.status == 'A' %}checked{% endif %}>
+                                            <label class="form-check-label text-danger fw-bold" for="status_A_{{ st.id }}">Absent</label>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <input type="text" name="remarks_{{ st.id }}" class="form-control form-control-sm" placeholder="e.g. Late" value="{{ att.remarks if att else '' }}">
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-3 text-end">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fa fa-check-double me-1"></i> Submit Attendance Sheet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% elif selected_schedule_id %}
+    <div class="alert alert-info text-center py-4">
+        <i class="fa fa-info-circle fa-2x mb-2 text-primary"></i>
+        <p class="mb-0">No students registered in this class / section.</p>
+    </div>
+    {% else %}
+    <div class="alert alert-light border text-center py-4">
+        <i class="fa fa-search fa-2x mb-2 text-muted"></i>
+        <p class="mb-0">Please select an Exam and Subject Schedule above to load the attendance sheet.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}Subjects Master - Bhishmaa ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1">📚 Subjects Master</h3>
+            <p class="text-muted mb-0">Register subjects, types (Theory/Practical/Viva) & map teachers</p>
+        </div>
+        <a href="/academics/" class="btn btn-outline-dark btn-sm">← Academics Menu</a>
+    </div>
+
+    <div class="row">
+        <!-- Add Subject & Assign Teacher Panels -->
+        <div class="col-md-4 mb-4">
+            <!-- Add Subject -->
+            <div class="card border-0 shadow-sm neo-card mb-4">
+                <div class="card-body p-2">
+                    <h5 class="fw-bold mb-3"><i class="fa fa-plus-circle text-primary me-2"></i>Create New Subject</h5>
+                    <form method="post">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Class</label>
+                            <select name="class_name" class="form-select" required>
+                                <option value="">Choose Class</option>
+                                {% for c in ["LKG","UKG","1","2","3","4","5","6","7","8","9","10","11","12"] %}
+                                <option value="{{ c }}">{{ c }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Section (Optional)</label>
+                            <select name="section" class="form-select">
+                                <option value="">All Sections</option>
+                                {% for s in ["A","B","C","D"] %}
+                                <option value="{{ s }}">Section {{ s }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Subject Name</label>
+                            <input type="text" name="subject_name" class="form-control" placeholder="e.g. Science" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Subject Code</label>
+                            <input type="text" name="subject_code" class="form-control" placeholder="e.g. SCI101" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Subject Type</label>
+                            <select name="subject_type" class="form-select" required>
+                                <option value="Theory">Theory</option>
+                                <option value="Practical">Practical</option>
+                                <option value="Viva">Viva</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check form-switch mt-2">
+                                <input class="form-check-input" type="checkbox" name="is_optional" id="isOptSwitch">
+                                <label class="form-check-label fw-semibold" for="isOptSwitch">Optional Subject</label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fa fa-save me-1"></i> Save Subject
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Assign Teacher -->
+            <div class="card border-0 shadow-sm neo-card">
+                <div class="card-body p-2">
+                    <h5 class="fw-bold mb-3"><i class="fa fa-chalkboard-teacher text-success me-2"></i>Subject Teacher Assignment</h5>
+                    <form method="post" action="/academics/subjects/assign-teacher">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Select Teacher</label>
+                            <select name="teacher_id" class="form-select" required>
+                                <option value="">Choose Teacher</option>
+                                {% for t in teachers %}
+                                <option value="{{ t.id }}">{{ t.first_name }} {{ t.last_name or '' }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Select Subject Slot</label>
+                            <select name="subject_id" class="form-select" required>
+                                <option value="">Choose Subject</option>
+                                {% for s in subjects %}
+                                <option value="{{ s.id }}">Class {{ s.class_name }} {{ s.section or '' }} - {{ s.subject_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="fa fa-check me-1"></i> Assign Teacher
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subject List Grid -->
+        <div class="col-md-8 mb-4">
+            <div class="card border-0 shadow-sm neo-card">
+                <div class="card-body p-2">
+                    <h5 class="fw-bold mb-3"><i class="fa fa-list text-dark me-2"></i>Subject Listings</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Subject</th>
+                                    <th>Code</th>
+                                    <th>Class/Sec</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for s in subjects %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td class="fw-bold text-dark">{{ s.subject_name }}</td>
+                                    <td><span class="badge bg-secondary">{{ s.subject_code or '-' }}</span></td>
+                                    <td>
+                                        <span class="badge bg-primary">Class {{ s.class_name }}</span>
+                                        {% if s.section %}
+                                        <span class="badge bg-dark">{{ s.section }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ s.subject_type or 'Theory' }}</span>
+                                        {% if s.is_optional %}
+                                        <span class="badge bg-warning text-dark">Optional</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if s.status %}
+                                        <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="/academics/subjects/toggle-status/{{ s.id }}" class="btn btn-xs btn-outline-dark">
+                                            Toggle Status
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-4">No subjects registered yet. Create subjects on the left panel.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
